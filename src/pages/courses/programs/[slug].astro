@@ -121,12 +121,12 @@ schemas.push(faqSchema(faqs));
   phản trên nền trắng. Riêng vàng ở bậc 500 đã mờ hẳn khi in chữ.
 */
 const blocks = [
-  { key: "audience", label: "Đối tượng", icon: ICONS.users, tone: "text-sky-600" },
-  { key: "goals", label: "Mục tiêu", icon: ICONS.target, tone: "text-brand-red-600" },
-  { key: "duration", label: "Thời lượng", icon: ICONS.clock, tone: "text-emerald-600" },
-  { key: "content", label: "Nội dung học", icon: ICONS.book, tone: "text-amber-600" },
-  { key: "materials", label: "Giáo trình", icon: ICONS.sparkle, tone: "text-indigo-600" },
-  { key: "outcomes", label: "Chuẩn đầu ra", icon: ICONS.shield, tone: "text-teal-600" },
+  { key: "audience", label: "Đối tượng", icon: ICONS.users, tone: "text-brand-ink-900" },
+  { key: "goals", label: "Mục tiêu", icon: ICONS.target, tone: "text-brand-ink-900" },
+  { key: "duration", label: "Thời lượng", icon: ICONS.clock, tone: "text-brand-ink-900" },
+  { key: "content", label: "Nội dung học", icon: ICONS.book, tone: "text-brand-ink-900" },
+  { key: "materials", label: "Giáo trình", icon: ICONS.sparkle, tone: "text-brand-ink-900" },
+  { key: "outcomes", label: "Chuẩn đầu ra", icon: ICONS.shield, tone: "text-brand-ink-900" },
 ] as const;
 
 const others = courses.filter((c) => c.slug !== course.slug).slice(0, 8);
@@ -244,6 +244,48 @@ const heroFacts = [
   },
 ].filter((f) => f.value);
 
+/*
+  Lộ trình dạng các chặng, dựng từ chính chuỗi thời lượng của từng cấp lớp:
+    · "2 lớp HSK4.1 và HSK4.2, mỗi lớp 3,5 tháng …" → hai chặng HSK4.1, HSK4.2, mỗi chặng 3,5 tháng
+    · "… (3 tháng)." hoặc "3,5 tháng · …"            → một chặng, thời lượng đó
+  KHÔNG cộng tổng số tháng cả khoá: cách tính tổng (một cấp hay cả lộ trình) chưa được
+  trung tâm xác nhận, nên chỉ ghi thời lượng từng lớp đúng như dữ liệu.
+*/
+const roadmap = course.levels.flatMap((level) => {
+  const text = (level.duration ?? []).join(" ");
+  const split = text.match(/2 lớp (\S+) và (\S+), mỗi lớp ([\d,]+ tháng)/);
+  const goal = level.goals?.[0] ?? level.outcomes?.[0] ?? "";
+  if (split) {
+    // Hai chặng cùng cấp: chặng sau lấy mục tiêu kế tiếp để hai thẻ không lặp một câu.
+    const goals = [...(level.goals ?? []), ...(level.outcomes ?? [])];
+    return [
+      { name: split[1], months: split[3], goal: goals[0] ?? "" },
+      { name: split[2], months: split[3], goal: goals[1] ?? goals[0] ?? "" },
+    ];
+  }
+  const months =
+    text.match(/\(([\d,]+ tháng)\)/)?.[1] ?? text.match(/^([\d,]+ tháng)/)?.[1] ?? "";
+  return [{ name: level.name.replace(/^Lớp /, ""), months, goal }];
+});
+const monthNums = roadmap
+  .map((r) => Number(r.months.replace(/[^\d,]/g, "").replace(",", ".")))
+  .filter((n) => n > 0);
+const fmtMonths = (n: number) => String(n).replace(".", ",");
+const perClassLabel =
+  monthNums.length === 0
+    ? ""
+    : Math.min(...monthNums) === Math.max(...monthNums)
+      ? `${fmtMonths(monthNums[0])} tháng/lớp`
+      : `${fmtMonths(Math.min(...monthNums))}–${fmtMonths(Math.max(...monthNums))} tháng/lớp`;
+
+/** Bốn dữ kiện ngay dưới tiêu đề trong banner. */
+const quickFacts = [
+  { label: "Đầu vào", value: course.entry },
+  { label: "Mục tiêu", value: course.goal },
+  { label: "Thời lượng", value: perClassLabel || totalsLabel },
+  { label: "Hình thức", value: "Offline / Online" },
+].filter((f) => f.value);
+
 const sectionTitle =
   "text-[1.75rem] font-black leading-tight tracking-tight text-brand-ink-900 md:text-[2rem]";
 ---
@@ -267,88 +309,127 @@ const sectionTitle =
 >
   <Header />
   <main id="main" class="pb-16 lg:pb-24">
-    <div class="container mx-auto px-6 pt-10 lg:pt-14">
-      <nav aria-label="Breadcrumb" class="mb-7">
-        <ol
-          class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground"
-        >
-          <li>
-            <a href="/" class="transition-colors hover:text-brand-red-600">Trang chủ</a>
-          </li>
+    {/*
+      Banner đỏ rượu như các trang Giới thiệu/Lịch khai giảng: tên khoá, một câu tóm tắt,
+      bốn dữ kiện người chọn khoá hỏi đầu tiên (đầu vào, mục tiêu, thời lượng, hình thức)
+      và nút đăng ký — đủ để quyết định có đọc tiếp hay không ngay ở màn đầu.
+    */}
+    <section class="bg-brand-red-900 pt-[var(--header-overlap,0px)] text-[#ffffff]">
+      <div class="container mx-auto px-6 py-12 lg:py-16">
+        <nav aria-label="Breadcrumb">
+          <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[#ffffff]/65">
+            <li>
+              <a href="/" class="transition-colors hover:text-white">Trang chủ</a>
+            </li>
+            {
+              crumbs.map((c) => (
+                <>
+                  <li
+                    aria-hidden="true"
+                    class="inline-flex items-center opacity-60 [&>svg]:size-3"
+                    set:html={ICONS.chevron}
+                  />
+                  <li>
+                    {c.href ? (
+                      <a href={c.href} class="transition-colors hover:text-white">
+                        {c.label}
+                      </a>
+                    ) : (
+                      <span class="text-[#ffffff]">{c.label}</span>
+                    )}
+                  </li>
+                </>
+              ))
+            }
+          </ol>
+        </nav>
+
+        <p class="mt-8 inline-flex items-center gap-3 text-xs font-semibold tracking-[0.22em] text-[#ffffff]/80 uppercase">
+          <span class="h-px w-8 bg-[#ffffff]/50" aria-hidden="true"></span>
+          {course.goal}
+        </p>
+        <h1 class="mt-4 max-w-3xl font-serif text-[2.4rem] leading-[1.08] font-medium text-balance md:text-[3.4rem]">
+          {course.title}
+        </h1>
+        <p class="mt-5 max-w-2xl text-base leading-[1.65] text-[#ffffff]/90 md:text-[1.0625rem]">
+          {course.summary}
+        </p>
+
+        <dl class="mt-9 grid max-w-4xl grid-cols-2 gap-x-6 gap-y-5 border-t border-[#ffffff]/15 pt-6 md:grid-cols-4">
           {
-            crumbs.map((c) => (
-              <>
-                <li
-                  aria-hidden="true"
-                  class="inline-flex items-center opacity-60 [&>svg]:size-3"
-                  set:html={ICONS.chevron}
-                />
-                <li>
-                  {c.href ? (
-                    <a href={c.href} class="transition-colors hover:text-brand-red-600">
-                      {c.label}
-                    </a>
-                  ) : (
-                    <span class="text-foreground">{c.label}</span>
-                  )}
-                </li>
-              </>
+            quickFacts.map((f) => (
+              <div class="min-w-0">
+                <dt class="text-[11px] font-semibold tracking-[0.12em] text-[#ffffff]/60 uppercase">
+                  {f.label}
+                </dt>
+                <dd class="mt-1.5 text-[0.95rem] leading-snug font-bold">{f.value}</dd>
+              </div>
             ))
           }
-        </ol>
-      </nav>
+        </dl>
 
+        <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+          <a
+            href={registerHref({ course: course.slug })}
+            class="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#ffffff] px-7 text-[0.95rem] font-extrabold text-brand-red-900 shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-50"
+          >
+            Đăng ký test trình độ miễn phí
+            <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-4" set:html={ICONS.arrow} />
+          </a>
+          {
+            roadmap.length > 1 && (
+              <a
+                href="#lo-trinh"
+                class="inline-flex h-12 items-center justify-center rounded-md border border-[#ffffff]/40 px-7 text-[0.95rem] font-semibold transition-colors hover:border-[#ffffff] hover:bg-white/5"
+              >
+                Xem lộ trình
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="container mx-auto px-6 pt-12 lg:pt-16">
       <!-- Nội dung chạy dọc bên trái, thẻ đăng ký dính bên phải suốt trang -->
       <div class="grid gap-10 lg:grid-cols-[1fr_21rem] lg:items-start lg:gap-14">
         <div class="space-y-14 lg:space-y-16">
-          <!-- Giới thiệu chương trình -->
-          <div>
-            <h1
-              class="text-[2.25rem] font-black leading-[1.05] tracking-tight text-balance text-brand-ink-900 md:text-5xl"
-            >
-              {course.title}
-            </h1>
-
-            <p class="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">
-              {course.summary}
-            </p>
-
-            <dl
-              class="mt-9 grid gap-x-7 gap-y-6 border-t border-border pt-7 sm:grid-cols-2 xl:grid-cols-3"
-            >
-              {
-                heroFacts.map((f, i) => (
-                  <div
-                    class:list={[
-                      "flex items-center gap-3",
-                      // Vạch ngăn dọc giữa các mục, chỉ hiện khi đã xếp cùng hàng.
-                      i > 0 && "sm:border-l sm:border-border sm:pl-7",
-                      i === 2 && "sm:border-l-0 sm:pl-0 xl:border-l xl:pl-7",
-                    ]}
-                  >
-                    <span
-                      class:list={[
-                        "grid size-10 shrink-0 place-items-center rounded-full text-white shadow-lg [&>svg]:size-[1.125rem]",
-                        f.tone,
-                      ]}
-                    >
-                      <Fragment set:html={f.icon} />
-                    </span>
-                    <div class="min-w-0">
-                      <dt class="text-xs font-medium text-muted-foreground">{f.label}</dt>
-                      {/* Giới hạn 2 dòng để mục "Đầu vào" dài không làm lệch cả hàng. */}
-                      <dd
-                        class="mt-0.5 line-clamp-2 text-sm font-bold leading-snug text-brand-ink-900"
-                        title={f.value}
-                      >
-                        {f.value}
-                      </dd>
-                    </div>
-                  </div>
-                ))
-              }
-            </dl>
-          </div>
+          {/*
+            Lộ trình — chỉ khi khoá có từ hai chặng trở lên. Mỗi chặng: tên lớp,
+            thời lượng, mục tiêu một dòng. Chi tiết từng lớp vẫn ở khối "Chương trình học".
+          */}
+          {
+            roadmap.length > 1 && (
+              <section id="lo-trinh" class="scroll-mt-24">
+                <h2 class={sectionTitle}>Lộ trình học tập</h2>
+                <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                  Mỗi chặng có mục tiêu và thời lượng riêng. Đã có nền tảng? Trung tâm test
+                  trình độ miễn phí để xếp bạn vào đúng chặng.
+                </p>
+                <ol class="mt-7 grid gap-3 sm:grid-cols-2">
+                  {roadmap.map((step, i) => (
+                    <li class="rounded-2xl border border-border bg-background p-5">
+                      <div class="min-w-0">
+                        <p class="text-lg leading-tight font-extrabold text-brand-ink-900">
+                          {step.name}
+                        </p>
+                        {step.months && (
+                          <p class="mt-1 text-xs font-bold tracking-[0.08em] text-brand-red-700 uppercase">
+                            {step.months}
+                          </p>
+                        )}
+                        {step.goal && (
+                          <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                            {step.goal}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )
+          }
 
           <!-- Bạn đạt được sau khoá học -->
           {
@@ -363,7 +444,7 @@ const sectionTitle =
                         i > 0 && "border-t border-border",
                       ]}
                     >
-                      <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-500 text-white [&>svg]:size-3">
+                      <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-red-700 text-white [&>svg]:size-3">
                         <Fragment set:html={ICONS.check} />
                       </span>
                       <p class="text-sm leading-relaxed text-brand-ink-800 md:text-base">
@@ -478,7 +559,7 @@ const sectionTitle =
 
           <!-- Khoá học gồm những gì -->
           <section id="gom-gi" class="scroll-mt-24">
-            <h2 class={sectionTitle}>Khoá học gồm những gì</h2>
+            <h2 class={sectionTitle}>Quyền lợi &amp; cam kết</h2>
             <div class="mt-7 grid gap-4 sm:grid-cols-2">
               {
                 includes.map((item) => (
@@ -493,6 +574,15 @@ const sectionTitle =
                     <p class="mt-2.5 text-sm leading-relaxed text-muted-foreground">
                       {item.desc}
                     </p>
+                    {item.icon === ICONS.shield && (
+                      <a
+                        href="/about/commitments"
+                        class="group mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-ink-900 transition-colors hover:text-brand-red-700"
+                      >
+                        Xem điều kiện cam kết
+                        <span class="transition-transform group-hover:translate-x-0.5 [&>svg]:size-4" set:html={ICONS.arrow} />
+                      </a>
+                    )}
                   </div>
                 ))
               }
@@ -648,7 +738,7 @@ const sectionTitle =
           <div
             class="overflow-hidden rounded-2xl border border-border bg-background shadow-sm"
           >
-            <div class="relative grid h-40 place-items-center bg-brand-red-600 text-white">
+            <div class="relative grid h-40 place-items-center bg-brand-red-900 text-[#ffffff]">
               <span
                 aria-hidden="true"
                 class="absolute -right-3 -top-6 select-none text-[8rem] font-black leading-none text-white/10">课</span
@@ -671,7 +761,7 @@ const sectionTitle =
 
               <a
                 href={registerHref({ course: course.slug })}
-                class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+                class="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
               >
                 Đăng ký ngay
                 <span class="[&>svg]:size-4" set:html={ICONS.arrow} />
@@ -679,7 +769,7 @@ const sectionTitle =
 
               <a
                 href={`tel:${contact.phonePrimaryRaw}`}
-                class="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+                class="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
               >
                 <span class="text-brand-ink-400 [&>svg]:size-4" set:html={ICONS.phone} />
                 {contact.phonePrimary}

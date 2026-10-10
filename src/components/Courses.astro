@@ -1,14 +1,11 @@
 ---
 import SectionHeading from "@/components/SectionHeading.astro";
 import CourseBadge from "@/components/CourseBadge.astro";
-import RailHint from "@/components/RailHint.astro";
 import { featuredPrograms, visiblePrograms } from "@/data/programsApi";
 import { ICONS } from "@/lib/icons";
 
 interface Props {
-
   showHeading?: boolean;
-
   limit?: number;
 }
 const { showHeading = true, limit } = Astro.props;
@@ -31,38 +28,38 @@ const list = limit ? source.slice(0, limit) : source;
 const hasMore = list.length < all.length;
 
 /*
-  Nhãn đối tượng — để người mới biết ngay khoá nào dành cho mình, người luyện thi thấy ngay
-  khoá luyện thi. Suy từ `icon` của chương trình (đã khai sẵn theo đúng nhóm này) chứ không
-  thêm trường mới ở trang quản trị.
-*/
-const AUDIENCE: Record<string, string> = {
-  hsk: "Luyện thi chứng chỉ",
-  seed: "Cho người mới bắt đầu",
-  chat: "Cho người mới bắt đầu",
-  growth: "Nâng cao trình độ",
-  peak: "Nâng cao trình độ",
-  briefcase: "Cho doanh nghiệp",
-  vip: "Học 1 kèm 1",
-  kids: "Cho thiếu nhi",
-  senior: "Cho người lớn tuổi",
-};
-
-/*
-  Thời lượng: lấy số tháng ghi trong `levels[].duration` ("… (3 tháng)."), gộp thành một
-  khoảng. Chương trình nào không khai thì bỏ dòng này — không tự đoán.
+  Thời lượng mỗi lớp, đọc từ `levels[].duration`: "… (3 tháng)." hoặc "3,5 tháng · …" /
+  "… mỗi lớp 3,5 tháng". Gộp thành khoảng. Không đọc được thì trả `null` — không đoán,
+  và KHÔNG cộng tổng cả khoá (cách tính tổng chưa được trung tâm xác nhận).
 */
 const durationOf = (c: (typeof list)[number]) => {
   const months = (c.levels ?? [])
     .flatMap((l) => l.duration)
-    .map((d) => d.match(/\(([\d,]+)\s*tháng\)/)?.[1])
+    .map(
+      (d) =>
+        d.match(/\(([\d,]+)\s*tháng\)/)?.[1] ??
+        d.match(/mỗi lớp ([\d,]+)\s*tháng/)?.[1] ??
+        d.match(/^([\d,]+)\s*tháng/)?.[1],
+    )
     .filter((m): m is string => Boolean(m))
     .map((m) => Number(m.replace(",", ".")));
   if (months.length === 0) return null;
   const lo = Math.min(...months);
   const hi = Math.max(...months);
   const fmt = (n: number) => String(n).replace(".", ",");
-  return lo === hi ? `${fmt(lo)} tháng/khoá` : `${fmt(lo)}–${fmt(hi)} tháng/khoá`;
+  return lo === hi ? `${fmt(lo)} tháng/lớp` : `${fmt(lo)}–${fmt(hi)} tháng/lớp`;
 };
+
+/*
+  Bốn thuộc tính, cùng thứ tự ở mọi thẻ. Thiếu dữ liệu thì ô hiện "—" chứ không bỏ ô:
+  bỏ ô là lưới 2×2 của thẻ đó lệch so với thẻ bên cạnh.
+*/
+const attrsOf = (c: (typeof list)[number]) => [
+  { label: "Đầu vào", value: c.entry },
+  { label: "Mục tiêu", value: c.goal },
+  { label: "Lộ trình", value: c.tags[0] ?? "—" },
+  { label: "Thời lượng", value: durationOf(c) ?? "Theo lịch lớp" },
+];
 ---
 
 <section id="courses" class="relative overflow-hidden bg-background scroll-mt-24">
@@ -77,79 +74,68 @@ const durationOf = (c: (typeof list)[number]) => {
       )
     }
 
-    <div data-rail class="group/rail relative mt-10 lg:mt-12">
-      <div
-        data-rail-track
-        class="course-rail -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-3 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0"
-      >
+    {/*
+      Một khuôn thẻ cho mọi chương trình — mọi thành phần có kích thước, khoảng cách và vị
+      trí cố định, chỉ nội dung thay đổi:
+
+        banner chéo đỏ–trắng (`CourseBadge`, cùng chiều cao mọi thẻ) trong khung xám
+        tên khoá (text-xl, giữ chỗ 2 dòng ở lưới 4 cột)
+        lưới 2×2 thuộc tính, nhãn trên – giá trị dưới
+        "Xem chương trình" ở đáy (mt-auto)
+
+      Lưới hàng chứ không dải cuộn: 1 cột mobile, 2 cột tablet, 4 cột desktop rộng. Các thẻ
+      cùng hàng cao bằng nhau (`h-full`), nên nút ở đáy thẳng hàng.
+    */}
+    <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-12 xl:grid-cols-4">
       {
         list.map((c) => (
-          <a
-            href={`/courses/programs/${c.slug}`}
-            class={"group flex w-[78vw] max-w-80 shrink-0 snap-start flex-col rounded-3xl bg-brand-ink-50 p-3 transition-transform duration-300 hover:-translate-y-1.5 sm:w-80 lg:w-auto lg:max-w-none"}
-          >
-
-            {/* Banner thấp hơn bản cũ (h-40 → h-32) và mảng đỏ hẹp lại: nó là nhận diện,
-                không phải nội dung — chỗ dành lại cho ba dòng thông tin bên dưới. */}
-            <div class="relative h-32 overflow-hidden rounded-2xl">
-              <CourseBadge
-                title={c.title}
-                class="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-
-            <div class="flex flex-1 flex-col px-3 pt-5 pb-2 sm:px-4">
-              <span class="w-fit rounded-full bg-brand-red-50 px-2.5 py-1 text-[11px] font-bold text-brand-red-700 ring-1 ring-brand-red-100">
-                {AUDIENCE[c.icon] ?? c.goal}
-              </span>
-
-              <h3 class="mt-3 text-xl font-extrabold leading-snug text-brand-ink-900">
-                {c.title}
-              </h3>
-
-              {/* Ba điều người chọn khoá cần biết, đọc dọc là ra: học từ đâu, đạt được gì,
-                  học bao lâu. Đoạn tóm tắt và chuỗi chip dài đã bỏ — chúng ở trang chi
-                  tiết. */}
-              <dl class="mt-4 space-y-2.5 border-t border-brand-ink-200/70 pt-4 text-sm">
-                <div class="flex gap-3">
-                  <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Bắt đầu</dt>
-                  <dd class="font-semibold leading-snug text-brand-ink-800">{c.entry}</dd>
-                </div>
-                <div class="flex gap-3">
-                  <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Đạt được</dt>
-                  <dd class="font-semibold leading-snug text-brand-ink-800">{c.goal}</dd>
-                </div>
-                {durationOf(c) && (
-                  <div class="flex gap-3">
-                    <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Thời gian</dt>
-                    <dd class="font-semibold leading-snug text-brand-ink-800">{durationOf(c)}</dd>
-                  </div>
-                )}
-              </dl>
-
-              <div class="mt-4 flex flex-wrap gap-1.5">
-                {c.tags.slice(0, 2).map((t) => (
-                  <span class="rounded-full bg-background px-2.5 py-1 text-[11px] font-medium text-brand-ink-600">
-                    {t}
-                  </span>
-                ))}
+          <li>
+            <a
+              href={`/courses/programs/${c.slug}`}
+              class="group flex h-full flex-col rounded-3xl bg-brand-ink-50 p-3 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-32px_rgb(17_24_39/0.45)]"
+            >
+              <div class="relative h-32 overflow-hidden rounded-2xl">
+                <CourseBadge
+                  title={c.title}
+                  class="transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
 
-              <span class="mt-auto flex items-center gap-2 pt-5 text-sm font-bold text-brand-red-700">
-                Xem chi tiết<span class="sr-only"> khoá {c.title}</span>
-                <span
-                  class="transition-transform group-hover:translate-x-1.5 [&>svg]:size-4"
-                  set:html={ICONS.arrow}
-                />
-              </span>
-            </div>
-          </a>
+              <div class="flex flex-1 flex-col gap-4 px-2 pt-5 pb-2">
+
+                {/* Tên khoá giữ sẵn chỗ hai dòng ở lưới 4 cột: một tên dài xuống dòng sẽ đẩy
+                    lưới thuộc tính của thẻ đó lệch khỏi ba thẻ bên cạnh. Mục tiêu không nhắc
+                    lại ở đây — nó đã là một ô trong lưới ngay dưới. */}
+                <h3 class="text-xl leading-snug font-bold text-balance text-brand-ink-900 xl:min-h-[2lh]">
+                  {c.title}
+                </h3>
+
+                <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border">
+                  {attrsOf(c).map((a) => (
+                    <div class="bg-background px-3 py-2.5">
+                      <dt class="text-[10.5px] font-semibold tracking-[0.1em] text-brand-ink-400 uppercase">
+                        {a.label}
+                      </dt>
+                      <dd class="mt-1 line-clamp-2 text-[13px] leading-snug font-semibold text-brand-ink-800">
+                        {a.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <span class="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-bold text-brand-ink-900 transition-colors group-hover:text-brand-red-700">
+                  Xem chương trình<span class="sr-only"> {c.title}</span>
+                  <span
+                    class="transition-transform group-hover:translate-x-1 [&>svg]:size-4"
+                    set:html={ICONS.arrow}
+                  />
+                </span>
+              </div>
+            </a>
+          </li>
         ))
       }
-      </div>
-
-      <RailHint label="khoá học" hideFrom="lg" />
-    </div>
+    </ul>
 
     {
       hasMore && (
@@ -169,14 +155,3 @@ const durationOf = (c: (typeof list)[number]) => {
     }
   </div>
 </section>
-
-<style>
-  .course-rail {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .course-rail::-webkit-scrollbar {
-    display: none;
-  }
-</style>

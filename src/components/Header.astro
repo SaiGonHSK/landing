@@ -32,8 +32,8 @@ const deepestSlug = (children: MenuChild[]) =>
   `AboutHero`): ở trang nền sáng, header kính chữ trắng sẽ không đọc được.
   Thêm trang có banner tối thì thêm đường dẫn vào đây.
 */
-const GLASS_PATHS = ["/", "/about", "/about/achievements", "/about/commitments"];
-const glass = GLASS_PATHS.includes(clean);
+const GLASS_PATHS = ["/", "/about", "/about/achievements", "/about/commitments", "/schedule"];
+const glass = GLASS_PATHS.includes(clean) || clean.startsWith("/courses/programs/");
 
 const visibleNav = menu.filter((entry) => !entry.hidden);
 const mainNav = visibleNav.filter((entry) => !entry.cta);
