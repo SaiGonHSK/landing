@@ -400,40 +400,19 @@ const lastSpansRow = promotions.length % 2 === 1;
     phách. #a16207 chính là `--sticker-gold-deep` đã dùng cho nét chữ trên cuốn sách dán ở
     hero, nên vàng này không phải màu lạ với trang.
 
-    Đỏ thương hiệu KHÔNG có mặt trong ba tấm phiếu, nhưng vẫn giữ ở tiêu đề và nhãn viết tay
-    của `SectionHeading` phía trên: phần đầu khối là tiếng nói của trung tâm nên nó mang màu
-    của trung tâm, còn ba tấm phiếu là ba món khác nhau nên mỗi tấm một màu.
+    CẬP NHẬT: ba màu trên đã thôi dùng. Hero nay là khối đỏ rượu vang, và ba tấm xanh lá /
+    vàng / xanh dương đứng ngay dưới nó kéo trang ra khỏi hệ màu thương hiệu. Cả ba tấm giờ
+    cùng một bộ: nền hồng ngà rất nhạt, con số + hộp quà + đường răng cưa theo tông đỏ rượu
+    của hero. Ba tấm phân biệt nhau bằng tiêu đề và con số, không cần màu. Giữ `accent` trong
+    `promotions.ts` và ba lớp `is-*` để sau này muốn tách màu lại thì chỉ sửa ở đây.
   */
-  .promo-ticket.is-green {
-    --tint: #edf8f1;
-    --ray: #e6f5ec;
-    --ink: #15803d;
-    --perf: #b4dcc4;
-    --gift-deep: #15803d;
-    --gift-mid: #4aa96c;
-    --gift-light: #9ad3b0;
-  }
-
-  /* Nền vàng nhạt hơn hai màu kia một chút (lệch khỏi trắng ~23 đơn vị RGB so với ~25): màu
-     ấm luôn tiến ra trước màu lạnh ở cùng độ nhạt, nên tô bằng nhau thì tấm giữa nổi lên
-     trước hai tấm bên. */
-  .promo-ticket.is-gold {
-    --tint: #fdf7ea;
-    --ray: #fbf3e3;
-    --ink: #a16207;
-    --perf: #e8d09a;
-    --gift-deep: #a16207;
-    --gift-mid: #d09a2c;
-    --gift-light: #eccd8a;
-  }
-
-  .promo-ticket.is-blue {
-    --tint: #eef4fd;
-    --ray: #e8f0fc;
-    --ink: #1668d1;
-    --perf: #b6cff0;
-    --gift-deep: #1668d1;
-    --gift-mid: #5794e0;
-    --gift-light: #a7c6f0;
+  .promo-ticket {
+    --tint: #fbf4f1;
+    --ray: #f8eeea;
+    --ink: var(--brand-red-800);
+    --perf: #e9c9c6;
+    --gift-deep: var(--brand-red-800);
+    --gift-mid: var(--brand-red-500);
+    --gift-light: var(--brand-red-200);
   }
 </style>

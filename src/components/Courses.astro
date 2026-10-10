@@ -29,6 +29,40 @@ const featured = featuredPrograms();
 const source = featured.length > 0 ? featured : all;
 const list = limit ? source.slice(0, limit) : source;
 const hasMore = list.length < all.length;
+
+/*
+  Nhãn đối tượng — để người mới biết ngay khoá nào dành cho mình, người luyện thi thấy ngay
+  khoá luyện thi. Suy từ `icon` của chương trình (đã khai sẵn theo đúng nhóm này) chứ không
+  thêm trường mới ở trang quản trị.
+*/
+const AUDIENCE: Record<string, string> = {
+  hsk: "Luyện thi chứng chỉ",
+  seed: "Cho người mới bắt đầu",
+  chat: "Cho người mới bắt đầu",
+  growth: "Nâng cao trình độ",
+  peak: "Nâng cao trình độ",
+  briefcase: "Cho doanh nghiệp",
+  vip: "Học 1 kèm 1",
+  kids: "Cho thiếu nhi",
+  senior: "Cho người lớn tuổi",
+};
+
+/*
+  Thời lượng: lấy số tháng ghi trong `levels[].duration` ("… (3 tháng)."), gộp thành một
+  khoảng. Chương trình nào không khai thì bỏ dòng này — không tự đoán.
+*/
+const durationOf = (c: (typeof list)[number]) => {
+  const months = (c.levels ?? [])
+    .flatMap((l) => l.duration)
+    .map((d) => d.match(/\(([\d,]+)\s*tháng\)/)?.[1])
+    .filter((m): m is string => Boolean(m))
+    .map((m) => Number(m.replace(",", ".")));
+  if (months.length === 0) return null;
+  const lo = Math.min(...months);
+  const hi = Math.max(...months);
+  const fmt = (n: number) => String(n).replace(".", ",");
+  return lo === hi ? `${fmt(lo)} tháng/khoá` : `${fmt(lo)}–${fmt(hi)} tháng/khoá`;
+};
 ---
 
 <section id="courses" class="relative overflow-hidden bg-background scroll-mt-24">
@@ -43,7 +77,7 @@ const hasMore = list.length < all.length;
       )
     }
 
-    <div data-rail class="group/rail relative mt-16">
+    <div data-rail class="group/rail relative mt-10 lg:mt-12">
       <div
         data-rail-track
         class="course-rail -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-3 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0"
@@ -55,38 +89,53 @@ const hasMore = list.length < all.length;
             class={"group flex w-[78vw] max-w-80 shrink-0 snap-start flex-col rounded-3xl bg-brand-ink-50 p-3 transition-transform duration-300 hover:-translate-y-1.5 sm:w-80 lg:w-auto lg:max-w-none"}
           >
 
-            <div class="relative h-40 overflow-hidden rounded-2xl">
+            {/* Banner thấp hơn bản cũ (h-40 → h-32) và mảng đỏ hẹp lại: nó là nhận diện,
+                không phải nội dung — chỗ dành lại cho ba dòng thông tin bên dưới. */}
+            <div class="relative h-32 overflow-hidden rounded-2xl">
               <CourseBadge
                 title={c.title}
                 class="transition-transform duration-300 group-hover:scale-105"
               />
             </div>
 
-            <div class="flex flex-1 flex-col px-4 pb-3 pt-5">
-              <span class="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-red-600">
-                {c.goal}
+            <div class="flex flex-1 flex-col px-3 pt-5 pb-2 sm:px-4">
+              <span class="w-fit rounded-full bg-brand-red-50 px-2.5 py-1 text-[11px] font-bold text-brand-red-700 ring-1 ring-brand-red-100">
+                {AUDIENCE[c.icon] ?? c.goal}
               </span>
 
-              <h3 class="mt-1 text-xl font-extrabold leading-snug text-brand-ink-900">
+              <h3 class="mt-3 text-xl font-extrabold leading-snug text-brand-ink-900">
                 {c.title}
               </h3>
-              <p class="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                {c.summary}
-              </p>
 
-              <p class="mt-5 text-xs leading-relaxed text-muted-foreground">
-                <span class="font-bold text-foreground">Đầu vào:</span> {c.entry}
-              </p>
+              {/* Ba điều người chọn khoá cần biết, đọc dọc là ra: học từ đâu, đạt được gì,
+                  học bao lâu. Đoạn tóm tắt và chuỗi chip dài đã bỏ — chúng ở trang chi
+                  tiết. */}
+              <dl class="mt-4 space-y-2.5 border-t border-brand-ink-200/70 pt-4 text-sm">
+                <div class="flex gap-3">
+                  <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Bắt đầu</dt>
+                  <dd class="font-semibold leading-snug text-brand-ink-800">{c.entry}</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Đạt được</dt>
+                  <dd class="font-semibold leading-snug text-brand-ink-800">{c.goal}</dd>
+                </div>
+                {durationOf(c) && (
+                  <div class="flex gap-3">
+                    <dt class="w-[4.75rem] shrink-0 pt-0.5 text-[11px] font-semibold tracking-[0.06em] text-brand-ink-400 uppercase">Thời gian</dt>
+                    <dd class="font-semibold leading-snug text-brand-ink-800">{durationOf(c)}</dd>
+                  </div>
+                )}
+              </dl>
 
-              <div class="mt-4 flex flex-wrap gap-2">
-                {c.tags.map((t) => (
-                  <span class="rounded-full bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground">
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {c.tags.slice(0, 2).map((t) => (
+                  <span class="rounded-full bg-background px-2.5 py-1 text-[11px] font-medium text-brand-ink-600">
                     {t}
                   </span>
                 ))}
               </div>
 
-              <span class="mt-auto flex items-center gap-2 pt-6 text-sm font-bold text-brand-red-600">
+              <span class="mt-auto flex items-center gap-2 pt-5 text-sm font-bold text-brand-red-700">
                 Xem chi tiết<span class="sr-only"> khoá {c.title}</span>
                 <span
                   class="transition-transform group-hover:translate-x-1.5 [&>svg]:size-4"
@@ -104,7 +153,7 @@ const hasMore = list.length < all.length;
 
     {
       hasMore && (
-        <div class="mt-12 text-center">
+        <div class="mt-8 text-center">
           <a
             href="/courses"
             class="group inline-flex items-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"

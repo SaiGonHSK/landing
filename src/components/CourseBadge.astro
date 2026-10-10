@@ -6,9 +6,12 @@ interface Props {
   /** Tên khoá đầy đủ, ví dụ "Tiếng Trung Giao tiếp Cấp tốc" */
   title: string;
   class?: string;
+  /** SVG thô của icon chương trình (`COURSE_ICONS`). Có thì vẽ ở góc trên–phải của nửa
+   *  trắng — chi tiết riêng của từng khoá, để các badge không còn giống hệt nhau. */
+  icon?: string;
 }
 
-const { title, class: className = "" } = Astro.props;
+const { title, class: className = "", icon } = Astro.props;
 
 /** Tách "Luyện thi HSK" → LUYỆN THI | HSK, "Tiếng Trung Sơ cấp" → TIẾNG TRUNG | SƠ CẤP */
 const PREFIXES: { match: string; label: string }[] = [
@@ -47,13 +50,23 @@ const sizeOf = (text: string) =>
 >
   <span
     aria-hidden="true"
-    class="absolute inset-0 bg-brand-red-600 [clip-path:polygon(0_0,58%_0,42%_100%,0_100%)]"
+    class="absolute inset-0 bg-brand-red-600 [clip-path:polygon(0_0,50%_0,34%_100%,0_100%)]"
   ></span>
+
+  {
+    icon && (
+      <span
+        aria-hidden="true"
+        class="absolute top-3 right-3 flex size-8 items-center justify-center rounded-full bg-brand-red-50 text-brand-red-700 ring-1 ring-brand-red-100 [&>svg]:size-4"
+        set:html={icon}
+      />
+    )
+  }
 
   <div class="relative flex size-full items-center">
     <p
       class:list={[
-        "flex-1 pl-5 pr-6 font-black uppercase leading-tight tracking-tight text-white",
+        "w-[42%] shrink-0 pl-5 pr-2 font-black uppercase leading-tight tracking-tight text-white",
         sizeOf(lead),
       ]}
     >

@@ -91,12 +91,15 @@ const badgeOf = (quote: string) => {
 >
   {/* `stickers="wide"`: tiêu đề mục nằm giữa và ăn hết bề rộng, nên hai sticker trên cùng phải
       lên khỏi tầm chữ ở màn hẹp — xem `variant` trong `HeroStickers.astro`. */}
+  {/* `stickers="wide"`: tiêu đề mục nằm giữa và ăn hết bề rộng, nên hai sticker trên cùng phải
+      lên khỏi tầm chữ ở màn hẹp — xem `variant` trong `HeroStickers.astro`. */}
   <HeroBackdrop stickers="wide" />
 
   <div class="container relative mx-auto px-6">
     <SectionHeading
       title="Chuyện của"
       highlight="học viên SaigonHSK"
+      description="Những trải nghiệm thực tế trên hành trình chinh phục tiếng Trung."
     />
 
     {/*
@@ -113,12 +116,17 @@ const badgeOf = (quote: string) => {
         href={summary.sourceUrl}
         target="_blank"
         rel="noopener nofollow"
-        class="group/summary inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-border bg-background/80 px-6 py-3 backdrop-blur-sm transition-colors hover:border-brand-red-300"
+        class="group/summary inline-flex items-center gap-4 rounded-2xl border border-[#eadfd3] bg-white px-6 py-4 shadow-[0_18px_40px_-32px_rgb(17_24_39/0.5)] transition-colors hover:border-brand-red-300"
       >
-        <span class="text-lg font-black text-brand-ink-900">{summary.score}</span>
-        <Stars rating={5} label={`${summary.score} trên 5 sao`} />
-        <span class="text-sm text-muted-foreground">
-          {summary.count} đánh giá trên {summary.sourceLabel}
+        <span class="text-4xl leading-none font-black tracking-tight text-brand-ink-900">
+          {summary.score}<span class="text-lg font-bold text-brand-ink-400"> / 5</span>
+        </span>
+        <span class="h-10 w-px bg-[#eadfd3]" aria-hidden="true"></span>
+        <span class="flex flex-col items-start gap-1">
+          <Stars rating={5} label={`${summary.score} trên 5 sao`} />
+          <span class="text-sm font-medium text-brand-ink-600">
+            {summary.count} đánh giá trên {summary.sourceLabel}
+          </span>
         </span>
         <span
           class="text-brand-red-700 transition-transform group-hover/summary:translate-x-0.5 [&>svg]:size-4"
@@ -127,10 +135,10 @@ const badgeOf = (quote: string) => {
       </a>
     </div>
 
-    <div data-rail class="group/rail relative mt-12">
+    <div data-rail class="group/rail relative mt-10">
       <div
         data-rail-track
-        class="flex snap-x snap-mandatory items-stretch gap-6 overflow-x-auto scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        class="flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto md:gap-5 scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {
         list.map(({ item: t, index }, i) => {
@@ -147,9 +155,9 @@ const badgeOf = (quote: string) => {
             <figure
               data-review-card
               data-review-slide={slide}
-              class="flex w-[min(88vw,34rem)] shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] border border-border bg-background lg:w-[calc((100%-1.5rem)/2)]"
+              class="flex w-[min(88vw,34rem)] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-[#eadfd3] bg-white shadow-[0_18px_40px_-34px_rgb(17_24_39/0.5)] lg:w-[calc((100%-1.25rem)/2)]"
             >
-              <div class="flex flex-1 gap-6 p-7 md:p-8">
+              <div class="flex flex-1 gap-6 p-6 md:p-8">
                 {/*
                   `justify-center` cho khối trích dẫn: mọi thẻ trong dải cao bằng nhau
                   (`items-stretch`), và chiều cao đó do thẻ có bài dài nhất quyết định —
@@ -163,19 +171,22 @@ const badgeOf = (quote: string) => {
                     thêm một hàng: hai thứ này cùng nằm trên đầu khối trích dẫn, để cả
                     hai thì đầu thẻ có hai hàng chỉ để nhìn và chữ bị đẩy xuống.
                   */}
-                  {t.rating ? (
-                    <Stars
-                      rating={t.rating}
-                      label={`${t.rating}/5 sao — đánh giá của ${t.name}`}
-                    />
-                  ) : (
+                  {/* Dấu ngoặc kép đỏ, cỡ lớn — điểm nhấn duy nhất của thẻ, nói ngay "đây là
+                      lời của học viên". Có điểm sao thì sao đứng cùng hàng bên phải. */}
+                  <div class="flex items-center justify-between gap-4">
                     <span
                       aria-hidden="true"
-                      class="font-serif text-6xl leading-[0.6] text-brand-ink-200"
+                      class="font-serif text-7xl leading-[0.55] text-brand-red-600/80"
                     >
                       &ldquo;
                     </span>
-                  )}
+                    {t.rating && (
+                      <Stars
+                        rating={t.rating}
+                        label={`${t.rating}/5 sao — đánh giá của ${t.name}`}
+                      />
+                    )}
+                  </div>
                   {/*
                     Nội suy chứ không `set:html`: `quote` là chữ thuần do người soạn
                     nhập, in như HTML thì dấu < và & của họ thành thẻ. `whitespace-pre-line`
@@ -187,7 +198,7 @@ const badgeOf = (quote: string) => {
                     chân thẻ — `line-clamp` chỉ cắt phần NHÌN THẤY, chữ vẫn nằm trong DOM
                     nên người dùng Ctrl+F và trình thu thập vẫn đọc được cả bài.
                   */}
-                  <blockquote class="mt-5 line-clamp-9 whitespace-pre-line text-[0.95rem] leading-[1.85] text-brand-ink-700">
+                  <blockquote class="mt-5 line-clamp-9 whitespace-pre-line text-[0.95rem] leading-7 text-brand-ink-800 md:text-base md:leading-[1.8]">
                     {t.quote}
                   </blockquote>
                 </div>
@@ -207,7 +218,7 @@ const badgeOf = (quote: string) => {
                 )}
               </div>
 
-              <figcaption class="mt-auto flex items-center justify-between gap-4 border-t border-border bg-brand-ink-50/70 px-7 py-5 md:px-8">
+              <figcaption class="mt-auto flex items-center justify-between gap-4 border-t border-brand-ink-100 px-6 py-4 md:px-8">
                 <div class="flex min-w-0 items-center gap-3">
                   {image ? (
                     <Image
@@ -222,13 +233,13 @@ const badgeOf = (quote: string) => {
                       class="size-12 shrink-0 rounded-full object-cover object-top"
                     />
                   ) : (
-                    <span class="grid size-12 shrink-0 place-items-center rounded-full bg-brand-red-100 text-sm font-black text-brand-red-700">
+                    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-brand-ink-100 text-sm font-bold text-brand-ink-700">
                       {initials(t.name)}
                     </span>
                   )}
 
                   <div class="min-w-0">
-                    <p class="truncate font-bold text-brand-ink-900">
+                    <p class="truncate text-base font-bold text-brand-ink-900">
                       {t.name}
                     </p>
                     {/*
@@ -260,14 +271,14 @@ const badgeOf = (quote: string) => {
                   phải chỗ bấm, và hai vùng bấm cạnh nhau trong một chân thẻ thì không
                   ai đoán được cái nào dẫn đi đâu.
                 */}
-                <div class="flex shrink-0 items-center gap-2">
-                  <span class="hidden rounded-full border border-border bg-background px-4 py-2 text-xs font-bold text-brand-ink-900 sm:inline">
+                <div class="flex shrink-0 items-center gap-5">
+                  <span class="hidden text-[11px] font-semibold tracking-[0.08em] text-brand-ink-400 uppercase sm:inline">
                     {badgeOf(t.quote)}
                   </span>
 
                   <a
                     href={reviewDetailHref(t, index)}
-                    class="group/detail inline-flex items-center gap-1.5 rounded-full border border-brand-red-200 bg-background px-5 py-2.5 text-sm font-bold text-brand-red-700 transition-colors hover:bg-brand-red-50"
+                    class="group/detail inline-flex items-center gap-1.5 text-sm font-bold text-brand-ink-900 transition-colors hover:text-brand-red-700"
                   >
                     Chi tiết
                     <span class="sr-only">
@@ -294,10 +305,10 @@ const badgeOf = (quote: string) => {
       danh sách, một nút "xem tất cả" ở đó sẽ trỏ về chính trang đang đứng.
     */}
     {limit !== undefined && limit < testimonials().length && (
-      <div class="mt-12 flex justify-center">
+      <div class="mt-8 flex justify-center">
         <a
           href="/about/reviews"
-          class="group inline-flex items-center gap-2 rounded-full border border-brand-red-200 bg-background px-7 py-3.5 text-sm font-bold text-brand-red-700 transition-colors hover:bg-brand-red-50"
+          class="group inline-flex items-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
         >
           Xem tất cả cảm nhận và đánh giá
           <span

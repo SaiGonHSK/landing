@@ -1,150 +1,169 @@
 ---
 import { Image } from "astro:assets";
 import bannerPhoto from "@/assets/daily/giang-vien-di-quanh-lop.webp";
+import { ICONS } from "@/lib/icons";
 
 /**
- * Khối mở đầu trang /about: chữ canh giữa trên nền sáng, ảnh lớp học nằm dưới dạng một
- * dải ngang bo góc.
+ * Hero trang Giới thiệu — cùng ngôn ngữ với hero trang chủ (`HeroV5`): nền đỏ rượu vang,
+ * tiêu đề serif, nội dung gói trong `container` như header. Khác ở việc nó KHÔNG bán gì:
+ * không poster ưu đãi, không nút đăng ký. Người vào trang này muốn biết trung tâm là ai,
+ * nên nửa phải là ảnh lớp học thật (giảng viên đi quanh lớp hướng dẫn từng bạn) và nút duy
+ * nhất dẫn xuống phần đội ngũ — phần nặng ký nhất của trang.
  *
- * Nền lấy đúng bộ nền của `HeroV3` (khối mở đầu trang chủ): trắng ngả xám nhạt ở đáy,
- * hai vệt xám hắt chéo, lưới kẻ mờ dần — xem chú thích trong `HeroV3.astro`. Hai trang
- * mở đầu bằng cùng một chất nền thì người xem biết mình vẫn ở trong một site; bản trước
- * để ảnh tối phủ kín, đọc như trang của một site khác.
- *
- * Ảnh xuống dưới chữ chứ không làm nền: ảnh nền phải phủ tối mới đọc được chữ, mà phủ
- * tối thì lớp học trong ảnh gần như không nhìn ra gì — mất cả hai. Tách ra thì chữ nằm
- * trên nền sáng, còn ảnh giữ nguyên độ sáng thật của nó.
+ * Ba dữ kiện ở chân khối chữ là ba điều kiểm chứng được (năm bắt đầu, lộ trình, giấy
+ * phép), không phải ba lời quảng cáo — đó là việc của trang chủ.
  */
+
 interface Props {
-  /**
-   * Tiêu đề trang. Xuống dòng bằng `\n` để tự chọn chỗ ngắt: để trình duyệt tự ngắt thì
-   * nó cắt giữa cụm ("...cùng học viên xây / dựng năng lực..."), đọc gãy nghĩa.
-   */
+  /** Dòng thứ hai (sau `\n`) in nghiêng. */
   title: string;
   lead: string;
-  /** Ba câu ngắn dưới lời dẫn — phần "vì sao tin được", giữ trong màn hình đầu tiên. */
-  badges?: string[];
+  facts?: { value: string; label: string }[];
+  /** Dòng nhỏ trên tiêu đề. */
+  eyebrow?: string;
+  /** Nút duy nhất của hero — mặc định dẫn xuống phần đội ngũ của trang Giới thiệu. */
+  cta?: { label: string; href: string };
+  /** Ảnh nửa phải. Mặc định là ảnh lớp học thật. */
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** `photo` 4:3 phủ kín khung; `square` cho poster/ảnh vuông, hiện trọn không cắt. */
+  imageShape?: "photo" | "square";
 }
 
 const {
   title,
   lead,
-  badges = [
-    "Giảng viên Thạc sĩ – Tiến sĩ",
-    "Lộ trình HSK1 – HSK6",
-    "Cam kết đầu ra mọi khoá học",
+  eyebrow = "Về Hoa văn SaigonHSK",
+  cta = { label: "Khám phá đội ngũ", href: "#doi-ngu" },
+  image = bannerPhoto,
+  imageAlt = "Giảng viên Hoa văn SaigonHSK đi quanh lớp hướng dẫn học viên làm bài",
+  imageShape = "photo",
+  facts = [
+    { value: "Từ 2019", label: "Đào tạo tiếng Trung tại TP.HCM" },
+    { value: "HSK 1–6", label: "Lộ trình từ vỡ lòng đến cao cấp" },
+    { value: "Có giấy phép", label: "Sở Giáo dục và Đào tạo TP.HCM" },
   ],
 } = Astro.props;
 
-const titleLines = title.split("\n");
+const [line1, ...rest] = title.split("\n");
+const line2 = rest.join(" ");
 ---
 
-<section class="about-hero relative isolate overflow-hidden">
-  {/* Hai lớp nền không mang thông tin, chép từ `HeroV3`: vệt xám hắt từ hai góc và lưới
-      kẻ mờ dần — giữ cho vùng nền lớn không thành một mảng phẳng. */}
-  <div class="about-hero-glow pointer-events-none absolute inset-0 -z-10"></div>
-  <div class="about-hero-grid pointer-events-none absolute inset-0 -z-10"></div>
-
-  <div class="container mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-24">
-    <div class="mx-auto flex max-w-4xl flex-col items-center text-center">
-      <h1
-        class="text-[2.25rem] font-black leading-[1.05] tracking-tight text-balance text-brand-ink-900 md:text-6xl"
+<section class="about-hero bg-[var(--about-wine)] pt-[var(--header-overlap,0px)]">
+  <div
+    class="container mx-auto grid items-center gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14 lg:py-20 xl:gap-20"
+  >
+    <div class="mx-auto w-full max-w-[40rem] text-center lg:mx-0 lg:text-left">
+      <p
+        class="about-rise inline-flex items-center gap-3 text-xs font-semibold tracking-[0.22em] text-[var(--about-ivory)]/80 uppercase"
       >
-        {
-          titleLines.map((line, i) => (
-            <>
-              {i > 0 && <br />}
-              {line}
-            </>
-          ))
-        }
+        <span class="h-px w-8 bg-[var(--about-ivory)]/50" aria-hidden="true"></span>
+        {eyebrow}
+      </p>
+
+      <h1
+        class="about-rise mt-6 font-serif text-[2.2rem] leading-[1.1] font-medium tracking-[-0.015em] text-balance text-[var(--about-ivory)] sm:text-[2.9rem] lg:text-[2.6rem] xl:text-[3.1rem]"
+        style="--about-delay: 80ms"
+      >
+        {line1}
+        {line2 && <span class="block italic">{line2}</span>}
       </h1>
 
       {/* `data-speakable`: câu tóm tắt của trang, khớp selector trong src/lib/schema.ts. */}
       <p
         data-speakable
-        class="mt-6 max-w-2xl text-base leading-relaxed text-brand-ink-500 md:text-lg"
+        class="about-rise mx-auto mt-6 max-w-[32rem] text-base leading-[1.65] text-[var(--about-ivory)]/90 lg:mx-0 lg:text-[1.0625rem]"
+        style="--about-delay: 150ms"
       >
         {lead}
       </p>
 
-      {
-        badges.length > 0 && (
-          <ul class="mt-8 flex flex-wrap justify-center gap-2.5">
-            {badges.map((b) => (
-              <li class="rounded-full border border-brand-surface-200 bg-background/80 px-4 py-2 text-[13px] font-semibold text-brand-ink-700 backdrop-blur-sm">
-                {b}
-              </li>
-            ))}
-          </ul>
-        )
-      }
+      <div
+        class="about-rise mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center lg:justify-start"
+        style="--about-delay: 230ms"
+      >
+        <a
+          href={cta.href}
+          class="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[var(--about-ivory)] px-8 text-[0.95rem] font-extrabold text-[var(--about-wine)] shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-white sm:h-[3.25rem]"
+        >
+          {cta.label}
+          <span
+            class="transition-transform group-hover:translate-y-0.5 [&>svg]:size-[1.1rem] [&>svg]:rotate-90"
+            set:html={ICONS.arrow}
+          />
+        </a>
+      </div>
+
+      <dl
+        class="about-rise mt-10 grid grid-cols-3 divide-x divide-[var(--about-ivory)]/15 border-t border-[var(--about-ivory)]/15 pt-6 lg:mt-12"
+        style="--about-delay: 310ms"
+      >
+        {
+          facts.map((f) => (
+            <div class="px-2 first:pl-0 last:pr-0 sm:px-4 xl:px-5">
+              <dt class="text-[0.85rem] leading-tight font-bold text-[var(--about-ivory)] sm:text-base">
+                {f.value}
+              </dt>
+              <dd class="mt-1.5 text-xs leading-snug text-[var(--about-ivory)]/75 sm:text-[0.8125rem]">
+                {f.label}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
 
-    {/*
-      Ảnh dải ngang 21:9. Tỉ lệ rất dẹt là cố ý: đây là ảnh mở đầu, nó phải nhường chỗ
-      cho chữ phía trên và cho khối tiếp theo, không được chiếm trọn màn hình.
-
-      Riêng ở khổ điện thoại đổi sang 16:10: 21:9 trên khung rộng 350px chỉ còn cao
-      150px, cả lớp học co lại thành một vệt không nhận ra ai đang làm gì.
-    */}
+    {/* Ảnh thật của trung tâm. Ảnh vuông (poster) thu hẹp khung lại cho khỏi cao hơn
+        khối chữ bên trái, và canh giữa cột. */}
     <div
-      class="mt-12 overflow-hidden rounded-[2rem] ring-1 ring-brand-surface-200 shadow-[0_30px_60px_-45px_var(--brand-ink-900)] lg:mt-16"
+      class:list={[
+        "about-media mx-auto w-full overflow-hidden rounded-[20px]",
+        imageShape === "square"
+          ? "max-w-[28rem] lg:max-w-[30rem]"
+          : "max-w-[36rem] lg:mx-0 lg:max-w-none",
+      ]}
     >
       <Image
-        src={bannerPhoto}
-        alt="Giảng viên Hoa văn SaigonHSK đi quanh lớp hướng dẫn học viên làm bài"
-        width={1600}
-        height={686}
-        fit="cover"
+        src={image}
+        alt={imageAlt}
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 1024px) 50vw, min(36rem, 100vw)"
         format="webp"
-        quality={80}
+        quality={82}
         loading="eager"
         fetchpriority="high"
-        class="aspect-16/10 w-full object-cover sm:aspect-21/9"
+        class:list={[
+          "w-full object-cover",
+          imageShape === "square" ? "aspect-square" : "aspect-[4/3]",
+        ]}
       />
     </div>
   </div>
 </section>
 
 <style>
-  /*
-    Ba lớp nền dưới đây lấy nguyên từ `HeroV3.astro` (style của Astro có phạm vi riêng
-    từng component nên không dùng lại class được, phải chép). Sửa nền ở đó thì sửa cả ở
-    đây — chúng cố ý trông giống nhau.
-  */
   .about-hero {
-    background: linear-gradient(
-      180deg,
-      #ffffff 0%,
-      #fbfbfc 45%,
-      var(--brand-ink-50) 100%
-    );
+    --about-wine: var(--brand-red-900);
+    --about-ivory: #f8f1e7;
   }
 
-  /* Hai vệt xám: một hắt từ trên–trái, một ở dưới–phải cho nền không đối xứng. Đây là
-     bóng chứ không phải màu — dùng chính mực của bộ màu ở độ mờ rất thấp. */
-  .about-hero-glow {
-    background:
-      radial-gradient(
-        60% 55% at 16% 6%,
-        rgba(18, 19, 22, 0.05) 0%,
-        transparent 70%
-      ),
-      radial-gradient(
-        50% 50% at 90% 88%,
-        rgba(18, 19, 22, 0.04) 0%,
-        transparent 70%
-      );
+  .about-media {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 24px 48px -28px rgba(0, 0, 0, 0.5);
   }
 
-  /* Lưới kẻ 72px một ô, mờ dần về bốn phía bằng `mask` để nó không chạy thẳng vào mép
-     section thành một đường cắt. */
-  .about-hero-grid {
-    background-image:
-      linear-gradient(to right, rgba(18, 19, 22, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(18, 19, 22, 0.05) 1px, transparent 1px);
-    background-size: 72px 72px;
-    mask-image: radial-gradient(70% 65% at 50% 30%, #000 0%, transparent 100%);
+  @media (prefers-reduced-motion: no-preference) {
+    .about-rise {
+      animation: about-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--about-delay, 0ms);
+    }
+  }
+
+  @keyframes about-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
 </style>

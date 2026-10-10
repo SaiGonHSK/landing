@@ -1,6 +1,5 @@
 ---
 import { Image } from "astro:assets";
-import RailHint from "@/components/RailHint.astro";
 import SectionHeading from "@/components/SectionHeading.astro";
 import { honorPosters } from "@/data/achievements";
 import { lightboxSrc } from "@/lib/images";
@@ -24,28 +23,31 @@ const posters = await Promise.all(
       highlight="của học viên SaigonHSK"
     />
 
-    {/* Dưới lg là dải cuộn ngang như mục hoạt động — bốn poster vuông xếp dọc
-        trên điện thoại thì phải cuộn rất lâu mới qua hết mục. */}
-    <div data-rail class="group/rail relative mt-12">
-      <div
-        data-rail-track
-        class="achievement-rail -mx-6 flex snap-x snap-mandatory items-start gap-4 overflow-x-auto px-6 pb-3 lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible lg:px-0 lg:pb-0"
-      >
+    {/*
+      Mỗi poster là một thẻ "câu chuyện thành công", không phải một ô gallery: ảnh vẫn là bằng
+      chứng (bấm để phóng to bảng điểm), nhưng những gì người đọc cần — tên, kỳ thi, tổng
+      điểm, điểm từng kỹ năng — nằm ngay dưới bằng chữ HTML, đọc được mà không phải nheo mắt
+      vào chữ in trên poster, và máy tìm kiếm cũng đọc được.
+
+      Lưới 2 cột từ điện thoại, 4 cột từ `lg`. Ở 2 cột trên điện thoại, hàng điểm từng kỹ
+      năng ẩn đi (`hidden sm:grid`) — ô chỉ rộng ~160px, chen bốn cặp số vào đó thì không đọc
+      được; tổng điểm trên nhãn và dòng kỳ thi vẫn còn.
+    */}
+    <ul class="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:mt-12 lg:grid-cols-4">
       {
         posters.map((p) => (
-          <figure class="w-[78vw] max-w-80 shrink-0 snap-start sm:w-80 lg:w-auto lg:max-w-none">
-            {/* group đặt ở button chứ không ở figure: gợi ý "xem bảng điểm" chỉ
-                hiện khi hover đúng vào ảnh, không tính phần tên bên dưới. */}
+          <li class="group/card flex flex-col overflow-hidden rounded-2xl border border-brand-ink-100 bg-white shadow-[0_18px_40px_-30px_rgb(17_24_39/0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_50px_-30px_rgb(17_24_39/0.55)]">
             <button
               type="button"
               data-lightbox={p.full}
               data-caption={p.caption}
-              class="group/img relative block w-full cursor-zoom-in overflow-hidden rounded-2xl bg-brand-ink-50"
+              aria-label={`Xem bảng điểm của bạn ${p.name}`}
+              class="group/img relative block w-full cursor-zoom-in overflow-hidden bg-brand-ink-50"
             >
               <Image
                 src={p.image}
                 alt={p.caption}
-                width={420}
+                width={560}
                 densities={[1, 2]}
                 format="webp"
                 quality={88}
@@ -54,44 +56,53 @@ const posters = await Promise.all(
                 class="aspect-square w-full object-cover transition-transform duration-500 group-hover/img:scale-[1.04]"
               />
 
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute inset-0 bg-linear-to-t from-brand-ink-950/80 via-brand-ink-950/25 to-transparent opacity-0 transition-opacity duration-300 group-hover/img:opacity-100 group-focus-visible/img:opacity-100"
-              />
+              {/* Nhãn điểm: thứ đầu tiên mắt bắt được trên thẻ, giống nhãn "92 điểm" trên
+                  thẻ review. Nền đỏ rượu của hero để khối này cùng hệ màu với đầu trang. */}
+              <span class="absolute top-2.5 left-2.5 inline-flex items-baseline gap-1 rounded-full bg-brand-red-900 px-2.5 py-1 text-white shadow-md sm:top-3 sm:left-3 sm:px-3 sm:py-1.5">
+                <span class="text-sm leading-none font-black sm:text-base">{p.total}</span>
+                <span class="text-[0.65rem] leading-none font-semibold text-white/70 sm:text-xs">/{p.max}</span>
+              </span>
 
-              {/* Máy cảm ứng không có hover nên để nhãn hiện sẵn, khỏi mất gợi ý. */}
               <span
-                class="pointer-events-none absolute inset-x-3 bottom-3 block translate-y-2 rounded-full bg-white/95 px-3 py-2 text-center text-xs font-bold text-brand-ink-900 opacity-0 shadow-[0_10px_24px_-14px_rgb(17_24_39/0.7)] transition duration-300 group-hover/img:translate-y-0 group-hover/img:opacity-100 group-focus-visible/img:translate-y-0 group-focus-visible/img:opacity-100 [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100"
+                class="pointer-events-none absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[0.65rem] font-bold text-brand-ink-900 shadow-sm transition-opacity duration-300 sm:right-3 sm:bottom-3 sm:text-xs [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/img:opacity-100 [@media(hover:hover)]:group-focus-visible/img:opacity-100"
+                aria-hidden="true"
               >
-                Xem bảng điểm
+                Phóng to
               </span>
             </button>
 
-            <figcaption class="mt-4 px-1">
-              <p class="text-lg font-black leading-tight text-brand-ink-900">
-                Bạn {p.name}
+            <div class="flex flex-1 flex-col p-3.5 sm:p-5">
+              <p class="text-[0.65rem] font-bold tracking-[0.12em] text-brand-red-700 uppercase sm:text-xs">
+                Đỗ {p.exam}
               </p>
-              <p class="mt-1.5 text-xs font-bold uppercase tracking-[0.08em] text-brand-red-600">
-                {p.result}
+              <h3 class="mt-1 font-serif text-lg leading-tight font-semibold text-brand-ink-900 sm:text-[1.35rem]">
+                {p.name}
+              </h3>
+
+              <dl class="mt-4 hidden grid-cols-4 gap-1 border-t border-dashed border-brand-ink-200 pt-3.5 sm:grid">
+                {p.parts.map((part) => (
+                  <div class="min-w-0">
+                    <dt class="truncate text-[0.65rem] font-semibold tracking-[0.04em] text-brand-ink-400 uppercase">
+                      {part.label.replace(" (HSKK)", "")}
+                    </dt>
+                    <dd class="mt-0.5 text-base font-black text-brand-ink-900">{part.score}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              {/* Ngày thi và ghi chú tách hai dòng, ghi chú giữ sẵn chỗ đúng hai dòng: ghi chú
+                  dài ngắn khác nhau, để chung một dòng thì thẻ nào bị xuống hàng sẽ có chữ
+                  lệch cao thấp so với ba thẻ bên cạnh. */}
+              <p class="mt-3 text-[0.7rem] leading-snug font-semibold text-brand-ink-700 sm:mt-4 sm:text-xs">
+                Thi ngày {p.testDate}
               </p>
-            </figcaption>
-          </figure>
+              <p class="mt-1 hidden min-h-[2lh] text-xs leading-snug text-muted-foreground sm:line-clamp-2 sm:block">
+                {p.note}
+              </p>
+            </div>
+          </li>
         ))
       }
-      </div>
-
-      <RailHint label="thành tích" hideFrom="lg" />
-    </div>
+    </ul>
   </div>
 </section>
-
-<style>
-  .achievement-rail {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .achievement-rail::-webkit-scrollbar {
-    display: none;
-  }
-</style>

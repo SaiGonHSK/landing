@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
-import PageHero from "@/components/PageHero.astro";
+import AboutHero from "@/components/AboutHero.astro";
 import SectionHeading from "@/components/SectionHeading.astro";
 import RegisterSection from "@/components/RegisterSection.astro";
 import CtaSection from "@/components/CtaSection.astro";
@@ -32,6 +32,20 @@ const outcomes = [
   { label: "Luyện thi HSK5", result: "100% đậu HSK5" },
 ];
 
+/*
+  Banner đầu trang cùng kiểu với trang Giới thiệu (`AboutHero`). Ảnh là poster của học viên
+  điểm cao nhất, ba dữ kiện bên dưới tính từ `honorPosters` — thêm poster mới là banner tự
+  cập nhật, không có con số nào viết tay.
+*/
+const levelOf = (exam: string) => Number(exam.replace(/\D/g, "")) || 0;
+const topScore = honorPosters.reduce((a, b) => (Number(b.total) > Number(a.total) ? b : a));
+const topLevel = honorPosters.reduce((a, b) => (levelOf(b.exam) > levelOf(a.exam) ? b : a));
+const heroFacts = [
+  { value: `${topScore.total}/${topScore.max}`, label: `Điểm ${topScore.exam} cao nhất — bạn ${topScore.name}` },
+  { value: topLevel.exam, label: `Cấp cao nhất đã thi đỗ — bạn ${topLevel.name}` },
+  { value: `${honorPosters.length} bảng điểm`, label: "Công bố kèm phiếu điểm gốc" },
+];
+
 /* Trang nhánh của mục Giới thiệu: khai `AboutPage` gộp vào node `WebPage` của Layout,
    `mainEntity` trỏ về `#organization` để AI biết trang này nói *về* trung tâm. */
 const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site })];
@@ -45,14 +59,18 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
 >
   <Header />
   <main id="main" class="flex flex-col gap-16 lg:gap-24">
-    <PageHero
-      title="Thành tích học viên"
-      description="Thành công của học viên là minh chứng thuyết phục nhất cho chất lượng đào tạo của Hoa văn SaigonHSK. Những bảng điểm HSK dưới đây là kết quả thi thực tế của các học viên đã đồng hành cùng trung tâm. Mỗi điểm số không chỉ phản ánh sự nỗ lực của người học mà còn khẳng định hiệu quả của chương trình đào tạo, phương pháp giảng dạy khoa học và sự tận tâm của đội ngũ giảng viên. Đó cũng chính là động lực để Hoa văn SaigonHSK không ngừng nâng cao chất lượng, đồng hành cùng nhiều học viên hơn nữa trên hành trình chinh phục tiếng Trung."
-      crumbs={[{ label: "Giới thiệu", href: "/about" }, { label: "Thành tích học viên" }]}
-      glyph="绩"
+    <AboutHero
+      eyebrow="Thành tích học viên"
+      title={"Nỗ lực hôm nay,\nthành tích ngày mai"}
+      lead="Kết quả thi HSK thực tế của học viên Hoa văn SaigonHSK — tổng điểm, điểm từng kỹ năng, ngày thi và phiếu điểm gốc."
+      cta={{ label: "Xem bảng vinh danh", href: "#vinh-danh" }}
+      image={topScore.image}
+      imageAlt={`Poster vinh danh bạn ${topScore.name} thi đỗ ${topScore.exam} — ${topScore.total}/${topScore.max}`}
+      imageShape="square"
+      facts={heroFacts}
     />
 
-    <section class="bg-background">
+    <section id="vinh-danh" class="scroll-mt-24 bg-background">
       <div class="container mx-auto px-6">
         <SectionHeading
           title="Bảng vinh danh"

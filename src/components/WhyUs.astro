@@ -36,26 +36,26 @@ import { valuePanels as slides } from "@/data/valuePanels";
             id={`why-panel-${i}`}
             aria-labelledby={`why-tab-${i}`}
             hidden={i !== 0}
-            class="grid lg:min-h-128 lg:grid-cols-[1fr_1.05fr]"
+            class="why-panel grid lg:min-h-[36rem] lg:grid-cols-[1fr_1.1fr]"
           >
             <div class="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
-              <span class="inline-flex w-fit items-center rounded-full bg-brand-ink-900 px-4 py-2 text-[0.6875rem] font-bold uppercase tracking-widest text-white">
+              <span class="inline-flex w-fit items-center rounded-full bg-brand-red-900 px-4 py-2 text-[0.6875rem] font-bold uppercase tracking-widest text-white">
                 {s.badge}
               </span>
 
-              <h3 class="mt-6 max-w-md text-2xl font-black leading-tight text-brand-ink-900 sm:text-3xl">
+              <h3 class="mt-6 max-w-md text-[1.75rem] font-black leading-tight text-brand-ink-900 sm:text-[2.25rem]">
                 {s.title}
               </h3>
 
-              <p class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
+              <p class="mt-4 max-w-md text-[0.95rem] leading-[1.65] text-brand-ink-600 sm:text-base">
                 {s.desc}
               </p>
 
               <div class="mt-8 max-w-md border-t border-border pt-6">
-                <p class="text-lg font-black leading-none text-brand-ink-900">
+                <p class="text-xl font-black leading-none text-brand-red-700">
                   {s.strong}
                 </p>
-                <p class="mt-2 text-xs leading-relaxed text-muted-foreground">
+                <p class="mt-2 text-sm leading-relaxed text-brand-ink-600">
                   {s.note}
                 </p>
               </div>
@@ -87,7 +87,7 @@ import { valuePanels as slides } from "@/data/valuePanels";
                     mà bị kéo mờ, nên ở khổ hẹp cứ cho nó rộng hết ô — xấp sáu cuốn càng
                     rộng thì chữ trên bìa càng đọc được.
                   */
-                  <div class="p-4 sm:p-6 lg:absolute lg:inset-0 lg:p-10">
+                  <div class="p-4 sm:p-6 lg:absolute lg:inset-0 lg:p-5">
                     {s.illustration === "honor-stack" ? (
                       <HonorStack class="h-auto w-full lg:size-full" />
                     ) : (
@@ -183,7 +183,7 @@ import { valuePanels as slides } from "@/data/valuePanels";
                     `min-h` là sàn nên ô tự giãn, và dưới `lg` panel vốn được phép cao
                     thấp khác nhau.
                   */
-                  <div class="p-4 sm:p-6 lg:absolute lg:inset-0 lg:p-10">
+                  <div class="p-4 sm:p-6 lg:absolute lg:inset-0 lg:p-6">
                     <Image
                       src={s.image}
                       alt={`${s.title} — ${s.note}`}
@@ -257,17 +257,21 @@ import { valuePanels as slides } from "@/data/valuePanels";
               data-active={i === 0 ? "true" : "false"}
               aria-controls={`why-panel-${i}`}
               aria-selected={i === 0}
-              class="group relative cursor-pointer bg-background px-3 py-3.5 text-center transition-colors data-[active=true]:bg-brand-ink-50/60 sm:px-6 sm:py-5"
+              class="group relative flex cursor-pointer items-center bg-background px-3.5 py-4 text-left transition-colors hover:bg-brand-ink-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-red-600 data-[active=true]:bg-brand-red-50 sm:px-6 sm:py-6"
             >
+              {/* Vạch đỏ 3px đánh dấu tab đang mở — ở mép giáp panel (trên từ `lg`, dưới
+                  khi tab nằm trên panel) để đọc ra là tab này "nối" với nội dung kia. */}
               <span
                 aria-hidden="true"
-                class="absolute inset-x-0 bottom-0 h-0.5 bg-brand-red-600 opacity-0 transition-opacity group-data-[active=true]:opacity-100 lg:bottom-auto lg:top-0"
+                class="absolute inset-x-0 bottom-0 h-[3px] bg-brand-red-600 opacity-0 transition-opacity group-data-[active=true]:opacity-100 lg:bottom-auto lg:top-0"
               />
-              <span class="block text-[0.8125rem] font-bold leading-snug text-muted-foreground transition-colors group-hover:text-brand-ink-900 group-data-[active=true]:text-brand-ink-900 sm:text-sm">
-                {s.tab}
-              </span>
-              <span class="mt-0.5 block text-[0.6875rem] leading-snug text-muted-foreground sm:mt-1 sm:text-xs">
-                {s.tabNote}
+              <span class="min-w-0">
+                <span class="block text-sm font-bold leading-snug text-brand-ink-700 transition-colors group-hover:text-brand-ink-900 group-data-[active=true]:text-brand-red-700 sm:text-[0.95rem]">
+                  {s.tab}
+                </span>
+                <span class="mt-0.5 block text-xs leading-snug text-brand-ink-500 sm:mt-1 sm:text-[0.8125rem]">
+                  {s.tabNote}
+                </span>
               </span>
             </button>
           ))
@@ -296,3 +300,20 @@ import { valuePanels as slides } from "@/data/valuePanels";
     tabs.forEach((tab, i) => tab.addEventListener("click", () => show(i)));
   });
 </script>
+
+<style>
+  /* Đổi tab: panel mới hiện ra bằng một nhịp mờ–rõ ngắn, để thấy rõ nội dung vừa đổi theo
+     tab vừa bấm. Tắt khi người xem chọn giảm chuyển động. */
+  @media (prefers-reduced-motion: no-preference) {
+    .why-panel:not([hidden]) {
+      animation: why-panel-in 0.35s ease-out both;
+    }
+  }
+
+  @keyframes why-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+</style>

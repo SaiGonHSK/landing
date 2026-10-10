@@ -26,6 +26,15 @@ const deepestSlug = (children: MenuChild[]) =>
     .filter(isActive)
     .sort((a, b) => b.length - a.length)[0];
 
+/*
+  Header trong suốt — đè lên banner đỏ rượu ở đầu trang; cuộn xuống thì về
+  nền đỏ đặc như mọi trang khác. Chỉ bật ở những trang mở đầu bằng banner tối (`HeroV5`,
+  `AboutHero`): ở trang nền sáng, header kính chữ trắng sẽ không đọc được.
+  Thêm trang có banner tối thì thêm đường dẫn vào đây.
+*/
+const GLASS_PATHS = ["/", "/about", "/about/achievements", "/about/commitments"];
+const glass = GLASS_PATHS.includes(clean);
+
 const visibleNav = menu.filter((entry) => !entry.hidden);
 const mainNav = visibleNav.filter((entry) => !entry.cta);
 const ctaNav = visibleNav.find((entry) => entry.cta);
@@ -34,14 +43,17 @@ const ctaNav = visibleNav.find((entry) => entry.cta);
 <header
   id="site-header"
   data-scrolled="false"
+  data-glass={glass ? "true" : undefined}
   class="sticky top-0 z-40 border-b border-white/10 bg-brand-red-600 backdrop-blur-sm transition-all duration-300 data-[scrolled=true]:shadow-lg data-[scrolled=true]:shadow-brand-red-950/25"
 >
   <div class="container mx-auto flex items-center gap-4 px-6 py-3">
-    <div class="flex flex-1 basis-0 items-center">
+    {/* Logo co theo nội dung, menu đẩy sang phải (`ml-auto`). Bản trước chia ba cột
+        `flex-1` để menu nằm chính giữa — ở khổ 1024 menu tràn chạm mép phải. */}
+    <div class="flex shrink-0 items-center">
       <Logo onDark />
     </div>
 
-    <nav class="hidden items-center gap-1 lg:flex">
+    <nav class="ml-auto hidden items-center gap-0.5 lg:flex xl:gap-1">
       {
         mainNav.map((item) => {
           const active = isActive(item.slug);
@@ -50,7 +62,7 @@ const ctaNav = visibleNav.find((entry) => entry.cta);
           const hasMenu = groups.length > 0 || plain.length > 0;
           const current = deepestSlug(item.children);
 
-          const linkClass = `inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors ${
+          const linkClass = `inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-sm font-medium whitespace-nowrap xl:px-3.5 text-white transition-colors ${
             active ? "bg-white/15 font-semibold" : "hover:bg-white/10"
           }`;
 
@@ -163,7 +175,7 @@ const ctaNav = visibleNav.find((entry) => entry.cta);
       }
     </nav>
 
-    <div class="flex flex-1 basis-0 items-center justify-end gap-2">
+    <div class="ml-auto flex shrink-0 items-center justify-end gap-2 lg:ml-0">
       {
         ctaNav && (
           <a
@@ -323,6 +335,22 @@ const ctaNav = visibleNav.find((entry) => entry.cta);
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
+  /*
+    Header kính đè lên banner: header kéo nội dung phía sau lên đúng bằng chiều cao của
+    nó (`margin-bottom` âm), banner bù lại bằng `padding-top: var(--header-overlap)`.
+    Đo bằng script vì header cao khác nhau giữa mobile và desktop. Không có JS thì biến
+    không được đặt, header nằm trong luồng như bình thường — không đè, không mất chữ.
+  */
+  if (header?.dataset.glass === "true") {
+    const root = document.documentElement;
+    const measure = () => {
+      root.style.setProperty("--header-overlap", `${header.offsetHeight}px`);
+    };
+    measure();
+    window.addEventListener("resize", measure, { passive: true });
+    if (document.fonts) document.fonts.ready.then(measure);
+  }
+
   document.querySelectorAll<HTMLElement>("[data-menu]").forEach((wrap) => {
     const panel = wrap.querySelector<HTMLElement>("[data-menu-panel]");
     if (!panel) return;
@@ -406,3 +434,18 @@ const ctaNav = visibleNav.find((entry) => entry.cta);
     if (e.key === "Escape") setDrawer(false);
   });
 </script>
+
+<style>
+  #site-header[data-glass="true"] {
+    margin-bottom: calc(-1 * var(--header-overlap, 0px));
+  }
+
+  /* Trong suốt hẳn khi CHƯA cuộn — banner phía sau lộ nguyên màu. Cuộn xuống thì rơi về
+     nền đỏ của lớp tiện ích như mọi trang khác. */
+  #site-header[data-glass="true"][data-scrolled="false"] {
+    background-color: transparent;
+    border-bottom-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+</style>

@@ -40,7 +40,9 @@ const { markOnly = false, onDark = false, class: className = "" } = Astro.props;
       <span class="flex flex-col gap-0.5">
         <span
           class:list={[
-            " text-sm font-extrabold uppercase tracking-[0.08em] md:text-base",
+            /* `whitespace-nowrap`: tên luôn trên một hàng — ô logo trong header là cột
+               `flex-1 basis-0`, ở khổ vừa nó hẹp lại và tên bị bẻ thành hai dòng. */
+            "text-sm font-extrabold whitespace-nowrap uppercase tracking-[0.08em] md:text-base",
             onDark ? "text-white" : "text-foreground",
           ]}
         >

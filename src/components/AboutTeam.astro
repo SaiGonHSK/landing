@@ -74,80 +74,94 @@ const blurbOf = (t: (typeof teachers)[number]) => {
   dọc), đã đối chiếu cả 8 tấm. Banner mới chụp theo đúng khuôn thì không phải sửa gì;
   chụp khác khuôn thì phần lệch sẽ thấy ngay ở khung tròn này.
 */
-const AVATAR_ZOOM = "width:217%;left:-63%;top:-15%";
+
+/* Cùng khuôn đó, cắt vào khung 4:5: ảnh vuông rộng 270% khung (tức cao 216% khung), dịch
+   trái để tâm mặt (52% bề ngang ảnh) về giữa khung. Khung lấy từ ~0.5% đến ~47% chiều cao
+   banner — dải đỏ có tên bắt đầu ở ~53%, nên không lộ vào chân ảnh. */
+const PORTRAIT_CROP = "width:270%;left:-90.4%;top:-1%";
 
 ---
 
-<section class="bg-background py-16 lg:py-24">
+{/*
+  Phần nặng ký nhất của trang Giới thiệu, nên nó có nền riêng (trắng ngà, cùng tông với chữ
+  trên hero đỏ rượu) và mỗi giảng viên là một tấm hồ sơ: chân dung cắt cùng một khung, học
+  vị + trường, chuyên môn, và lối vào hồ sơ đầy đủ. `id="doi-ngu"` là đích của nút "Khám
+  phá đội ngũ" trên hero.
+*/}
+<section id="doi-ngu" class="about-team scroll-mt-24 py-16 lg:py-24">
   <div class="container mx-auto px-6">
     <div class="flex flex-col items-center text-center">
-      <p
-        class="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-red-600"
-      >
+      <p class="text-[11px] font-bold tracking-[0.18em] text-brand-red-700 uppercase">
         {eyebrow}
       </p>
 
       <h2
-        class="mt-4 text-[2rem] font-black leading-[1.08] tracking-tight text-balance text-brand-ink-900 md:text-[2.75rem]"
+        class="mt-4 font-serif text-[2.1rem] leading-[1.1] font-medium tracking-tight text-balance text-brand-ink-900 md:text-[2.9rem]"
       >
         {title}
       </h2>
 
       {
         description && (
-          <p class="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
+          <p class="mt-5 max-w-2xl text-base leading-relaxed text-brand-ink-600">
             {description}
           </p>
         )
       }
     </div>
 
-    <ul class="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+    <ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
       {
         shown.map((t) => (
-          <li class="flex flex-col items-center text-center">
-            {/* Vòng xám nhạt bọc ngoài: ảnh giảng viên nào cũng nền trắng, đặt thẳng lên
-                nền trang sáng thì khung tròn biến mất, chỉ còn cái đầu lơ lửng. Xám chứ
-                không hồng — dòng học vị ngay dưới đã là chữ đỏ, vòng hồng bao quanh ảnh
-                làm cả dải bốn người thành một mảng đỏ nhạt tranh chỗ với nó. */}
-            <div class="rounded-full bg-brand-surface-200 p-1.5">
-              <div class="relative size-32 overflow-hidden rounded-full bg-background sm:size-36">
-                {imageAsset(t.image) ? (
-                  <Image
-                    src={imageAsset(t.image)!}
-                    alt={t.title ? `${t.name} — ${t.title}` : t.name}
-                    loading="lazy"
-                    decoding="async"
-                    width={480}
-                    densities={[1, 2]}
-                    format="webp"
-                    quality={88}
-                    class="absolute h-auto max-w-none"
-                    style={AVATAR_ZOOM}
-                  />
-                ) : (
-                  <span class="flex size-full items-center justify-center text-3xl font-black text-brand-ink-900/25">
-                    {initialsOf(t.name)}
-                  </span>
-                )}
-              </div>
+          <li class="group flex flex-col overflow-hidden rounded-2xl border border-[#eadfd3] bg-white shadow-[0_18px_40px_-32px_rgb(17_24_39/0.5)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_50px_-30px_rgb(17_24_39/0.55)]">
+            {/* Chân dung: banner gốc vuông, nửa dưới là dải đỏ có tên — phóng lên rồi cắt
+                lấy phần đầu–vai trong khung 4:5, mọi giảng viên cùng một khung. */}
+            <div class="relative aspect-[4/5] overflow-hidden bg-[#f6efe6]">
+              {imageAsset(t.image) ? (
+                <Image
+                  src={imageAsset(t.image)!}
+                  alt={t.title ? `${t.name} — ${t.title}` : t.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={640}
+                  densities={[1, 2]}
+                  format="webp"
+                  quality={88}
+                  class="absolute h-auto max-w-none transition-transform duration-500 group-hover:scale-[1.03]"
+                  style={PORTRAIT_CROP}
+                />
+              ) : (
+                <span class="flex size-full items-center justify-center font-serif text-5xl text-brand-ink-900/25">
+                  {initialsOf(t.name)}
+                </span>
+              )}
             </div>
 
-            <p class="mt-5 text-sm font-extrabold uppercase tracking-[0.06em] text-brand-ink-900">
-              {t.name}
-            </p>
+            <div class="flex flex-1 flex-col p-5">
+              <h3 class="font-serif text-[1.3rem] leading-tight font-semibold text-brand-ink-900">
+                {t.name}
+              </h3>
 
-            {t.title && (
-              <p class="mt-1.5 text-[13px] font-semibold leading-snug text-brand-red-600">
-                {t.title}
+              {t.title && (
+                <p class="mt-2 text-[13px] leading-snug font-semibold text-brand-red-700">
+                  {t.title}
+                </p>
+              )}
+
+              {/* Chặn 3 dòng: các dòng thành tích lấy nguyên văn từ banner rất dài, để tự
+                  do thì các thẻ trong cùng hàng lệch chân nhau. */}
+              <p class="mt-3 line-clamp-3 min-h-[3lh] text-[13px] leading-relaxed text-brand-ink-600">
+                {blurbOf(t)}
               </p>
-            )}
 
-            {/* Chặn 3 dòng: mấy dòng thành tích lấy nguyên văn từ banner rất dài, để tự
-                do thì các thẻ trong cùng hàng lệch chân nhau. */}
-            <p class="mt-2.5 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
-              {blurbOf(t)}
-            </p>
+              <a
+                href={ctaHref}
+                class="mt-auto inline-flex items-center gap-1.5 border-t border-dashed border-[#eadfd3] pt-4 text-[13px] font-bold text-brand-ink-900 transition-colors hover:text-brand-red-700"
+              >
+                Xem hồ sơ
+                <span class="[&>svg]:size-3.5" set:html={ICONS.arrow} />
+              </a>
+            </div>
           </li>
         ))
       }
@@ -156,7 +170,7 @@ const AVATAR_ZOOM = "width:217%;left:-63%;top:-15%";
     <div class="mt-12 flex justify-center">
       <a
         href={ctaHref}
-        class="group inline-flex items-center gap-2 rounded-full border border-brand-red-200 bg-background px-7 py-3.5 text-sm font-bold text-brand-red-700 transition-colors hover:bg-brand-red-50"
+        class="group inline-flex h-12 items-center gap-2 rounded-md bg-brand-red-900 px-7 text-sm font-bold text-white transition-colors hover:bg-brand-red-800"
       >
         {ctaLabel}
         <span
@@ -167,3 +181,9 @@ const AVATAR_ZOOM = "width:217%;left:-63%;top:-15%";
     </div>
   </div>
 </section>
+
+<style>
+  .about-team {
+    background: #faf6f1;
+  }
+</style>

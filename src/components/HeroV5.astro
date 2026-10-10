@@ -1,0 +1,199 @@
+---
+import { Image } from "astro:assets";
+import { hero } from "@/data/site";
+import heroPhoto from "@/assets/hero/hoc-vien-hsk1-hsk4-tach-nen.webp";
+import couponPhoto from "@/assets/hero/coupon-20-10.webp";
+import { ICONS } from "@/lib/icons";
+
+/**
+ * Hero phương án 5 — "Modern Education + Premium Editorial": chia đôi màn đầu, bên trái một
+ * khối đỏ rượu vang đặc chứa tiêu đề chữ serif, bên phải ảnh tràn sát mép.
+ *
+ * Vì sao bỏ nền trắng + sticker + sóng của `HeroV3`: khi đặt poster ưu đãi vào, hero có hai
+ * tâm điểm cùng ồn (poster nhiều chữ, nhiều màu và tiêu đề đen cỡ lớn), cộng thêm sách, sao,
+ * sóng mỗi thứ một phong cách. Ở đây mỗi nửa chỉ làm một việc: nửa trái là lời hứa của
+ * trung tâm, đọc trên nền phẳng một màu; nửa phải là poster — mọi chi tiết trang trí khác
+ * đã gỡ để poster là hình ảnh duy nhất.
+ *
+ * Đỏ dùng `--brand-red-900` (đỏ rượu vang) chứ không phải đỏ 600 của nút: một mảng nửa màn
+ * hình đỏ tươi thì gắt và tranh với poster vốn đã hồng-đỏ; tông sẫm lùi về làm nền, chữ
+ * trắng ngà nổi lên trên.
+ */
+
+/**
+ * Ảnh ưu đãi 20/10 (01/10 – 31/10). Khi bật, poster chiếm nửa phải; hết đợt thì đặt `false`
+ * để nửa phải quay về ảnh học viên.
+ */
+const showCoupon = true;
+
+/** Ba điểm mạnh — xem chú thích cùng tên trong `HeroV3.astro` về việc không lặp chữ với
+ *  `hero.description`. */
+const features = [
+  { title: "Thạc sĩ, Tiến sĩ", desc: "Tốt nghiệp tại Trung Quốc" },
+  { title: "Lớp 10–15 học viên", desc: "Kèm sát từng người" },
+  { title: "Học lại miễn phí", desc: "Nếu chưa đạt mục tiêu" },
+];
+---
+
+{/*
+  Nền đỏ rượu tràn hết bề ngang, còn nội dung nằm gọn trong `container px-6` giống header: mép
+  trái khối chữ thẳng logo, mép phải poster thẳng mép phải của menu. Poster là một thẻ bo góc
+  có khoảng đệm quanh — tràn sát mép màn hình thì nó áp đảo cả hero và đọc ra là ảnh dán vào
+  chứ không phải một thành phần được thiết kế.
+
+  Chiều cao hero do nội dung quyết định (không `100svh`): hero cao hết màn đầu thì không thấy
+  khối nào phía dưới, người xem không biết trang còn tiếp.
+
+  Dưới `lg` hai khối xếp dọc: chữ trước, poster sau — không cố giữ chia đôi ở bề ngang hẹp.
+*/}
+<section id="hero" class="hero5 bg-[var(--hero5-wine)] pt-[var(--header-overlap,0px)]">
+  <div
+    class="container mx-auto grid items-center gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-10 lg:py-16 xl:gap-20 xl:py-20"
+  >
+    <div class="mx-auto w-full max-w-[34rem] text-center lg:mx-0 lg:max-w-[38rem] lg:text-left">
+      <p class="hero5-rise inline-flex items-center gap-3 text-xs font-semibold tracking-[0.22em] text-[var(--hero5-ivory)]/80 uppercase">
+        <span class="h-px w-8 bg-[var(--hero5-ivory)]/50" aria-hidden="true"></span>
+        {hero.noteTitle}
+      </p>
+
+      {/* Tiêu đề phải nặng ngang poster bên cạnh: poster nói "ưu đãi", tiêu đề nói giá trị
+          cốt lõi của trung tâm — người vào lần đầu cần đọc được cái sau trước. */}
+      <h1
+        class="hero5-rise mt-6 font-serif text-[2.75rem] leading-[1.05] font-medium tracking-[-0.015em] text-balance text-[var(--hero5-ivory)] sm:text-[4rem] lg:text-[3.6rem] xl:text-[4.5rem] 2xl:text-[5rem]"
+        style="--hero-delay: 80ms"
+      >
+        {hero.titleLine1}
+        <span class="block italic">{hero.titleLine2}</span>
+      </h1>
+
+      <p
+        class="hero5-rise mx-auto mt-6 max-w-[32rem] text-base leading-[1.65] text-[var(--hero5-ivory)] lg:mx-0 lg:text-[1.0625rem]"
+        style="--hero-delay: 150ms"
+      >
+        {hero.description}
+      </p>
+
+      <p class="sr-only" data-speakable>
+        Trung tâm Hoa văn SaigonHSK — dạy tiếng Trung và luyện thi HSK tại
+        TP.HCM (Sài Gòn), cam kết 100% đầu ra.
+      </p>
+
+      {/* Nút chính nền trắng ngà, chữ đỏ rượu, cao 48px: trên nền sẫm nó là mảng sáng duy
+          nhất ngoài poster nên là chỗ mắt dừng sau tiêu đề. Nút phụ chỉ có viền mảnh. */}
+      <div
+        class="hero5-rise mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center lg:justify-start"
+        style="--hero-delay: 230ms"
+      >
+        <a
+          href="/register"
+          class="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[var(--hero5-ivory)] px-8 text-[0.95rem] font-extrabold text-[var(--hero5-wine)] shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-white sm:h-[3.25rem]"
+        >
+          Đăng ký giữ chỗ ngay
+          <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-[1.1rem]" set:html={ICONS.arrow} />
+        </a>
+        <a
+          href="/schedule"
+          class="inline-flex h-12 items-center justify-center rounded-md border border-[var(--hero5-ivory)]/40 px-7 text-[0.95rem] font-semibold text-[var(--hero5-ivory)] transition-colors hover:border-[var(--hero5-ivory)] hover:bg-white/5 sm:h-[3.25rem]"
+        >
+          Xem lịch khai giảng
+        </a>
+      </div>
+
+      <ul
+        class="hero5-rise mt-10 grid grid-cols-3 divide-x divide-[var(--hero5-ivory)]/15 border-t border-[var(--hero5-ivory)]/15 pt-6 lg:mt-12 lg:pt-7"
+        style="--hero-delay: 310ms"
+      >
+        {
+          features.map((f) => (
+            <li class="px-2 first:pl-0 last:pr-0 sm:px-4 lg:px-3 xl:px-5">
+              <p class="text-[0.85rem] leading-tight font-bold text-[var(--hero5-ivory)] sm:text-base sm:whitespace-nowrap lg:text-[0.9rem] xl:text-base">{f.title}</p>
+              <p class="mt-1.5 text-xs leading-snug text-[var(--hero5-ivory)]/75 sm:text-[0.8125rem] lg:text-sm">{f.desc}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="hero5-media relative mx-auto w-full max-w-[34rem] overflow-hidden rounded-[20px] bg-[var(--hero5-cream)] lg:mx-0 lg:max-w-none">
+      {
+        showCoupon ? (
+          <a
+            href="/schedule"
+            class="block h-full w-full"
+            aria-label="Ưu đãi 20/10: giảm 210.000 VND cho học viên nữ mới, từ 01/10 đến 31/10 — xem lịch khai giảng"
+          >
+            {/* `<img>` trần với file gốc: ảnh nguồn chỉ 1080px, mọi lần Astro thu nhỏ/nén
+                lại đều làm chữ trên poster nhoè. Dải địa chỉ + số điện thoại ở đáy poster
+                (từ y=1020 của ảnh 1080) bị cắt bằng khung tỉ lệ 1080:1020 + `object-top`,
+                không cắt file để khỏi nén lại thêm một lần. */}
+            <img
+              src={couponPhoto.src}
+              width={couponPhoto.width}
+              height={couponPhoto.height}
+              alt="Chúc mừng ngày 20/10 — ưu đãi đặc biệt 210.000 VND dành cho học viên nữ mới, áp dụng từ 01/10 đến 31/10"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              class="block h-full w-full object-cover object-top"
+            />
+          </a>
+        ) : (
+          <Image
+            src={heroPhoto}
+            alt="Hai học viên Hoa văn SaigonHSK mặc áo đồng phục, cầm giáo trình HSK1 và HSK4"
+            height={720}
+            densities={[1, 2]}
+            format="webp"
+            quality={92}
+            loading="eager"
+            fetchpriority="high"
+            class="absolute bottom-0 left-1/2 h-[94%] w-auto max-w-none -translate-x-1/2"
+          />
+        )
+      }
+    </div>
+  </div>
+</section>
+
+
+<style>
+  .hero5 {
+    --hero5-wine: var(--brand-red-900);
+    --hero5-ivory: #f8f1e7;
+    --hero5-cream: #f6efe6;
+    /* Tỉ lệ poster sau khi bỏ dải liên hệ ở đáy: 1080 × 1020. */
+    --hero5-ratio: 1080 / 1020;
+  }
+
+  /* Poster nằm gọn trong nền đỏ, căn giữa theo chiều dọc với khối chữ. Từng thử cho nó thò
+     xuống qua mép nền đỏ để "nối" sang khối sau — nhìn ra là tấm thẻ rơi khỏi chỗ, và nó ăn
+     vào khoảng trống đầu khối ưu đãi. Bóng đổ giữ nhẹ: nền đỏ sẫm đã đủ tách poster. */
+  .hero5-media {
+    aspect-ratio: var(--hero5-ratio);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 24px 48px -28px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (min-width: 1024px) {
+    /* Poster cao cố định theo bề ngang, trần 37rem; bề ngang suy ra từ tỉ lệ. */
+    .hero5-media {
+      height: clamp(26rem, 37vw, 37rem);
+      width: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero5-rise {
+      animation: hero5-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--hero-delay, 0ms);
+    }
+  }
+
+  @keyframes hero5-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+</style>
