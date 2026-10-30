@@ -40,6 +40,15 @@ export type ApiCourse = {
   note: string;
   priceDisplay: string;
   curriculum: CurriculumBlock[];
+  /** Ảnh bìa khoá, URL đã ký (bucket R2 private). Vắng mặt = khoá chưa đặt ảnh. */
+  thumbnail?: { playbackUrl: string } | null;
+  /**
+   * Markdown cột trái trang khoá học, soạn ở bước 2 của trang dựng khoá trong console.
+   *
+   * Khi có, nó THAY toàn bộ phần văn dài sinh từ `catalog.ts` — xem `lib/courseBody.ts`.
+   * Rỗng = khoá chưa chuyển sang Markdown, trang vẫn đi đường ghép cũ bên dưới.
+   */
+  landingBody: string;
 };
 
 /**
@@ -57,6 +66,10 @@ export type VisibleCourse = CatalogItem & {
   goal: string;
   /** Chip trang trí ở thẻ trang chủ. */
   tags: string[];
+  /** Markdown cột trái; rỗng thì trang dùng nội dung ghép từ repo. */
+  landingBody: string;
+  /** Ảnh bìa đã ký; chuỗi rỗng = chưa có ảnh, thẻ đăng ký dùng khối chữ 课 như cũ. */
+  image: string;
 };
 
 let apiCourses: ApiCourse[] = [];
@@ -119,6 +132,8 @@ const toVisible = (course: ApiCourse, href: string): VisibleCourse => ({
   // từ API chứ không đi qua `merge`.
   goal: course.goal ?? "",
   tags: course.tags ?? [],
+  landingBody: course.landingBody ?? "",
+  image: course.thumbnail?.playbackUrl ?? "",
 });
 
 /**

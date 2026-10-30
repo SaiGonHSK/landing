@@ -2,6 +2,7 @@
 import CatalogDetail from "@/components/CatalogDetail.astro";
 import { curriculumOf, findVisibleCourse, visibleCourses } from "@/data/coursesApi";
 import { clampDescription, keywordsFor, pickTitle } from "@/lib/seo";
+import { introOf, parseCourseBody } from "@/lib/courseBody";
 
 /*
   Một route bắt-tất-cả cho mọi trang khoá học.
@@ -21,6 +22,17 @@ if (!item) return new Response(null, { status: 404 });
 
 // Khối "Chương trình học" soạn từ console; rỗng thì dùng nội dung sinh từ repo.
 const curriculum = curriculumOf(item.id);
+
+/*
+  Cột trái soạn bằng Markdown trong console. Có khối nào thì nó thay toàn bộ phần văn
+  dài ghép từ repo; rỗng thì `CatalogDetail` tự đi đường cũ.
+
+  Parse ở đây chứ không trong `coursesApi`: bản chụp từ API còn được /courses và trang
+  chủ dùng lại, mà hai chỗ đó chỉ cần tên + mô tả ngắn — parse thân Markdown của mọi
+  khoá cho mỗi lượt xem trang chủ là phí.
+*/
+const body = parseCourseBody(item.landingBody);
+const intro = introOf(body) || item.intro;
 
 // `slug` ở đây là **khoá tra sang repo**, không phải đường dẫn — xem `coursesApi.ts`.
 const examLevel = item.slug.match(/^luyen-thi-hsk-([3-5])$/)?.[1];
@@ -76,7 +88,7 @@ const seoTitle =
         );
 
 const seoDescription = clampDescription(
-  `${item.intro} Học tại TP.HCM hoặc online, lớp 10–15 học viên. Gọi hotline để nhận học phí và lịch khai giảng.`,
+  `${intro} Học tại TP.HCM hoặc online, lớp 10–15 học viên. Gọi hotline để nhận học phí và lịch khai giảng.`,
 );
 
 // Người Việt gõ cả "HSK4" và "HSK 4"; khai báo cả hai biến thể.
@@ -98,6 +110,9 @@ const keywords = keywordsFor(
   title={item.title}
   summary={item.summary}
   intro={item.intro}
+  body={body}
+  image={item.image}
+  hero="dark"
   facts={item.facts}
   content={item.content}
   contentTitle="Nội dung khoá học"
