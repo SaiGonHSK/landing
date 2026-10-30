@@ -5,17 +5,45 @@ import RegisterSection from "@/components/RegisterSection.astro";
 import CtaSection from "@/components/CtaSection.astro";
 import EnrollCta from "@/components/EnrollCta.astro";
 import Footer from "@/components/Footer.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import FloatingContact from "@/components/FloatingContact.astro";
 import { contact, site } from "@/data/site";
 import { ICONS } from "@/lib/icons";
 import { registerHref, registerNote } from "@/lib/registerLink";
 import { clampDescription, courseSchema as buildCourseSchema } from "@/lib/seo";
 import { breadcrumbNodes } from "@/lib/schema";
+import { factOf, introOf, type CourseBlock } from "@/lib/courseBody";
 
 interface Props {
   title: string;
   summary: string;
   intro: string;
+
+  /**
+   * Cột trái soạn bằng Markdown trong console (`courses.landing_body`), đã parse sẵn.
+   *
+   * Có khối nào thì nó THAY các prop rời bên dưới (`intro`, `facts`, `outcomes`,
+   * `content`, `topics`, `curriculum`) — cùng lý do với `curriculum`: giáo vụ đã quyết
+   * định trang gồm những gì, chồng thêm nội dung sinh từ repo vào là ra hai lần cùng
+   * một thứ. Rỗng thì trang đi đường cũ, nên các trang dùng chung layout này mà không
+   * có khoá trong DB (giáo trình, luyện kỹ năng, học thử) không phải đổi gì.
+   */
+  body?: CourseBlock[];
+
+  /**
+   * Ảnh bìa khoá (URL đã ký). Có ảnh thì thẻ đăng ký mở đầu bằng ảnh thay cho khối
+   * chữ 课 — thẻ khoá có ảnh thật đọc nhanh hơn một hoạ tiết trang trí.
+   */
+  image?: string;
+
+  /**
+   * "dark" bật bố cục kiểu Udemy: dải đầu trang nền tối, thẻ đăng ký nổi đè lên nó,
+   * khối đầu ra hai cột và chương trình học dạng đóng/mở.
+   *
+   * Opt-in chứ không đổi cho mọi trang: layout này dùng chung với giáo trình, luyện
+   * kỹ năng và học thử — những trang không bán khoá nên không cần dải bán hàng.
+   */
+  hero?: "light" | "dark";
   facts?: { label: string; value: string }[];
   content?: string[];
   contentTitle?: string;
@@ -66,6 +94,9 @@ const {
   title,
   summary,
   intro,
+  body = [],
+  image = "",
+  hero = "light",
   facts = [],
   content = [],
   contentTitle = "Nội dung khoá học",
@@ -87,12 +118,48 @@ const {
 
 const origin = Astro.site?.origin ?? "";
 
-const fact = (label: string) => facts.find((f) => f.label.startsWith(label))?.value;
+const dark = hero === "dark";
+
+const fromBody = body.length > 0;
+
+const fact = (label: string) =>
+  (fromBody ? factOf(body, label) : undefined) ||
+  facts.find((f) => f.label.startsWith(label))?.value;
 
 const months = fact("Thời lượng");
 const level = fact("Cấp độ");
 const entry = fact("Đầu vào");
 const mode = fact("Hình thức") ?? "Offline tại TP.HCM hoặc online";
+
+/*
+  Nội dung thật sự đem ra render. Khi khoá đã soạn Markdown, mọi khối lấy từ đó; các
+  prop rời chỉ còn phục vụ những trang chưa có bản Markdown nào.
+
+  `classSize` nằm trong dữ liệu chứ không còn là hằng số viết cứng ở đây: nó là một
+  dòng trong khối "## Thông tin cơ bản" nên giáo vụ sửa được như mọi dòng khác.
+*/
+const introText = (fromBody ? introOf(body) : "") || intro;
+const classSize = fact("Sĩ số") ?? "10–15 học viên";
+
+const bodyOutcomes = body.find((b) => b.kind === "outcomes");
+const bodyProgram = body.find((b) => b.kind === "program");
+const proseBlocks = body.filter((b) => b.kind === "prose");
+
+const shownOutcomes = fromBody ? (bodyOutcomes?.items ?? []) : outcomes;
+const outcomesTitle = bodyOutcomes?.title ?? "Bạn đạt được sau khoá học";
+
+/** Panel của khối "Chương trình học": từ Markdown, rồi tới curriculum cũ của console. */
+const shownProgram = fromBody
+  ? (bodyProgram?.blocks ?? [])
+  : curriculum.map((block) => ({ title: block.title, note: "", items: block.items }));
+/** Tổng số mục của mọi panel — con số "N mục" trên đầu khung chương trình học. */
+const programItemCount = shownProgram.reduce((sum, b) => sum + b.items.length, 0);
+
+const programTitle =
+  bodyProgram?.title ?? (months ? `Chương trình học ${months}` : "Chương trình học");
+
+/** Hai panel sinh từ repo chỉ còn dùng khi KHÔNG có Markdown và console chưa soạn mục. */
+const showRepoPanels = !fromBody && curriculum.length === 0;
 
 const schemas: Record<string, unknown>[] = [
   ...breadcrumbNodes(crumbs, Astro.url.pathname, Astro.site),
@@ -125,7 +192,7 @@ const heroFacts = [
     icon: ICONS.users,
     label: "Sĩ số lớp",
     // Không dùng "Thời lượng" ở đây: đã có trong bảng lịch học và phần intro bên dưới.
-    value: "10–15 học viên",
+    value: classSize,
     tone: "bg-brand-red-600 shadow-brand-red-600/30",
   },
   {
@@ -161,54 +228,54 @@ const sectionTitle =
 >
   <Header />
   <main id="main" class="pb-16 lg:pb-24">
-    <div class="container mx-auto px-6 pt-10 lg:pt-14">
-      <nav aria-label="Breadcrumb" class="mb-7">
-        <ol
-          class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground"
-        >
-          <li>
-            <a href="/" class="transition-colors hover:text-brand-red-600">Trang chủ</a>
-          </li>
-          {
-            crumbs.map((c) => (
-              <>
-                <li
-                  aria-hidden="true"
-                  class="inline-flex items-center opacity-60 [&>svg]:size-3"
-                  set:html={ICONS.chevron}
-                />
-                <li>
-                  {c.href ? (
-                    <a href={c.href} class="transition-colors hover:text-brand-red-600">
-                      {c.label}
-                    </a>
-                  ) : (
-                    <span class="text-foreground">{c.label}</span>
-                  )}
-                </li>
-              </>
-            ))
-          }
-        </ol>
-      </nav>
+    <div class:list={["container mx-auto px-6", dark ? "" : "pt-10 lg:pt-14"]}>
+      {!dark && <Breadcrumbs crumbs={crumbs} class="mb-7" />}
 
       <!-- Nội dung chạy dọc bên trái, thẻ đăng ký dính bên phải suốt trang -->
       <div class="grid gap-10 lg:grid-cols-[1fr_21rem] lg:items-start lg:gap-14">
-        <div class="space-y-14 lg:space-y-16">
+        <div class:list={["space-y-14 lg:space-y-16", dark && "lg:space-y-16"]}>
           <!-- Giới thiệu khoá -->
-          <div>
+          <div class={dark ? "relative pt-8 pb-10 lg:pt-10 lg:pb-14" : ""}>
+            {/*
+              Dải nền tối chạy hết chiều ngang màn hình nhưng chỉ cao bằng đúng khối
+              giới thiệu này.
+
+              `w-screen` + `left-1/2 -translate-x-1/2` để thoát khỏi `container` mà
+              không cần tách khối ra khỏi lưới — tách ra thì thẻ đăng ký dính (sticky)
+              ở cột phải mất chung lưới với nội dung và không dính được nữa.
+            */}
+            {dark && (
+              <span
+                aria-hidden="true"
+                class="absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 bg-brand-ink-900"
+              />
+            )}
+
+            {dark && <Breadcrumbs crumbs={crumbs} tone="dark" class="mb-6" />}
+
             <h1
-              class="text-[2.25rem] font-black leading-[1.05] tracking-tight text-balance text-brand-ink-900 md:text-5xl"
+              class:list={[
+                "text-[2.25rem] font-black leading-[1.05] tracking-tight text-balance md:text-5xl",
+                dark ? "text-white" : "text-brand-ink-900",
+              ]}
             >
               {title}
             </h1>
 
-            <p class="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">
-              {intro}
+            <p
+              class:list={[
+                "mt-5 text-base leading-relaxed md:text-lg",
+                dark ? "text-white/70" : "text-muted-foreground",
+              ]}
+            >
+              {introText}
             </p>
 
             <dl
-              class="mt-9 grid gap-x-7 gap-y-6 border-t border-border pt-7 sm:grid-cols-2 xl:grid-cols-3"
+              class:list={[
+                "mt-9 grid gap-x-7 gap-y-6 border-t pt-7 sm:grid-cols-2 xl:grid-cols-3",
+                dark ? "border-white/15" : "border-border",
+              ]}
             >
               {
                 heroFacts.map((f, i) => (
@@ -216,7 +283,7 @@ const sectionTitle =
                     class:list={[
                       "flex items-center gap-3",
                       // Vạch ngăn dọc giữa các mục, chỉ hiện khi đã xếp cùng hàng.
-                      i > 0 && "sm:border-l sm:border-border sm:pl-7",
+                      i > 0 && (dark ? "sm:border-l sm:border-white/15 sm:pl-7" : "sm:border-l sm:border-border sm:pl-7"),
                       i === 2 && "sm:border-l-0 sm:pl-0 xl:border-l xl:pl-7",
                     ]}
                   >
@@ -229,10 +296,20 @@ const sectionTitle =
                       <Fragment set:html={f.icon} />
                     </span>
                     <div class="min-w-0">
-                      <dt class="text-xs font-medium text-muted-foreground">{f.label}</dt>
+                      <dt
+                        class:list={[
+                          "text-xs font-medium",
+                          dark ? "text-white/55" : "text-muted-foreground",
+                        ]}
+                      >
+                        {f.label}
+                      </dt>
                       {/* Giới hạn 2 dòng để mục "Đầu vào" dài không làm lệch cả hàng. */}
                       <dd
-                        class="mt-0.5 line-clamp-2 text-sm font-bold leading-snug text-brand-ink-900"
+                        class:list={[
+                          "mt-0.5 line-clamp-2 text-sm font-bold leading-snug",
+                          dark ? "text-white" : "text-brand-ink-900",
+                        ]}
                         title={f.value}
                       >
                         {f.value}
@@ -246,62 +323,144 @@ const sectionTitle =
 
           <!-- Bạn đạt được sau khoá học -->
           {
-            outcomes.length > 0 && (
+            shownOutcomes.length > 0 && (
               <section>
-                <h2 class={sectionTitle}>Bạn đạt được sau khoá học</h2>
-                <div class="mt-7 overflow-hidden rounded-2xl border border-border bg-background">
-                  {outcomes.map((o, i) => (
-                    <div
-                      class:list={[
-                        "flex items-start gap-3.5 px-6 py-5",
-                        i > 0 && "border-t border-border",
-                      ]}
-                    >
-                      <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-500 text-white [&>svg]:size-3">
-                        <Fragment set:html={ICONS.check} />
-                      </span>
-                      <p class="text-sm leading-relaxed text-brand-ink-800 md:text-base">
-                        {o}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                <h2 class={sectionTitle}>{outcomesTitle}</h2>
+                {/*
+                  Nền tối: khung một mảnh, các ý xếp hai cột — nhiều ý ngắn đọc theo
+                  cột nhanh hơn là một danh sách dọc dài. Bố cục cũ giữ nguyên cho các
+                  trang còn lại.
+                */}
+                {dark ? (
+                  <div class="mt-7 rounded-2xl border border-border bg-background p-6 md:p-8">
+                    <ul class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                      {shownOutcomes.map((o) => (
+                        <li class="flex items-start gap-3">
+                          <span class="mt-1 shrink-0 text-emerald-600 [&>svg]:size-4">
+                            <Fragment set:html={ICONS.check} />
+                          </span>
+                          <span class="text-sm leading-relaxed text-brand-ink-800">
+                            {o}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div class="mt-7 overflow-hidden rounded-2xl border border-border bg-background">
+                    {shownOutcomes.map((o, i) => (
+                      <div
+                        class:list={[
+                          "flex items-start gap-3.5 px-6 py-5",
+                          i > 0 && "border-t border-border",
+                        ]}
+                      >
+                        <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-emerald-500 text-white [&>svg]:size-3">
+                          <Fragment set:html={ICONS.check} />
+                        </span>
+                        <p class="text-sm leading-relaxed text-brand-ink-800 md:text-base">
+                          {o}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
             )
           }
 
           <!-- Chương trình học -->
           {
-            (curriculum.length > 0 || content.length > 0 || topics) && (
+            (shownProgram.length > 0 || (showRepoPanels && (content.length > 0 || topics))) && (
               <section>
-                <h2 class={sectionTitle}>
-                  {months ? `Chương trình học ${months}` : "Chương trình học"}
-                </h2>
+                <h2 class={sectionTitle}>{programTitle}</h2>
 
-                {/* Mục soạn từ trang quản trị — thay hai panel sinh từ repo bên dưới. */}
-                {curriculum.length > 0 && (
-                  <div class="mt-7 grid gap-4">
-                    {curriculum.map((block) => (
-                      <div class="rounded-2xl border border-border bg-background p-6 md:p-7">
-                        <h3 class="text-lg font-extrabold text-brand-ink-900">
-                          {block.title}
-                        </h3>
-                        <ul class="mt-5 space-y-3">
-                          {block.items.map((line) => (
-                            <li class="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+                {/* Mục soạn từ console — thay hai panel sinh từ repo bên dưới. */}
+                {shownProgram.length > 0 &&
+                  (dark ? (
+                    /*
+                      Dạng đóng/mở, một khung liền kiểu Udemy. Dùng <details> của HTML
+                      chứ không viết JavaScript: mở/đóng chạy cả khi script chưa tải,
+                      và Google đọc được nội dung bên trong dù đang đóng.
+
+                      Mục đầu mở sẵn để trang không trông như một hàng tiêu đề rỗng.
+                    */
+                    <div class="mt-7 overflow-hidden rounded-2xl border border-border bg-background">
+                      <div class="flex items-center justify-between gap-4 border-b border-border bg-brand-ink-50 px-5 py-3.5 text-sm">
+                        <p class="font-bold text-brand-ink-900">
+                          {shownProgram.length} phần
+                        </p>
+                        <p class="text-muted-foreground">{programItemCount} mục</p>
+                      </div>
+                      {shownProgram.map((block, i) => (
+                        <details open={i === 0} class="group border-b border-border last:border-b-0">
+                          <summary
+                            class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-brand-ink-50/60"
+                          >
+                            <span class="font-bold text-brand-ink-900">
+                              {block.title || "Nội dung"}
+                            </span>
+                            <span class="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+                              {block.items.length > 0 && <span>{block.items.length} mục</span>}
                               <span
                                 aria-hidden="true"
-                                class="mt-0.5 shrink-0 text-brand-ink-400 [&>svg]:size-4"
-                                set:html={ICONS.plus}
+                                class="text-brand-ink-400 transition-transform group-open:rotate-180 [&>svg]:size-4"
+                                set:html={ICONS.chevron}
                               />
-                              <span>{line}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                            </span>
+                          </summary>
+                          <div class="px-5 pb-5">
+                            {block.note && (
+                              <p class="mb-3 text-sm leading-relaxed text-muted-foreground">
+                                {block.note}
+                              </p>
+                            )}
+                            <ul class="space-y-2.5">
+                              {block.items.map((line) => (
+                                <li class="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+                                  <span
+                                    aria-hidden="true"
+                                    class="mt-0.5 shrink-0 text-brand-ink-400 [&>svg]:size-4"
+                                    set:html={ICONS.plus}
+                                  />
+                                  <span>{line}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  ) : (
+                    <div class="mt-7 grid gap-4">
+                      {shownProgram.map((block) => (
+                        <div class="rounded-2xl border border-border bg-background p-6 md:p-7">
+                          {block.title && (
+                            <h3 class="text-lg font-extrabold text-brand-ink-900">
+                              {block.title}
+                            </h3>
+                          )}
+                          {block.note && (
+                            <p class="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                              {block.note}
+                            </p>
+                          )}
+                          <ul class="mt-5 space-y-3">
+                            {block.items.map((line) => (
+                              <li class="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+                                <span
+                                  aria-hidden="true"
+                                  class="mt-0.5 shrink-0 text-brand-ink-400 [&>svg]:size-4"
+                                  set:html={ICONS.plus}
+                                />
+                                <span>{line}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 {/*
                   Hai panel sinh từ repo — chỉ dựng khi trang quản trị chưa soạn mục nào.
                   Ẩn bằng CSS thì HTML vẫn ra, Google đọc được và thành trùng nội dung.
@@ -311,7 +470,7 @@ const sectionTitle =
                   nửa dưới, và người đọc phải nhảy mắt qua lại giữa hai cột cùng cấp.
                 */}
                 <div class="mt-7 grid gap-4">
-                  {curriculum.length === 0 && content.length > 0 && (
+                  {showRepoPanels && content.length > 0 && (
                     <div class="rounded-2xl border border-border bg-background p-6 md:p-7">
                       <h3 class="text-lg font-extrabold text-brand-ink-900">
                         {contentTitle}
@@ -331,7 +490,7 @@ const sectionTitle =
                     </div>
                   )}
 
-                  {curriculum.length === 0 && topics && topics.items.length > 0 && (
+                  {showRepoPanels && topics && topics.items.length > 0 && (
                     <div class="rounded-2xl border border-border bg-background p-6 md:p-7">
                       <h3 class="text-lg font-extrabold text-brand-ink-900">
                         {topics.title}
@@ -372,6 +531,24 @@ const sectionTitle =
             thân bảng còn đọc `row.className` — một trường `ScheduleRow` chưa bao giờ có.)
           */}
 
+          {/*
+            Tiêu đề `##` không nằm trong ba khối có giao diện riêng — giáo vụ thêm mục
+            của riêng khoá (học phí, lịch khai giảng, lưu ý…). In ra như thân bài viết
+            Thư viện, dùng chung lớp `.rich` với trang bài viết nên bảng, ảnh và liên
+            kết ăn sẵn style của site.
+          */}
+          {
+            proseBlocks.map((block) => (
+              <section>
+                <h2 class={sectionTitle}>{block.title}</h2>
+                <div
+                  class="rich rich-wide mt-7 text-base leading-[1.75] text-muted-foreground md:text-[1.0625rem]"
+                  set:html={block.html}
+                />
+              </section>
+            ))
+          }
+
           {
             related.length > 0 && (
               <section>
@@ -392,23 +569,50 @@ const sectionTitle =
         </div>
 
         <!-- Thẻ đăng ký, dính khi cuộn -->
+        {/*
+          Thẻ đăng ký đè lên dải tối giống thẻ giá của Udemy — và không cần kéo bằng
+          margin âm: thẻ là ô bên phải của CÙNG hàng lưới với khối giới thiệu, nên mép
+          trên của nó vốn đã trùng mép trên của dải. Margin âm từng dùng ở đây làm thẻ
+          trồi lên khỏi dải ở những khoá có phần giới thiệu ngắn.
+        */}
         <aside class="lg:sticky lg:top-24 lg:order-last">
           <div
-            class="overflow-hidden rounded-2xl border border-border bg-background shadow-sm"
+            class:list={[
+              "overflow-hidden rounded-2xl border bg-background",
+              dark ? "border-border shadow-xl" : "border-border shadow-sm",
+            ]}
           >
-            <div class="relative grid h-40 place-items-center bg-brand-red-600 text-white">
-              <span
-                aria-hidden="true"
-                class="absolute -right-3 -top-6 select-none text-[8rem] font-black leading-none text-white/10"
-                >{glyph}</span
-              >
-              <div class="relative text-center">
-                <p class="text-3xl font-black leading-none">100%</p>
-                <p class="mt-2 text-xs font-bold uppercase tracking-[0.14em]">
-                  Cam kết đầu ra
-                </p>
+            {image ? (
+              <div class="relative aspect-[16/9] bg-brand-ink-50">
+                <img
+                  src={image}
+                  alt={`Ảnh khoá ${title}`}
+                  loading="eager"
+                  class="size-full object-cover"
+                />
+                {/* Cam kết đầu ra vẫn phải thấy được: đặt thành nhãn góc trên ảnh. */}
+                <span
+                  class="absolute left-3 top-3 rounded-full bg-brand-red-600 px-3 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-white shadow-sm"
+                >
+                  100% cam kết đầu ra
+                </span>
               </div>
-            </div>
+            ) : (
+              <div class="relative grid h-40 place-items-center bg-brand-red-600 text-white">
+                <span
+                  aria-hidden="true"
+                  class="absolute -right-3 -top-6 select-none text-[8rem] font-black leading-none text-white/10"
+                >
+                  {glyph}
+                </span>
+                <div class="relative text-center">
+                  <p class="text-3xl font-black leading-none">100%</p>
+                  <p class="mt-2 text-xs font-bold uppercase tracking-[0.14em]">
+                    Cam kết đầu ra
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div class="p-6">
               <p class="text-center text-base font-black text-brand-ink-900">

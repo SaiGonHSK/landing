@@ -1,0 +1,56 @@
+---
+import { ICONS } from "@/lib/icons";
+
+/*
+  Đường dẫn vụn "Trang chủ › … › trang hiện tại".
+
+  Tách khỏi `CatalogDetail.astro` khi trang khoá học có dải đầu trang nền tối: ở bố cục
+  đó đường dẫn nằm TRONG dải (trên tên khoá), còn các trang khác vẫn để nó trên lưới như
+  cũ — hai chỗ đặt, một đoạn markup.
+
+  Chỉ hiện chữ; phần dữ liệu có cấu trúc cho Google do `breadcrumbNodes` trong
+  `lib/schema.ts` lo, trang gọi nó riêng.
+*/
+interface Props {
+  crumbs: { label: string; href?: string }[];
+  /** "dark" cho dải nền tối — chữ sáng, chữ trắng ở mục cuối. */
+  tone?: "light" | "dark";
+  class?: string;
+}
+
+const { crumbs, tone = "light", class: className } = Astro.props;
+
+const dark = tone === "dark";
+const linkClass = dark
+  ? "transition-colors hover:text-white"
+  : "transition-colors hover:text-brand-red-600";
+---
+
+<nav
+  aria-label="Breadcrumb"
+  class:list={[className, dark ? "text-white/60" : "text-muted-foreground"]}
+>
+  <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium">
+    <li><a href="/" class={linkClass}>Trang chủ</a></li>
+    {
+      crumbs.map((c) => (
+        <>
+          <li
+            aria-hidden="true"
+            class="inline-flex items-center opacity-60 [&>svg]:size-3"
+            set:html={ICONS.chevron}
+          />
+          <li>
+            {c.href ? (
+              <a href={c.href} class={linkClass}>
+                {c.label}
+              </a>
+            ) : (
+              <span class={dark ? "text-white" : "text-foreground"}>{c.label}</span>
+            )}
+          </li>
+        </>
+      ))
+    }
+  </ol>
+</nav>
