@@ -1,17 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/google-sans-flex";
-@import "@fontsource/fuzzy-bubbles/latin-400.css";
-@import "@fontsource/fuzzy-bubbles/vietnamese-400.css";
-@import "@fontsource-variable/plus-jakarta-sans";
-@import "@fontsource-variable/playfair-display";
-@import "@fontsource-variable/playfair-display/wght-italic.css";
+@import "@fontsource-variable/google-sans-flex/slnt.css";
 
+/*
+  Cả site chỉ dùng MỘT font: Google Sans Flex. `font-heading`, `font-serif`, `font-hand` vẫn
+  giữ làm tên vai trò (component đang gọi), nhưng đều trỏ về `--font-sans` — đổi font sau này
+  chỉ sửa một chỗ.
+*/
 @theme inline {
-  --font-heading:
-    "Plus Jakarta Sans Variable",
-    var(--font-sans);
+  --font-heading: var(--font-sans);
   --font-sans:
     "Google Sans Flex Variable",
     system-ui,
@@ -21,8 +19,8 @@
     "Helvetica Neue",
     Arial,
     sans-serif;
-  --font-hand: "Fuzzy Bubbles", "Segoe Script", cursive;
-  --font-serif: "Playfair Display Variable", Georgia, "Times New Roman", serif;
+  --font-hand: var(--font-sans);
+  --font-serif: var(--font-sans);
 
   --color-brand-red-50: var(--brand-red-50);
   --color-brand-red-100: var(--brand-red-100);
