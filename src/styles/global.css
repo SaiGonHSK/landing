@@ -1,17 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/google-sans-flex";
-@import "@fontsource/fuzzy-bubbles/latin-400.css";
-@import "@fontsource/fuzzy-bubbles/vietnamese-400.css";
-@import "@fontsource-variable/plus-jakarta-sans";
-@import "@fontsource-variable/playfair-display";
-@import "@fontsource-variable/playfair-display/wght-italic.css";
+@import "@fontsource-variable/google-sans-flex/slnt.css";
 
+/*
+  Cả site chỉ dùng MỘT font: Google Sans Flex. `font-heading`, `font-serif`, `font-hand` vẫn
+  giữ làm tên vai trò (component đang gọi), nhưng đều trỏ về `--font-sans` — đổi font sau này
+  chỉ sửa một chỗ.
+*/
 @theme inline {
-  --font-heading:
-    "Plus Jakarta Sans Variable",
-    var(--font-sans);
+  --font-heading: var(--font-sans);
   --font-sans:
     "Google Sans Flex Variable",
     system-ui,
@@ -21,8 +19,8 @@
     "Helvetica Neue",
     Arial,
     sans-serif;
-  --font-hand: "Fuzzy Bubbles", "Segoe Script", cursive;
-  --font-serif: "Playfair Display Variable", Georgia, "Times New Roman", serif;
+  --font-hand: var(--font-sans);
+  --font-serif: var(--font-sans);
 
   --color-brand-red-50: var(--brand-red-50);
   --color-brand-red-100: var(--brand-red-100);
@@ -163,23 +161,17 @@
 
 :root {
 
-  /*
-    Đỏ thương hiệu = đỏ rượu vang của banner (#5e0b16). Bậc 600 — bậc dùng nhiều nhất
-    (header, nút, chữ nhấn) — và 900 (nền banner) là CÙNG một màu, nên mọi chỗ "đỏ" trên
-    site là một sắc duy nhất. 700/800/950 đậm dần cho hover và chữ trên nền nhạt; 50–500
-    là các sắc hồng ngả rượu cho nền nhãn, viền, chấm.
-  */
-  --brand-red-50: #faf2f3;
-  --brand-red-100: #f3dfe2;
-  --brand-red-200: #e4bcc2;
-  --brand-red-300: #cd8e98;
-  --brand-red-400: #a64d5b;
-  --brand-red-500: #7e1b2b;
-  --brand-red-600: #5e0b16;
-  --brand-red-700: #4d0912;
-  --brand-red-800: #40070f;
+  --brand-red-50: #fdf2f3;
+  --brand-red-100: #fbdcdf;
+  --brand-red-200: #f5b3b9;
+  --brand-red-300: #ed8a92;
+  --brand-red-400: #dd5560;
+  --brand-red-500: #c92c3c;
+  --brand-red-600: #b2182b;
+  --brand-red-700: #971324;
+  --brand-red-800: #7c0f1d;
   --brand-red-900: #5e0b16;
-  --brand-red-950: #2a0409;
+  --brand-red-950: #38060d;
 
 
   --brand-ink-50: #f6f6f7;

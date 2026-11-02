@@ -1,0 +1,296 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { hero } from "@/data/site";
+import paperRed from "@/assets/hero/paper-red.webp";
+import { ICONS } from "@/lib/icons";
+// Ngoại lệ duy nhất của quy tắc "cả site chỉ dùng Google Sans Flex": tiêu đề hero giữ
+// Playfair Display. Nạp ở đây chứ không trong `global.css`, nên chỉ trang có hero tải font.
+import "@fontsource-variable/playfair-display";
+import "@fontsource-variable/playfair-display/wght-italic.css";
+
+import hocVienNamNu from "@/assets/hero/hoc-vien-nam-nu.webp";
+import hocVienHsk from "@/assets/hero/hoc-vien-hsk1-hsk4.webp";
+import hocVienGiaoTrinh from "@/assets/hero/hoc-vien-giao-trinh.webp";
+import hocVienLopHsk4 from "@/assets/hero/hoc-vien-lop-hsk4.webp";
+import coGiaoAoDai from "@/assets/daily/co-giao-ao-dai-giang-bai.webp";
+import lopCamBang from "@/assets/daily/giang-sinh-lop-cam-bang.webp";
+import giangVienDiQuanh from "@/assets/daily/giang-vien-di-quanh-lop.webp";
+import phatTraSua from "@/assets/daily/giang-vien-phat-tra-sua.webp";
+import choVaoLop from "@/assets/daily/hoc-vien-cho-vao-lop.webp";
+import lopLamBai from "@/assets/daily/lop-lam-bai-tap.webp";
+import uongTraSua from "@/assets/daily/lop-uong-tra-sua.webp";
+import leTan from "@/assets/daily/quay-le-tan-trang-tri.webp";
+import chuaBai from "@/assets/classes/giang-vien-chua-bai.webp";
+import luyenThi from "@/assets/classes/lop-luyen-thi-hsk.webp";
+import tuVan from "@/assets/classes/tu-van-lo-trinh.webp";
+
+/**
+ * Hero phương án 6 — "tường ảnh": tiêu đề serif + mô tả + CTA canh giữa trên tờ giấy đỏ
+ * thương hiệu, bên dưới là một mảng ảnh thật của lớp học xếp lệch, nghiêng nhẹ, chồng mép lên
+ * nhau và tràn ra hai mép màn hình — như ảnh rửa ra rồi rải lên bàn. Nhiều ảnh nhỏ cho người
+ * xem thấy "không khí" trung tâm thay vì một tấm ảnh chụp dàn dựng.
+ *
+ * Đỏ là `--brand-red-600` (#b2182b) chứ không phải ảnh giấy nguyên màu: ảnh giấy gốc đỏ tươi
+ * hơn thương hiệu, nên phủ một lớp đỏ 600 đặc 62% lên trên — vân giấy còn lại ~40% biên độ,
+ * đủ thấy chất liệu mà không làm nhiễu chữ trắng.
+ */
+
+type Tile = {
+  src: ImageMetadata;
+  alt: string;
+  /** Mép trái, % bề ngang mảng ảnh (âm/ >100 = tràn khỏi màn). */
+  x: number;
+  /** Mép trên, % chiều cao mảng ảnh. */
+  y: number;
+  /** Bề ngang, % bề ngang mảng ảnh; chiều cao theo tỉ lệ ảnh gốc. */
+  w: number;
+  /** Góc nghiêng, độ. */
+  r: number;
+};
+
+/*
+  Toạ độ dựng trên khung 1440 × 700 và để theo %, nên cả mảng co giãn theo bề ngang. Thứ tự
+  trong mảng = thứ tự chồng lớp (tấm sau đè tấm trước). Ảnh có học viên mặc đồng phục đặt ở
+  hàng trên, giữa — chỗ mắt rơi xuống đầu tiên sau nút CTA.
+*/
+const tiles: Tile[] = [
+  { src: leTan, alt: "Quầy lễ tân trung tâm được trang trí", x: -4, y: 8, w: 9, r: 4 },
+  { src: lopCamBang, alt: "Cả lớp cầm bảng chụp ảnh dịp Giáng sinh", x: 3, y: 0, w: 19, r: -3 },
+  { src: hocVienNamNu, alt: "Hai học viên mặc áo đồng phục SaigonHSK", x: 23, y: 7, w: 15, r: 1.5 },
+  { src: lopLamBai, alt: "Học viên làm bài tập trên lớp", x: 9, y: 41, w: 19, r: 0 },
+  { src: hocVienHsk, alt: "Học viên cầm giáo trình HSK1 và HSK4", x: 40, y: 15, w: 12, r: -2 },
+  { src: giangVienDiQuanh, alt: "Giảng viên đi quanh lớp hướng dẫn học viên", x: 51, y: 6, w: 21, r: 1.5 },
+  { src: hocVienGiaoTrinh, alt: "Học viên cầm giáo trình của trung tâm", x: 75, y: 0, w: 15, r: 1 },
+  { src: coGiaoAoDai, alt: "Cô giáo mặc áo dài giảng bài", x: 36, y: 56, w: 13, r: -2.5 },
+  { src: phatTraSua, alt: "Giảng viên phát trà sữa cho học viên", x: 53, y: 46, w: 12, r: 2 },
+  { src: chuaBai, alt: "Giảng viên chữa bài cho học viên", x: 72, y: 44, w: 13, r: -1 },
+  { src: uongTraSua, alt: "Cả lớp uống trà sữa sau giờ học", x: 63, y: 68, w: 15, r: 2.5 },
+  { src: hocVienLopHsk4, alt: "Học viên lớp HSK4", x: 84, y: 50, w: 12, r: 1 },
+  { src: choVaoLop, alt: "Học viên chờ vào lớp", x: 8, y: 70, w: 10, r: -1.5 },
+  { src: tuVan, alt: "Tư vấn lộ trình học cho học viên mới", x: 20, y: 72, w: 14, r: 3 },
+  { src: luyenThi, alt: "Lớp luyện thi HSK", x: 95, y: 18, w: 10, r: 4 },
+];
+
+const texture = `--hero6-red-tex: url(${paperRed.src});`;
+---
+
+<section
+  id="hero"
+  class="hero6 relative isolate overflow-hidden pt-[var(--header-overlap,0px)]"
+  style={texture}
+>
+  {/* Đánh dấu hero chờ intro để chỉ ảnh được giấu trước khi GSAP bắt đầu.
+      Copy vẫn hiện ngay; nếu GSAP không chạy, ảnh tự hiện sau 4 giây. */}
+  <script is:inline>
+    (function (hero) {
+      if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      hero.dataset.intro = "pending";
+      setTimeout(function () {
+        if (hero.dataset.intro === "pending") delete hero.dataset.intro;
+      }, 4000);
+    })(document.currentScript && document.currentScript.parentElement);
+  </script>
+
+  <div class="container mx-auto px-6 pt-14 text-center sm:pt-16 lg:pt-20">
+    <h1
+      data-hero6-copy class="hero6-title mx-auto max-w-[60rem] text-[3rem] leading-[1] font-medium tracking-[-0.02em] text-balance text-[var(--hero6-on-red)] sm:text-[4.25rem] lg:text-[5rem] xl:text-[5.5rem]"
+    >
+      {hero.titleLine1} <span class="italic">{hero.titleLine2}</span>
+    </h1>
+
+    <p
+      data-hero6-copy
+      class="mx-auto mt-6 max-w-[36rem] text-base leading-[1.7] text-[var(--hero6-on-red)]/85 lg:text-[1.0625rem]"
+    >
+      {hero.description}
+    </p>
+
+    <p class="sr-only" data-speakable>
+      Trung tâm Hoa văn SaigonHSK — dạy tiếng Trung và luyện thi HSK tại
+      TP.HCM (Sài Gòn), cam kết 100% đầu ra.
+    </p>
+
+    {/* Hai CTA có tương phản rõ trên nền đỏ, với góc bo vừa phải. */}
+    <div
+      data-hero6-copy
+      class="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center"
+    >
+      <a
+        href="/schedule"
+        class="inline-flex h-12 items-center justify-center rounded-lg bg-[var(--hero6-on-red)] px-7 text-[0.95rem] font-bold text-[var(--hero6-red)] transition-transform hover:-translate-y-0.5"
+      >
+        Xem lịch khai giảng
+      </a>
+      <a
+        href="/register"
+        class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[var(--hero6-on-red)]/70 bg-transparent px-7 text-[0.95rem] font-extrabold text-[var(--hero6-on-red)] transition-all hover:-translate-y-0.5 hover:bg-white/10"
+      >
+        Đăng ký giữ chỗ ngay
+        <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-[1.1rem]" set:html={ICONS.arrow} />
+      </a>
+    </div>
+  </div>
+
+  {/* Mảng ảnh. Màn hẹp: rộng 190% màn và canh giữa, để từng ảnh đủ lớn mà vẫn tràn ra hai
+      mép như bản desktop. */}
+  <ul class="hero6-wall relative mx-auto mt-12 lg:mt-16" aria-label="Hình ảnh lớp học tại SaigonHSK">
+    {
+      tiles.map((t, i) => (
+        <li
+          class="hero6-tile absolute"
+          style={`left:${t.x}%;top:${t.y}%;width:${t.w}%;--r:${t.r}deg`}
+          data-r={t.r}
+        >
+          {/* Lớp trong để ScrollTrigger dịch parallax, tách khỏi lớp ngoài (vị trí + góc
+              nghiêng do intro điều khiển) và khỏi ảnh (phóng nhẹ khi rê chuột). */}
+          <div class="hero6-drift" data-depth={[0.5, 1, 0.75, 1.25][i % 4]}>
+            <Image
+              src={t.src}
+              alt={t.alt}
+              widths={[240, 360, 520]}
+              sizes={`(min-width: 1024px) ${t.w}vw, ${Math.round(t.w * 1.9)}vw`}
+              format="webp"
+              quality={78}
+              loading={i < 8 ? "eager" : "lazy"}
+              class="block h-auto w-full rounded-[6px]"
+            />
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<script>
+  // Giữ copy đứng yên; ảnh trượt xuống tại vị trí mosaic bên dưới CTA.
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  const hero = document.querySelector<HTMLElement>(".hero6");
+
+  if (hero && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Đợi font hero tải xong để vị trí mosaic ổn định trước khi bung ảnh.
+    const ready = document.fonts ? document.fonts.ready : Promise.resolve();
+    ready.then(() => requestAnimationFrame(start));
+  }
+
+  function start() {
+    if (!hero) return;
+    const ctx = gsap.context(() => {
+      const tiles = gsap.utils.toArray<HTMLElement>(".hero6-tile");
+      const rect = hero.getBoundingClientRect();
+      // Nếu tải lại khi hero đã ngoài màn hình thì hiện nội dung ngay, không chạy intro.
+      if (rect.bottom <= 0 || rect.top >= window.innerHeight) {
+        delete hero.dataset.intro;
+        return;
+      }
+      const finalRotation = tiles.map((tile) => Number(tile.dataset.r ?? 0));
+      gsap.set(tiles, {
+        y: -36,
+        scale: 0.94,
+        rotation: (i) => finalRotation[i],
+        autoAlpha: 0,
+      });
+      // Trạng thái đầu đã nằm trong style inline — gỡ dấu "chờ intro" của CSS.
+      delete hero.dataset.intro;
+
+      const tl = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        onComplete: () => {
+          // Trả transform cho CSS để giữ góc nghiêng và hiệu ứng rê chuột.
+          gsap.set(tiles, { clearProps: "transform,opacity,visibility" });
+          ctx.add(parallax);
+        },
+      });
+
+      // Giữ nguyên vị trí title và CTA; chỉ ảnh trượt xuống vào mosaic bên dưới.
+      tl.to(
+        tiles,
+        {
+          y: 0,
+          scale: 1,
+          autoAlpha: 1,
+          duration: 0.65,
+          ease: "power3.out",
+          stagger: { each: 0.035, from: "center" },
+        },
+        "-=0.2",
+      );
+
+      // Sau intro: parallax rất nhẹ, mỗi ảnh một độ sâu (`data-depth`), chỉ dịch lớp trong.
+      function parallax() {
+        gsap.utils.toArray<HTMLElement>(".hero6-drift").forEach((el) => {
+          gsap.to(el, {
+            yPercent: -6 * Number(el.dataset.depth ?? 1),
+            ease: "none",
+            scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true },
+          });
+        });
+      }
+    }, hero);
+
+    // Dọn timeline + ScrollTrigger nếu trang được thay bằng view transition sau này.
+    document.addEventListener("astro:before-swap", () => ctx.revert(), { once: true });
+  }
+</script>
+
+<style>
+  .hero6 {
+    --hero6-red: var(--brand-red-600);
+    --hero6-on-red: #ffffff;
+
+    background-color: var(--hero6-red);
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--hero6-red) 62%, transparent),
+        color-mix(in srgb, var(--hero6-red) 62%, transparent)
+      ),
+      var(--hero6-red-tex);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .hero6-title {
+    font-family: "Playfair Display Variable", Georgia, "Times New Roman", serif;
+  }
+
+  /* Khung toạ độ 1440 × 700 của mảng ảnh; ảnh hàng dưới cùng thò quá đáy khung một chút và bị
+     mép hero cắt — đọc ra là mảng ảnh còn tiếp chứ không dừng gọn. */
+  .hero6-wall {
+    width: 190%;
+    margin-left: -45%;
+    aspect-ratio: 1440 / 700;
+  }
+
+  @media (min-width: 1024px) {
+    .hero6-wall {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+
+  .hero6-tile {
+    transform: rotate(var(--r));
+  }
+
+  .hero6-tile:hover {
+    z-index: 1;
+  }
+
+  .hero6-tile :global(img) {
+    box-shadow: 0 14px 28px -18px rgba(40, 4, 10, 0.6);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .hero6-tile:hover :global(img) {
+    transform: scale(1.04);
+  }
+
+  /* Giấu riêng ảnh trong lúc chờ GSAP; title/CTA luôn hiện ổn định ngay từ đầu. */
+  .hero6[data-intro="pending"] .hero6-tile {
+    opacity: 0;
+  }
+</style>
