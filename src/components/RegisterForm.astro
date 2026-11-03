@@ -1,6 +1,7 @@
 ---
 import { contact } from "@/data/site";
 import { ICONS } from "@/lib/icons";
+import SelectField from "@/components/SelectField.astro";
 import { courseOptions, resolveCourseOption } from "@/lib/registerLink";
 import { schedule } from "@/data/schedule";
 
@@ -63,7 +64,9 @@ const levels = [
 ];
 
 const field =
-  "h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground outline-none transition-colors focus:border-brand-red-500";
+  "h-11 w-full rounded-sm border border-border bg-background px-3.5 text-sm text-foreground outline-none transition-colors focus:border-brand-red-500";
+// Bản không JS vẫn là select thật — bỏ mũi tên hệ điều hành, chừa chỗ cho mũi tên của SelectField.
+const selectField = `${field} cursor-pointer appearance-none pr-10 invalid:text-muted-foreground`;
 const label = "mb-1.5 block text-sm font-semibold text-foreground";
 ---
 
@@ -130,24 +133,28 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         <label class={label} for="rf-course">
           Khoá học quan tâm <span class="text-brand-red-600">*</span>
         </label>
-        <select id="rf-course" name="course" required class={field}>
-          <option value="" selected={!selectedCourse} disabled>Chọn khoá học</option>
-          {
-            courseOptions.map((c) => (
-              <option value={c} selected={c === selectedCourse}>{c}</option>
-            ))
-          }
-        </select>
+        <SelectField>
+          <select id="rf-course" name="course" required class={selectField}>
+            <option value="" selected={!selectedCourse} disabled>Chọn khoá học</option>
+            {
+              courseOptions.map((c) => (
+                <option value={c} selected={c === selectedCourse}>{c}</option>
+              ))
+            }
+          </select>
+        </SelectField>
       </div>
 
       <div>
         <label class={label} for="rf-level">
           Trình độ hiện tại <span class="text-brand-red-600">*</span>
         </label>
-        <select id="rf-level" name="level" required class={field}>
-          <option value="" selected disabled>Chọn trình độ</option>
-          {levels.map((l) => <option value={l}>{l}</option>)}
-        </select>
+        <SelectField>
+          <select id="rf-level" name="level" required class={selectField}>
+            <option value="" selected disabled>Chọn trình độ</option>
+            {levels.map((l) => <option value={l}>{l}</option>)}
+          </select>
+        </SelectField>
       </div>
     </div>
 
@@ -169,21 +176,23 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
             Lớp muốn giữ chỗ{" "}
             <span class="font-normal text-muted-foreground">(không bắt buộc)</span>
           </label>
-          <select id="rf-class" name="scheduleItemId" class={field}>
-            <option value="" selected={!itemId}>
-              Chưa chọn — để trung tâm tư vấn xếp lớp
-            </option>
-            {openingClasses.map((row) => (
-              <option
-                value={row.id}
-                data-class-code={row.code}
-                data-class-name={row.name}
-                selected={row.id === itemId}
-              >
-                {row.code} · {row.name} · Khai giảng {row.openDate}
+          <SelectField>
+            <select id="rf-class" name="scheduleItemId" class={selectField}>
+              <option value="" selected={!itemId}>
+                Chưa chọn — để trung tâm tư vấn xếp lớp
               </option>
-            ))}
-          </select>
+              {openingClasses.map((row) => (
+                <option
+                  value={row.id}
+                  data-class-code={row.code}
+                  data-class-name={row.name}
+                  selected={row.id === itemId}
+                >
+                  {row.code} · {row.name} · Khai giảng {row.openDate}
+                </option>
+              ))}
+            </select>
+          </SelectField>
         </div>
       )
     }
@@ -195,10 +204,30 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         name="note"
         rows="3"
         placeholder="Ví dụ: cần HSK4 trước tháng 12, học buổi tối sau 18h…"
-        class="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-red-500"
+        class="w-full rounded-sm border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-red-500"
         >{note}</textarea
       >
     </div>
+
+    {/*
+      Đồng ý xử lý dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP): `required` để trình duyệt
+      chặn submit như mọi field bắt buộc khác. Ô này không đi vào payload — `/leads`
+      dựng từng field, và đã gửi được thì nghĩa là khách đã tick.
+    */}
+    <label class="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+      <input
+        type="checkbox"
+        name="consent"
+        required
+        class="mt-1 size-4 shrink-0 cursor-pointer accent-brand-red-600"
+      />
+      <span>
+        Tôi đồng ý để trung tâm dùng thông tin trên để liên hệ tư vấn, theo
+        <a href="/privacy" target="_blank" class="font-semibold text-brand-red-600 hover:underline"
+          >Chính sách bảo mật</a
+        >. <span class="text-brand-red-600">*</span>
+      </span>
+    </label>
 
     <p
       data-register-error
@@ -342,6 +371,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
     type LeadPayload,
   } from "@/lib/leads";
   import { SOURCE_LABELS, leadSource } from "@/lib/attribution";
+  import { bindConsent } from "@/lib/consent";
   import {
     PHONE_ERROR,
     isValidPhone,
@@ -424,6 +454,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
       phone.classList.remove(INVALID);
     });
     phone?.addEventListener("blur", checkPhone);
+    bindConsent(form);
 
     /*
       Đóng modal là kết thúc luồng đăng ký → đưa khách về trang chủ.

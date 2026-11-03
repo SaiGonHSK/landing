@@ -83,6 +83,7 @@
   --color-brand-hero-950: var(--brand-hero-950);
 
   /* Ba mức nền trung tính của hệ màu — xem chú thích ở khối `:root`. */
+  --color-brand-cream: var(--brand-cream);
   --color-brand-surface-50: var(--brand-surface-50);
   --color-brand-surface-100: var(--brand-surface-100);
   --color-brand-surface-200: var(--brand-surface-200);
@@ -226,6 +227,8 @@
     thuần như thang `brand-ink` — đặt cạnh mảng đỏ của thương hiệu thì xám ngả xanh
     trông sạch, còn xám thuần ngả sang be và làm đỏ bị đục.
   */
+  /* Nền kem ấm của khối đội ngũ (`AboutTeam`), dùng lại làm nền hero. */
+  --brand-cream: #faf6f1;
   --brand-surface-50: #f8fafc;
   --brand-surface-100: #f1f5f9;
   --brand-surface-200: #e2e8f0;
@@ -241,7 +244,7 @@
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  --muted-foreground: oklch(0.62 0.035 257.417);
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);

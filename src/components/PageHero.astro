@@ -36,6 +36,15 @@ interface Props {
    * mặc định cộng với khoảng cách giữa các section đẩy nó trôi lơ lửng ở giữa.
    */
   compactBottom?: boolean;
+
+  /**
+   * Chuyển động lúc vào trang (GSAP), bật riêng từng trang — bỏ trống thì hero đứng yên
+   * như mọi trang khác. Các trang con mục Giới thiệu mỗi trang một kiểu:
+   * - `flip`: tiêu đề lật từng ký tự 3D; chữ Hán nền xoay vào.
+   * - `blur`: chữ hiện từ nhoè sang nét; chữ Hán nền trôi lơ lửng.
+   * - `burst`: chữ bung từ giữa ra hai bên; chữ Hán nền chạy theo chuột.
+   */
+  motion?: "flip" | "blur" | "burst";
 }
 
 const {
@@ -48,7 +57,13 @@ const {
   image,
   imageAlt = "",
   compactBottom = false,
+  motion,
 } = Astro.props;
+
+/** Ký tự theo grapheme, để chữ có dấu tiếng Việt không bị tách khỏi dấu. */
+const graphemes = (w: string) =>
+  Array.from(new Intl.Segmenter("vi", { granularity: "grapheme" }).segment(w), (g) => g.segment);
+const titleWords = title.split(" ").filter(Boolean);
 
 const paragraphs = [description ?? []].flat();
 
@@ -61,8 +76,11 @@ const breadcrumbSchema = breadcrumbGraph(crumbs, Astro.url.pathname, Astro.site)
 ---
 
 <section
+  data-page-motion={motion}
   class:list={[
-    "relative overflow-hidden bg-background pt-14 lg:pt-20",
+    "page-hero relative isolate overflow-hidden pt-14 lg:pt-20",
+    // Trang bật `motion` (mục Giới thiệu) dùng nền kem, cùng tông với `AboutHero`.
+    motion ? "bg-brand-cream" : "bg-background",
     compactBottom ? "pb-6 lg:pb-8" : "pb-14 lg:pb-20",
   ]}
 >
@@ -70,7 +88,7 @@ const breadcrumbSchema = breadcrumbGraph(crumbs, Astro.url.pathname, Astro.site)
     showGlyph && (
       <span
         aria-hidden="true"
-        class="pointer-events-none absolute -right-4 -top-6 select-none text-[11rem] font-black leading-none text-brand-red-900/[0.05] lg:text-[15rem]"
+        class="page-glyph pointer-events-none absolute -right-4 -top-6 select-none text-[11rem] font-black leading-none text-brand-red-900/[0.05] lg:text-[15rem]"
       >
         {glyph}
       </span>
@@ -98,8 +116,23 @@ const breadcrumbSchema = breadcrumbGraph(crumbs, Astro.url.pathname, Astro.site)
 
         <h1
           class="max-w-4xl text-[2.25rem] font-black leading-[1.02] tracking-tight text-balance text-brand-ink-900 md:text-6xl"
+          aria-label={motion ? title : undefined}
         >
-          {title}
+          {
+            motion
+              ? titleWords.map((w, i) => (
+                  <>
+                    {i > 0 && " "}
+                    {/* Chữ bọc `nowrap` để xuống dòng theo từ, không giữa từ. */}
+                    <span class="page-word inline-block whitespace-nowrap [perspective:600px]" aria-hidden="true">
+                      {motion === "flip"
+                        ? graphemes(w).map((c) => <span class="page-char inline-block">{c}</span>)
+                        : w}
+                    </span>
+                  </>
+                ))
+              : title
+          }
         </h1>
 
         {
@@ -108,7 +141,7 @@ const breadcrumbSchema = breadcrumbGraph(crumbs, Astro.url.pathname, Astro.site)
              đầu — trợ lý giọng nói đọc tối đa vài câu, gắn cả khối thì nó đọc lan. */
           paragraphs.map((p, i) => (
             <p
-              class="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg"
+              class="page-step mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg"
               data-speakable={i === 0 ? "" : undefined}
             >
               {p}
@@ -140,9 +173,92 @@ const breadcrumbSchema = breadcrumbGraph(crumbs, Astro.url.pathname, Astro.site)
       }
     </div>
   </div>
+  {
+    motion && (
+      <script
+        is:inline
+        set:html={`(function (s) {
+          if (!s || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          s.dataset.intro = "pending";
+          setTimeout(function () { if (s.dataset.intro === "pending") delete s.dataset.intro; }, 3000);
+        })(document.currentScript && document.currentScript.closest("section"));`}
+      />
+    )
+  }
   <script
     is:inline
     type="application/ld+json"
     set:html={JSON.stringify(breadcrumbSchema)}
   />
 </section>
+
+<script>
+  import { gsap } from "gsap";
+
+  document.querySelectorAll<HTMLElement>(".page-hero[data-page-motion]").forEach((hero) => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const motion = hero.dataset.pageMotion;
+    const q = gsap.utils.selector(hero);
+    const words = q(".page-word");
+    const steps = q(".page-step");
+    const glyph = hero.querySelector<HTMLElement>(".page-glyph");
+    delete hero.dataset.intro;
+
+    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+    if (motion === "flip") {
+      tl.from(q(".page-char"), {
+        rotationX: -90,
+        yPercent: 40,
+        autoAlpha: 0,
+        transformOrigin: "50% 100%",
+        duration: 0.8,
+        stagger: 0.018,
+        ease: "back.out(1.6)",
+      })
+        .from(steps, { y: 16, autoAlpha: 0, duration: 0.7, stagger: 0.1 }, "-=0.5")
+        .from(glyph, { scale: 0.5, rotation: -25, autoAlpha: 0, duration: 1.6, ease: "expo.out" }, 0);
+    }
+
+    if (motion === "blur") {
+      tl.from(words, { autoAlpha: 0, filter: "blur(14px)", y: 12, duration: 1, stagger: 0.08, ease: "power3.out" })
+        .from(steps, { autoAlpha: 0, filter: "blur(8px)", duration: 0.9, stagger: 0.1 }, "-=0.7")
+        .from(glyph, { autoAlpha: 0, y: 60, duration: 1.6, ease: "expo.out" }, 0)
+        .add(() => {
+          gsap.to(glyph, { y: -14, rotation: 3, duration: 4, ease: "sine.inOut", repeat: -1, yoyo: true });
+        });
+    }
+
+    if (motion === "burst") {
+      tl.from(words, {
+        autoAlpha: 0,
+        scale: 0.6,
+        y: 30,
+        duration: 0.8,
+        stagger: { each: 0.06, from: "center" },
+        ease: "back.out(1.8)",
+      })
+        .from(steps, { y: 16, autoAlpha: 0, duration: 0.7, stagger: 0.1 }, "-=0.45")
+        .from(glyph, { autoAlpha: 0, scale: 1.4, duration: 1.4, ease: "expo.out" }, 0);
+
+      // Chữ Hán nền lệch nhẹ ngược chiều con trỏ — chiều sâu, không cần thêm lớp trang trí.
+      if (glyph && matchMedia("(hover: hover)").matches) {
+        const gx = gsap.quickTo(glyph, "x", { duration: 1, ease: "power3.out" });
+        const gy = gsap.quickTo(glyph, "y", { duration: 1, ease: "power3.out" });
+        hero.addEventListener("pointermove", (e) => {
+          const r = hero.getBoundingClientRect();
+          gx(-((e.clientX - r.left) / r.width - 0.5) * 60);
+          gy(-((e.clientY - r.top) / r.height - 0.5) * 40);
+        });
+      }
+    }
+  });
+</script>
+
+<style>
+  .page-hero[data-intro="pending"] .page-word,
+  .page-hero[data-intro="pending"] .page-step,
+  .page-hero[data-intro="pending"] .page-glyph {
+    opacity: 0;
+  }
+</style>

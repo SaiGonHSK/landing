@@ -1,0 +1,137 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import PageHero from "@/components/PageHero.astro";
+import Footer from "@/components/Footer.astro";
+import FloatingContact from "@/components/FloatingContact.astro";
+import { contact, site } from "@/data/site";
+
+/*
+  Trang mà ô "Tôi đồng ý…" ở mọi form trỏ tới.
+
+  Viết bằng lời thường cho phụ huynh/học viên đọc — không thuật ngữ kỹ thuật, không
+  dẫn điều luật. Thêm pixel quảng cáo hay chia sẻ lead ra ngoài thì phải sửa trang này,
+  và đổi `EFFECTIVE_DATE` mỗi lần sửa nội dung.
+*/
+const EFFECTIVE_DATE = "03/11/2026";
+
+const sections = [
+  {
+    title: "Thông tin bạn để lại",
+    body: [
+      "Khi đăng ký tư vấn, giữ chỗ lớp học hoặc nhận lịch khai giảng, bạn để lại họ tên, số điện thoại, email và khoá học bạn quan tâm.",
+      "Trung tâm không hỏi số CCCD, tài khoản ngân hàng hay thông tin nhạy cảm nào khác qua website.",
+    ],
+  },
+  {
+    title: "Trung tâm dùng thông tin để làm gì",
+    body: [
+      "Chỉ để gọi tư vấn khoá học, học phí, xếp lớp và gửi lịch khai giảng cho bạn. Ngoài ra không dùng vào việc gì khác.",
+    ],
+  },
+  {
+    title: "Không chia sẻ thông tin",
+    body: [
+      "Trung tâm cam kết không chia sẻ, không bán và không cho bất kỳ ai khác sử dụng thông tin của bạn.",
+      "Khi trung tâm gọi điện, nhắn Zalo hoặc gửi email cho bạn, tin nhắn đi qua dịch vụ của nhà mạng, Zalo và nhà cung cấp email — các bên này chỉ chuyển tin, không được trung tâm giao thông tin của bạn để dùng vào việc khác.",
+      "Trường hợp duy nhất trung tâm phải cung cấp thông tin là khi cơ quan nhà nước có thẩm quyền yêu cầu theo quy định pháp luật.",
+    ],
+  },
+  {
+    title: "Thông tin được lưu ở đâu và ai được xem",
+    body: [
+      "Thông tin được lưu trên hệ thống của trung tâm. Chỉ nhân viên tư vấn và giáo vụ phụ trách lớp của bạn mới được xem.",
+    ],
+  },
+  {
+    title: "Lưu trong bao lâu",
+    body: [
+      "Trung tâm giữ thông tin trong thời gian bạn đang được tư vấn hoặc đang học, và tối đa 24 tháng kể từ lần liên hệ cuối. Sau đó thông tin được xoá.",
+      "Bạn yêu cầu xoá thì trung tâm xoá sớm hơn, không cần đợi hết thời hạn.",
+    ],
+  },
+  {
+    title: "Thông tin của trẻ em",
+    body: [
+      "Với học viên dưới 16 tuổi, phụ huynh hoặc người giám hộ là người đăng ký và đồng ý cho trung tâm dùng thông tin của bé. Nếu bé tự đăng ký, trung tâm sẽ liên hệ xác nhận với phụ huynh trước khi tư vấn.",
+    ],
+  },
+  {
+    title: "Quyền của bạn",
+    body: [
+      "Bạn có quyền biết trung tâm đang giữ thông tin gì của mình, xem, sửa hoặc yêu cầu xoá thông tin đó, và rút lại sự đồng ý bất cứ lúc nào — kể cả chỉ để ngừng nhận tin.",
+      "Rút lại đồng ý thì trung tâm ngừng liên hệ và xoá thông tin của bạn; việc này không ảnh hưởng tới những gì trung tâm đã làm trước đó. Nếu thấy thông tin của mình bị dùng sai, bạn có quyền khiếu nại với trung tâm hoặc cơ quan nhà nước có thẩm quyền.",
+      "Để thực hiện các quyền này, chỉ cần gọi hoặc nhắn trung tâm theo thông tin bên dưới.",
+    ],
+  },
+  {
+    title: "Cookie và công cụ theo dõi",
+    body: [
+      "Website hiện không dùng cookie quảng cáo hay công cụ theo dõi hành vi nào. Nếu sau này có thêm, trung tâm sẽ cập nhật trang này.",
+    ],
+  },
+  {
+    title: "Thay đổi chính sách",
+    body: [
+      `Khi chính sách thay đổi, nội dung mới được đăng tại trang này kèm ngày hiệu lực. Chính sách hiện tại có hiệu lực từ ngày ${EFFECTIVE_DATE}.`,
+    ],
+  },
+];
+---
+
+<Layout
+  title={`Chính sách bảo mật | ${site.name}`}
+  description={`Cách ${site.name} thu thập, sử dụng và bảo vệ thông tin cá nhân bạn cung cấp khi đăng ký tư vấn, giữ chỗ lớp học hoặc nhận lịch khai giảng.`}
+>
+  <Header />
+  <main id="main" class="flex flex-col gap-16 pb-16 lg:gap-24 lg:pb-24">
+    <PageHero
+      title="Chính sách bảo mật"
+      description="Thông tin bạn để lại chỉ dùng để trung tâm liên hệ tư vấn — không chia sẻ cho bất kỳ ai."
+      crumbs={[{ label: "Chính sách bảo mật" }]}
+      glyph="密"
+    />
+
+    <div class="container mx-auto px-6">
+      <div class="mx-auto max-w-3xl space-y-14 md:space-y-16">
+        {
+          sections.map((s, i) => (
+            <section>
+              <h2 class="text-xl font-black text-brand-ink-900 md:text-2xl">
+                {i + 1}. {s.title}
+              </h2>
+              {s.body.map((p) => (
+                <p class="mt-4 text-base leading-relaxed text-muted-foreground">{p}</p>
+              ))}
+            </section>
+          ))
+        }
+
+        <section>
+          <h2 class="text-xl font-black text-brand-ink-900 md:text-2xl">
+            {sections.length + 1}. Liên hệ
+          </h2>
+          <ul class="mt-4 space-y-2 text-base leading-relaxed text-muted-foreground">
+            <li>{site.name} — {contact.address}</li>
+            <li>
+              Điện thoại:
+              <a
+                href={`tel:${contact.phonePrimaryRaw}`}
+                class="font-semibold text-brand-red-600 hover:underline">{contact.phonePrimary}</a
+              >
+            </li>
+            <li>
+              Email:
+              <a
+                href={`mailto:${contact.email}`}
+                class="font-semibold text-brand-red-600 hover:underline">{contact.email}</a
+              >
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+  <Footer />
+  <FloatingContact />
+</Layout>

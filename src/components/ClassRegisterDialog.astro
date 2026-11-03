@@ -30,7 +30,7 @@ import { ICONS } from "@/lib/icons";
  * thật; script chỉ `preventDefault` khi modal dựng được. Xem `ScheduleCards.astro`.
  */
 const field =
-  "h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground outline-none transition-colors focus:border-brand-red-500";
+  "h-11 w-full rounded-sm border border-border bg-background px-3.5 text-sm text-foreground outline-none transition-colors focus:border-brand-red-500";
 const label = "mb-1.5 block text-sm font-semibold text-foreground";
 ---
 
@@ -133,9 +133,25 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
           name="note"
           rows="2"
           placeholder="Ví dụ: cần học buổi tối sau 18h, muốn học thử một buổi…"
-          class="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-red-500"
+          class="w-full rounded-sm border border-border bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-red-500"
         ></textarea>
       </div>
+
+      {/* Cùng ô đồng ý với RegisterForm — xem chú thích ở đó. */}
+      <label class="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          class="mt-1 size-4 shrink-0 cursor-pointer accent-brand-red-600"
+        />
+        <span>
+          Tôi đồng ý để trung tâm dùng thông tin trên để liên hệ xếp lớp, theo
+          <a href="/privacy" target="_blank" class="font-semibold text-brand-red-600 hover:underline"
+            >Chính sách bảo mật</a
+          >. <span class="text-brand-red-600">*</span>
+        </span>
+      </label>
 
       <p
         data-crd-error
@@ -244,6 +260,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
 
 <script>
   import { leadSource } from "@/lib/attribution";
+  import { bindConsent } from "@/lib/consent";
   import { LEADS_ENDPOINT, submitLead } from "@/lib/leads";
   import { PHONE_ERROR, isValidPhone, normalizePhone, sanitizePhoneInput } from "@/lib/phone";
 
@@ -300,6 +317,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
       phone.classList.remove(INVALID);
     });
     phone?.addEventListener("blur", checkPhone);
+    bindConsent(form);
 
     /* ── Mở / đóng ────────────────────────────────────────────────────── */
 

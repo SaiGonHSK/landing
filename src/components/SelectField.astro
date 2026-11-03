@@ -1,0 +1,234 @@
+---
+import { ICONS } from "@/lib/icons";
+
+/**
+ * Bọc một `<select>` thật để vẽ lại phần trigger + danh sách theo theme của site.
+ *
+ * Select thật vẫn nằm trong form (ẩn bằng `opacity-0`, không phải `display: none`): nó lo
+ * `required`, `FormData`, `form.reset()` và bong bóng báo lỗi của trình duyệt — script chỉ
+ * vẽ phần nhìn và ghi ngược giá trị vào nó. JS chưa chạy thì select thật vẫn dùng được,
+ * chỉ là popup của hệ điều hành.
+ */
+---
+
+<div data-select class="group relative">
+  <slot />
+  <span
+    aria-hidden="true"
+    class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform duration-200 group-data-open:rotate-180 [&>svg]:size-4"
+    set:html={ICONS.chevron}
+  />
+  <template data-select-check set:html={ICONS.check}></template>
+</div>
+
+<script>
+  /** Viền đỏ mà RegisterForm gắn lên field lỗi — chép sang trigger qua `peer`. */
+  const TRIGGER_EXTRA =
+    "flex items-center text-left peer-focus:border-brand-red-500 peer-[.border-brand-red-500]:border-brand-red-500";
+  const OPTION =
+    "flex cursor-pointer items-center justify-between gap-3 rounded-sm px-3 py-2.5 text-sm text-foreground transition-colors data-[active]:bg-muted aria-selected:font-semibold aria-selected:text-brand-red-700";
+
+  let uid = 0;
+
+  document.querySelectorAll<HTMLElement>("[data-select]").forEach((root) => {
+    const select = root.querySelector("select");
+    if (!select) return;
+    const checkIcon =
+      root.querySelector<HTMLTemplateElement>("template[data-select-check]")?.innerHTML ?? "";
+    const id = select.id || `select-${++uid}`;
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = `${select.className} ${TRIGGER_EXTRA}`;
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    const value = document.createElement("span");
+    value.className = "truncate";
+    trigger.append(value);
+
+    const label = select.id
+      ? document.querySelector<HTMLLabelElement>(`label[for="${select.id}"]`)
+      : null;
+    if (label) {
+      label.id ||= `${id}-label`;
+      trigger.setAttribute("aria-labelledby", `${label.id} ${id}-trigger`);
+      // Bấm nhãn thì focus trigger, không để focus rơi vào select đã ẩn.
+      label.addEventListener("click", (e) => {
+        e.preventDefault();
+        trigger.focus();
+      });
+    }
+    trigger.id = `${id}-trigger`;
+
+    const list = document.createElement("ul");
+    list.id = `${id}-listbox`;
+    list.setAttribute("role", "listbox");
+    list.tabIndex = -1;
+    list.hidden = true;
+    list.className =
+      "absolute inset-x-0 z-30 max-h-72 overflow-y-auto overscroll-contain rounded-sm border border-border bg-background p-1.5 shadow-xl shadow-brand-ink-900/10 outline-none";
+    if (label) list.setAttribute("aria-labelledby", label.id);
+
+    // Dòng placeholder ("Chọn khoá học") bị khoá nên không đưa vào danh sách.
+    const options = [...select.options].filter((o) => !o.disabled);
+    const items = options.map((option, i) => {
+      const li = document.createElement("li");
+      li.id = `${id}-opt-${i}`;
+      li.setAttribute("role", "option");
+      li.className = OPTION;
+      const text = document.createElement("span");
+      text.textContent = option.textContent?.trim() ?? "";
+      const check = document.createElement("span");
+      check.className = "shrink-0 text-brand-red-600 [&>svg]:size-4";
+      check.innerHTML = checkIcon;
+      li.append(text, check);
+      li.addEventListener("pointermove", () => setActive(i));
+      li.addEventListener("click", () => choose(i));
+      return li;
+    });
+    list.append(...items);
+
+    // Select thật lùi xuống dưới trigger: còn chỗ cho bong bóng `required`, nhưng không
+    // nhận chuột và không nằm trong thứ tự Tab.
+    select.classList.add("peer", "pointer-events-none", "absolute", "inset-0", "opacity-0");
+    select.tabIndex = -1;
+    select.after(trigger);
+    root.append(list);
+
+    let active = -1;
+
+    const sync = () => {
+      const picked = select.selectedOptions[0];
+      const isPlaceholder = !picked || picked.disabled;
+      value.textContent = picked?.textContent?.trim() ?? "";
+      trigger.classList.toggle("text-muted-foreground", isPlaceholder);
+      items.forEach((li, i) => {
+        const on = options[i] === picked;
+        li.setAttribute("aria-selected", String(on));
+        (li.lastElementChild as HTMLElement).classList.toggle("invisible", !on);
+      });
+    };
+
+    const setActive = (i: number) => {
+      if (i < 0 || i >= items.length) return;
+      items[active]?.removeAttribute("data-active");
+      active = i;
+      items[i].setAttribute("data-active", "");
+      list.setAttribute("aria-activedescendant", items[i].id);
+      items[i].scrollIntoView({ block: "nearest" });
+    };
+
+    const isOpen = () => !list.hidden;
+
+    const open = () => {
+      if (isOpen()) return;
+      // Dưới không đủ chỗ mà trên rộng hơn thì mở ngược lên.
+      const rect = trigger.getBoundingClientRect();
+      const below = window.innerHeight - rect.bottom;
+      const up = below < 300 && rect.top > below;
+      list.classList.toggle("bottom-full", up);
+      list.classList.toggle("mb-1.5", up);
+      list.classList.toggle("top-full", !up);
+      list.classList.toggle("mt-1.5", !up);
+
+      list.hidden = false;
+      root.dataset.open = "";
+      trigger.setAttribute("aria-expanded", "true");
+      setActive(Math.max(0, options.indexOf(select.selectedOptions[0])));
+      list.focus({ preventScroll: true });
+    };
+
+    const close = (refocus = true) => {
+      if (!isOpen()) return;
+      list.hidden = true;
+      delete root.dataset.open;
+      trigger.setAttribute("aria-expanded", "false");
+      if (refocus) trigger.focus();
+    };
+
+    const choose = (i: number) => {
+      const option = options[i];
+      if (option && select.value !== option.value) {
+        select.value = option.value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      sync();
+      close();
+    };
+
+    // Safari không focus nút khi bấm chuột: không chặn thì `focusout` của list đóng nó
+    // trước, rồi cú click lại mở ra ngay.
+    trigger.addEventListener("mousedown", (e) => {
+      if (isOpen()) e.preventDefault();
+    });
+    trigger.addEventListener("click", () => (isOpen() ? close() : open()));
+    trigger.addEventListener("keydown", (e) => {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        open();
+      }
+    });
+
+    // `reportValidity()` / RegisterForm.showError focus thẳng vào select ẩn — phím ở đó
+    // mở danh sách tự vẽ thay vì popup của hệ điều hành.
+    select.addEventListener("keydown", (e) => {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        open();
+      }
+    });
+    select.addEventListener("change", sync);
+    // `reset()` đổi giá trị mà không bắn `change`; đợi nó xong rồi mới đọc lại.
+    select.form?.addEventListener("reset", () => setTimeout(sync));
+
+    list.addEventListener("keydown", (e) => {
+      switch (e.key) {
+        case "ArrowDown":
+          setActive(Math.min(active + 1, items.length - 1));
+          break;
+        case "ArrowUp":
+          setActive(Math.max(active - 1, 0));
+          break;
+        case "Home":
+          setActive(0);
+          break;
+        case "End":
+          setActive(items.length - 1);
+          break;
+        case "Enter":
+        case " ":
+          choose(active);
+          break;
+        case "Escape":
+          close();
+          break;
+        case "Tab":
+          close(false);
+          return;
+        default: {
+          // Gõ chữ cái đầu để nhảy tới dòng kế tiếp bắt đầu bằng chữ đó.
+          if (e.key.length !== 1) return;
+          const key = e.key.toLocaleLowerCase("vi");
+          const n = items.length;
+          for (let step = 1; step <= n; step++) {
+            const i = (active + step) % n;
+            if (items[i].textContent?.trim().toLocaleLowerCase("vi").startsWith(key)) {
+              setActive(i);
+              break;
+            }
+          }
+        }
+      }
+      e.preventDefault();
+    });
+
+    document.addEventListener("pointerdown", (e) => {
+      if (isOpen() && !root.contains(e.target as Node)) close(false);
+    });
+    list.addEventListener("focusout", (e) => {
+      if (!root.contains(e.relatedTarget as Node | null)) close(false);
+    });
+
+    sync();
+  });
+</script>

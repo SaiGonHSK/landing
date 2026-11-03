@@ -72,7 +72,7 @@ const perks = commitments.map((c) => ({
 >
   <Header />
 
-  <main id="main">
+  <main id="main" class="flex flex-col gap-16 lg:gap-24">
     <section
       class="relative overflow-hidden border-b border-border bg-brand-ink-50/70 py-10 lg:py-14"
     >
@@ -84,23 +84,11 @@ const perks = commitments.map((c) => ({
       </span>
 
       <div class="container relative z-10 mx-auto px-6">
-        <nav aria-label="Breadcrumb">
-          <ol
-            class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground"
-          >
-            <li>
-              <a href="/" class="transition-colors hover:text-brand-red-600">Trang chủ</a>
-            </li>
-            <li aria-hidden="true" class="opacity-60 [&>svg]:size-3" set:html={ICONS.chevron} />
-            <li class="text-foreground">Đăng ký</li>
-          </ol>
-        </nav>
-
         <!--
           Cột chữ hẹp hơn cột form: form là hành động chính nên được nhiều chỗ hơn,
           và mọi field vẫn đủ rộng để không phải rút xuống một cột.
         -->
-        <div class="mt-8 grid items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        <div class="grid items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
           <div>
             <h1
               class="text-[2.25rem] font-black leading-[1.02] tracking-tight text-balance text-brand-ink-900 md:text-5xl"

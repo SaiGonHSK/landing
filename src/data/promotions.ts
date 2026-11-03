@@ -7,8 +7,7 @@
  * Ưu đãi **theo dịp lễ** (30/4, 2/9, 20/11, Tết…) KHÔNG nằm ở đây. Trung tâm chốt vào ngày
  * 25 hằng tháng, mỗi dịp một nội dung khác nhau và có ngày hết hạn — đưa vào cùng mảng này
  * thì đến lúc hết dịp phải nhớ quay lại xoá, mà quên một lần là trang treo ưu đãi đã hết
- * hạn. Nay trang chỉ nói đúng một câu: `promotionNote` báo cho người đọc biết chỗ nào có
- * ưu đãi dịp lễ và khi nào cập nhật.
+ * hạn.
  */
 export type Promotion = {
   /** Dùng làm `key` khi render, không hiện ra ngoài. */
@@ -114,14 +113,3 @@ export const promotions: Promotion[] = [
     ],
   },
 ];
-
-/**
- * Câu chốt về ưu đãi theo dịp lễ. Có nêu ngày 25 vì đó là thông tin dùng được: người đang
- * cân nhắc biết chính xác khi nào quay lại xem, thay vì một câu "theo dõi để cập nhật" không
- * nói gì.
- *
- * Câu này nằm dưới ba tấm phiếu (`Promotions.astro`) và cố ý mang hình dạng khác hẳn chúng:
- * nó là một lời hẹn, không phải một ưu đãi đang áp dụng.
- */
-export const promotionNote =
-  "Ưu đãi theo dịp lễ (30/4, 2/9, 20/11, Tết…) được trung tâm cập nhật vào ngày 25 hằng tháng.";

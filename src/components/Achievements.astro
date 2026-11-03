@@ -56,13 +56,6 @@ const posters = await Promise.all(
                 class="aspect-square w-full object-cover transition-transform duration-500 group-hover/img:scale-[1.04]"
               />
 
-              {/* Nhãn điểm: thứ đầu tiên mắt bắt được trên thẻ, giống nhãn "92 điểm" trên
-                  thẻ review. Nền đỏ rượu của hero để khối này cùng hệ màu với đầu trang. */}
-              <span class="absolute top-2.5 left-2.5 inline-flex items-baseline gap-1 rounded-full bg-brand-red-900 px-2.5 py-1 text-white shadow-md sm:top-3 sm:left-3 sm:px-3 sm:py-1.5">
-                <span class="text-sm leading-none font-black sm:text-base">{p.total}</span>
-                <span class="text-[0.65rem] leading-none font-semibold text-white/70 sm:text-xs">/{p.max}</span>
-              </span>
-
               <span
                 class="pointer-events-none absolute right-2.5 bottom-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[0.65rem] font-bold text-brand-ink-900 shadow-sm transition-opacity duration-300 sm:right-3 sm:bottom-3 sm:text-xs [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/img:opacity-100 [@media(hover:hover)]:group-focus-visible/img:opacity-100"
                 aria-hidden="true"

@@ -1,0 +1,281 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { hero } from "@/data/site";
+import { ICONS } from "@/lib/icons";
+
+import hocVienNamNu from "@/assets/hero/hoc-vien-nam-nu.webp";
+import hocVienHsk from "@/assets/hero/hoc-vien-hsk1-hsk4.webp";
+import hocVienGiaoTrinh from "@/assets/hero/hoc-vien-giao-trinh.webp";
+import hocVienLopHsk4 from "@/assets/hero/hoc-vien-lop-hsk4.webp";
+import coGiaoAoDai from "@/assets/daily/co-giao-ao-dai-giang-bai.webp";
+import lopCamBang from "@/assets/daily/giang-sinh-lop-cam-bang.webp";
+import giangVienDiQuanh from "@/assets/daily/giang-vien-di-quanh-lop.webp";
+import phatTraSua from "@/assets/daily/giang-vien-phat-tra-sua.webp";
+import choVaoLop from "@/assets/daily/hoc-vien-cho-vao-lop.webp";
+import lopLamBai from "@/assets/daily/lop-lam-bai-tap.webp";
+import uongTraSua from "@/assets/daily/lop-uong-tra-sua.webp";
+import leTan from "@/assets/daily/quay-le-tan-trang-tri.webp";
+import chuaBai from "@/assets/classes/giang-vien-chua-bai.webp";
+import luyenThi from "@/assets/classes/lop-luyen-thi-hsk.webp";
+import tuVan from "@/assets/classes/tu-van-lo-trinh.webp";
+
+/**
+ * Hero phương án 7 — nền trắng, chữ canh giữa, bên dưới là lưới ảnh 5 cột (3 cột ở màn
+ * hẹp). Bố cục theo trang chủ ef.com.vn; đỏ thương hiệu chỉ là màu nhấn.
+ *
+ * Chuyển động (GSAP):
+ * - Tiêu đề hiện từng chữ, trượt lên + hiện dần.
+ * - Mỗi cột ảnh trôi vô tận, cột chẵn lên – cột lẻ xuống, tốc độ khác nhau. Cuộn trang
+ *   thì cột trôi nhanh theo vận tốc cuộn rồi chậm lại; rê chuột vào lưới thì chậm hẳn
+ *   để xem ảnh. Mỗi cột render ảnh HAI lần nối nhau để vòng lặp liền mạch.
+ *
+ * Không JS / giảm chuyển động: chữ và ảnh đứng yên, hiện đủ.
+ */
+
+type Tile = { src: ImageMetadata; alt: string; aspect: string };
+
+const columns: { speed: number; tiles: Tile[] }[] = [
+  {
+    speed: 46,
+    tiles: [
+      { src: lopCamBang, alt: "Cả lớp cầm bảng chụp ảnh dịp Giáng sinh", aspect: "1/1" },
+      { src: choVaoLop, alt: "Học viên chờ vào lớp", aspect: "3/4" },
+      { src: leTan, alt: "Quầy lễ tân trung tâm được trang trí", aspect: "4/5" },
+    ],
+  },
+  {
+    speed: 38,
+    tiles: [
+      { src: hocVienNamNu, alt: "Hai học viên mặc áo đồng phục SaigonHSK", aspect: "4/7" },
+      { src: lopLamBai, alt: "Học viên làm bài tập trên lớp", aspect: "1/1" },
+      { src: luyenThi, alt: "Lớp luyện thi HSK", aspect: "4/5" },
+    ],
+  },
+  {
+    speed: 52,
+    tiles: [
+      { src: giangVienDiQuanh, alt: "Giảng viên đi quanh lớp hướng dẫn học viên", aspect: "4/7" },
+      { src: hocVienHsk, alt: "Học viên cầm giáo trình HSK1 và HSK4", aspect: "3/4" },
+      { src: phatTraSua, alt: "Giảng viên phát trà sữa cho học viên", aspect: "1/1" },
+    ],
+  },
+  {
+    speed: 40,
+    tiles: [
+      { src: coGiaoAoDai, alt: "Cô giáo mặc áo dài giảng bài", aspect: "1/1" },
+      { src: chuaBai, alt: "Giảng viên chữa bài cho học viên", aspect: "4/7" },
+      { src: hocVienLopHsk4, alt: "Học viên lớp HSK4", aspect: "4/5" },
+    ],
+  },
+  {
+    speed: 48,
+    tiles: [
+      { src: hocVienGiaoTrinh, alt: "Học viên cầm giáo trình của trung tâm", aspect: "3/4" },
+      { src: uongTraSua, alt: "Cả lớp uống trà sữa sau giờ học", aspect: "1/1" },
+      { src: tuVan, alt: "Tư vấn lộ trình học cho học viên mới", aspect: "4/5" },
+    ],
+  },
+];
+
+const line1 = hero.titleLine1.split(" ");
+const line2 = hero.titleLine2.split(" ");
+---
+
+<section id="hero" class="hero7 relative isolate overflow-hidden bg-brand-cream">
+  {/* Đánh dấu chờ intro để giấu chữ tiêu đề trước khi GSAP chạy; GSAP không chạy thì
+      tự hiện sau 3 giây. */}
+  <script is:inline>
+    (function (hero) {
+      if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      hero.dataset.intro = "pending";
+      setTimeout(function () {
+        if (hero.dataset.intro === "pending") delete hero.dataset.intro;
+      }, 3000);
+    })(document.currentScript && document.currentScript.parentElement);
+  </script>
+
+  <div class="container mx-auto px-6 pt-16 text-center sm:pt-20 lg:pt-24">
+    <h1
+      class="mx-auto max-w-5xl text-[3rem] leading-[1.08] font-extrabold tracking-[-0.035em] text-balance text-brand-ink-900 sm:text-[4.5rem] lg:text-[6rem]"
+    >
+      {/* Không bọc chữ trong khung `overflow-hidden`: khung đó cắt mất dấu tiếng Việt phía
+          trên (ế, ụ…). Chữ trượt lên + hiện dần thay cho kiểu trồi từ sau mép ẩn. */}
+      {line1.map((w) => (
+        <span class="inline-block">
+          <span class="hero7-word inline-block">{w}</span>
+        </span>
+      ))}{" "}
+      <span class="inline-block text-brand-red-600">
+        {line2.map((w) => (
+          <span class="inline-block">
+            <span class="hero7-word inline-block">{w}</span>
+          </span>
+        ))}
+      </span>
+    </h1>
+
+    <p
+      class="hero7-fade mx-auto mt-7 max-w-152 text-base leading-relaxed font-medium text-balance text-brand-ink-500 lg:text-lg"
+    >
+      {hero.description}
+    </p>
+
+    <p class="sr-only" data-speakable>
+      Trung tâm Hoa văn SaigonHSK — dạy tiếng Trung và luyện thi HSK tại
+      TP.HCM (Sài Gòn), cam kết 100% đầu ra.
+    </p>
+
+    <div
+      class="hero7-fade mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center"
+    >
+      <a
+        href="/schedule"
+        class="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-red-600 px-7 text-[0.95rem] font-bold text-white transition-colors hover:bg-brand-red-700"
+      >
+        Xem lịch khai giảng
+        <span
+          class="transition-transform group-hover:translate-x-1 [&>svg]:size-[1.1rem]"
+          set:html={ICONS.arrow}
+        />
+      </a>
+      <a
+        href="/register"
+        class="inline-flex h-12 items-center justify-center rounded-full border border-border px-7 text-[0.95rem] font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+      >
+        Đăng ký giữ chỗ ngay
+      </a>
+    </div>
+  </div>
+
+  <div
+    class="hero7-wall relative mt-14 h-120 overflow-hidden px-3 sm:h-152 lg:mt-20 lg:h-176"
+    aria-label="Hình ảnh lớp học tại SaigonHSK"
+    role="list"
+  >
+    <div class="grid h-full grid-cols-3 gap-3 lg:grid-cols-5">
+      {
+        columns.map((col, ci) => (
+          <div
+            class:list={["overflow-hidden", (ci === 0 || ci === 4) && "hidden lg:block"]}
+            role="listitem"
+          >
+            <div class="hero7-track flex flex-col" data-speed={col.speed} data-dir={ci % 2 ? 1 : -1}>
+              {[0, 1].map((copy) => (
+                <div class="flex flex-col gap-3 pb-3" aria-hidden={copy === 1 ? "true" : undefined}>
+                  {col.tiles.map((t) => (
+                    <Image
+                      src={t.src}
+                      alt={copy === 1 ? "" : t.alt}
+                      widths={[280, 420, 560]}
+                      sizes="(min-width: 1024px) 20vw, 33vw"
+                      format="webp"
+                      quality={78}
+                      loading={copy === 0 ? "eager" : "lazy"}
+                      class="block w-full rounded-lg object-cover"
+                      style={`aspect-ratio:${t.aspect}`}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  const hero = document.querySelector<HTMLElement>(".hero7");
+
+  if (hero && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    gsap.registerPlugin(ScrollTrigger);
+    requestAnimationFrame(start);
+  }
+
+  function start() {
+    if (!hero) return;
+    const ctx = gsap.context(() => {
+      const words = gsap.utils.toArray<HTMLElement>(".hero7-word");
+      const fades = gsap.utils.toArray<HTMLElement>(".hero7-fade");
+      const tracks = gsap.utils.toArray<HTMLElement>(".hero7-track");
+
+      gsap.set(words, { y: 32, autoAlpha: 0 });
+      gsap.set(fades, { y: 16, autoAlpha: 0 });
+      delete hero.dataset.intro;
+
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+      tl.to(words, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.07 })
+        .to(fades, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.1 }, "-=0.5");
+
+      /*
+        Cột trôi vô tận: track gồm 2 bản ảnh giống hệt, dịch đúng nửa track (-50%) là về
+        lại vị trí đầu, nên `repeat: -1` liền mạch. Cột hướng xuống chạy ngược từ -50%.
+        `speed` là số giây cho một vòng — càng lớn càng chậm.
+      */
+      const loops = tracks.map((track) => {
+        const down = track.dataset.dir === "1";
+        return gsap.fromTo(
+          track,
+          { yPercent: down ? -50 : 0 },
+          {
+            yPercent: down ? 0 : -50,
+            duration: Number(track.dataset.speed ?? 45),
+            ease: "none",
+            repeat: -1,
+          },
+        );
+      });
+
+      // Cuộn trang: tăng tốc theo vận tốc cuộn rồi thả dần về nhịp thường.
+      let hovering = false;
+      const base = () => (hovering ? 0.15 : 1);
+      ScrollTrigger.create({
+        trigger: hero,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: (self) => {
+          const boost = 1 + Math.min(Math.abs(self.getVelocity()) / 250, 6);
+          loops.forEach((t) => {
+            t.timeScale(base() * boost);
+            gsap.to(t, { timeScale: base(), duration: 0.9, ease: "power2.out", overwrite: true });
+          });
+        },
+        // Ra khỏi màn: dừng hẳn, đỡ tốn CPU khi đọc phần dưới trang.
+        onToggle: ({ isActive }) => loops.forEach((t) => (isActive ? t.resume() : t.pause())),
+      });
+
+      // Rê chuột vào lưới: chậm hẳn để xem ảnh.
+      const wall = hero.querySelector<HTMLElement>(".hero7-wall");
+      const slowTo = (to: number) =>
+        loops.forEach((t) => gsap.to(t, { timeScale: to, duration: 0.6, ease: "power2.out", overwrite: true }));
+      wall?.addEventListener("mouseenter", () => {
+        hovering = true;
+        slowTo(0.15);
+      });
+      wall?.addEventListener("mouseleave", () => {
+        hovering = false;
+        slowTo(1);
+      });
+    }, hero);
+
+    document.addEventListener("astro:before-swap", () => ctx.revert(), { once: true });
+  }
+</script>
+
+<style>
+  /* Mờ cả mép trên lẫn mép dưới: ảnh trôi vào – trôi ra chứ không bị cắt cụt. */
+  .hero7-wall {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
+  }
+
+  .hero7[data-intro="pending"] .hero7-word,
+  .hero7[data-intro="pending"] .hero7-fade {
+    opacity: 0;
+  }
+</style>

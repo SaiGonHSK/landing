@@ -1,7 +1,6 @@
 ---
 import SectionHeading from "@/components/SectionHeading.astro";
-import { promotions, promotionNote } from "@/data/promotions";
-import { ICONS } from "@/lib/icons";
+import { promotions } from "@/data/promotions";
 
 /**
  * Ba chương trình ưu đãi cố định, vẽ thành ba tấm phiếu quà tặng.
@@ -236,23 +235,6 @@ const lastSpansRow = promotions.length % 2 === 1;
       }
     </ul>
 
-    {/*
-      Ưu đãi theo dịp lễ. Viền nét đứt để nó nối được với ba tấm phiếu ở trên mà không cần
-      thêm một tấm phiếu thứ tư — nội dung ở đây là một lời hẹn, không phải một ưu đãi đang
-      áp dụng, nên nó không được mang cùng hình dạng với ba cái trên.
-    */}
-    <p
-      class="mx-auto mt-7 flex max-w-2xl items-center justify-center gap-2.5 rounded-full border border-dashed border-brand-ink-200 bg-background/70 px-5 py-3 text-center text-xs leading-relaxed text-muted-foreground sm:text-[0.8rem] lg:mt-8"
-    >
-      {/* Icon để màu mực chứ không lấy một trong ba màu nhấn: chọn màu nào cũng thành ra
-          dòng này thuộc về một trong ba tấm phiếu, mà nó nói về chuyện thứ tư. */}
-      <span
-        class="shrink-0 text-brand-ink-400 [&>svg]:size-4"
-        aria-hidden="true"
-        set:html={ICONS.calendar}
-      />
-      {promotionNote}
-    </p>
   </div>
 </section>
 
