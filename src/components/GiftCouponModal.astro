@@ -1,0 +1,473 @@
+---
+/**
+ * Modal "hộp quà" ưu đãi 20/11 trên trang chủ.
+ *
+ * Kịch bản (GSAP, một timeline):
+ *   1. Modal mở, hộp quà rơi vào giữa màn hình rồi lắc nhẹ chờ khách bấm.
+ *   2. Bấm hộp → hộp nén lại, rung, nắp bật bay lên xoay, thân hộp tụt xuống mờ đi,
+ *      confetti nổ từ miệng hộp.
+ *   3. Phiếu giảm giá phóng to từ chỗ hộp, số tiền đếm lên tới 200.000đ.
+ *
+ * Hiện mỗi lần vào trang trong thời gian chương trình (tới `endsAt`).
+ * Thêm `?gift=1` vào URL để ép hiện khi cần xem thử.
+ * `prefers-reduced-motion`: bỏ toàn bộ chuyển động, mở thẳng phiếu.
+ */
+interface Props {
+  /** Số tiền giảm, đơn vị đồng. */
+  amount?: number;
+  /** Ngày cuối chương trình (ISO, hết ngày theo giờ VN). */
+  endsAt?: string;
+}
+
+const {
+  amount = 200000,
+  endsAt = "2026-11-20T23:59:59+07:00",
+} = Astro.props;
+
+const amountLabel = amount.toLocaleString("vi-VN");
+---
+
+<dialog
+  data-gift-coupon
+  data-amount={amount}
+  data-ends-at={endsAt}
+  aria-labelledby="gift-title"
+  class="gift-dialog"
+>
+  <button type="button" data-gift-close class="gift-close" aria-label="Đóng">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
+
+  <div class="gift-stage">
+    {/* Lời mời — mờ đi khi hộp mở */}
+    <div data-gift-intro class="gift-intro">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Ưu đãi 20/11</p>
+      <p id="gift-title" class="mt-2 text-2xl font-black text-white md:text-3xl">Bạn có một món quà</p>
+      <p data-gift-hint class="mt-2 text-sm text-white/70">Chạm vào hộp để mở</p>
+    </div>
+
+    {/* Hộp quà */}
+    <button type="button" data-gift-box class="gift-box" aria-label="Mở hộp quà">
+      <span data-gift-lid class="gift-lid">
+        <span class="gift-bow">
+          <span class="gift-bow-loop gift-bow-loop--l"></span>
+          <span class="gift-bow-loop gift-bow-loop--r"></span>
+          <span class="gift-bow-knot"></span>
+        </span>
+        <span class="gift-ribbon-v"></span>
+      </span>
+      <span data-gift-body class="gift-body">
+        <span class="gift-ribbon-v"></span>
+      </span>
+    </button>
+
+    {/* Lớp confetti — các mảnh do script sinh ra */}
+    <div data-gift-confetti class="gift-confetti" aria-hidden="true"></div>
+
+    {/* Phiếu giảm giá */}
+    <div data-gift-coupon-card class="gift-card" hidden>
+      <div class="gift-card-top">
+        <p class="text-sm font-semibold text-brand-ink-700">Chúc mừng! Bạn được giảm</p>
+        <p class="mt-1 font-black leading-none text-brand-red-600">
+          <span data-gift-amount class="text-5xl tabular-nums md:text-6xl">{amountLabel}</span>
+          <span class="text-2xl md:text-3xl">đ</span>
+        </p>
+        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Dành cho học viên đăng ký mới trong dịp 20/11 — áp dụng cho mọi khoá học.
+        </p>
+      </div>
+
+      <div class="gift-card-tear" aria-hidden="true"></div>
+
+      <div class="gift-card-bottom">
+        <a
+          href="/register"
+          data-gift-cta
+          class="flex h-11 w-full items-center justify-center rounded-lg bg-brand-red-600 px-5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+        >
+          Đăng ký nhận ưu đãi
+        </a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .gift-dialog {
+    margin: auto;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+  .gift-dialog:not([open]) {
+    display: none;
+  }
+  .gift-dialog[open] {
+    display: grid;
+    place-items: center;
+  }
+  .gift-dialog::backdrop {
+    background: rgb(15 15 20 / 0.72);
+    backdrop-filter: blur(4px);
+  }
+
+  .gift-close {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    color: #fff;
+    background: rgb(255 255 255 / 0.12);
+    transition: background 0.2s;
+  }
+  .gift-close:hover {
+    background: rgb(255 255 255 / 0.22);
+  }
+
+  .gift-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    max-width: 380px;
+    min-height: 460px;
+  }
+  .gift-stage > * {
+    grid-area: 1 / 1;
+  }
+
+  .gift-intro {
+    align-self: start;
+    text-align: center;
+  }
+
+  /* ---------- Hộp quà ---------- */
+  .gift-box {
+    --box-w: 150px;
+    position: relative;
+    width: var(--box-w);
+    height: 170px;
+    margin-top: 70px;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gift-box:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 12px;
+    border-radius: 8px;
+  }
+
+  .gift-body {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 118px;
+    border-radius: 4px 4px 8px 8px;
+    background: linear-gradient(180deg, var(--color-brand-red-600), var(--color-brand-red-700));
+    box-shadow: inset 0 14px 18px -12px rgb(0 0 0 / 0.35);
+    overflow: hidden;
+  }
+  .gift-lid {
+    position: absolute;
+    left: -9px;
+    bottom: 112px;
+    z-index: 2;
+    width: calc(100% + 18px);
+    height: 36px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--color-brand-red-500), var(--color-brand-red-600));
+    box-shadow: 0 6px 10px -6px rgb(0 0 0 / 0.4);
+    transform-origin: 50% 100%;
+  }
+  .gift-ribbon-v {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 24px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #f3c64d, #ffe08a 50%, #f3c64d);
+  }
+  .gift-bow {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    width: 0;
+    height: 0;
+  }
+  .gift-bow-loop {
+    position: absolute;
+    bottom: -4px;
+    width: 40px;
+    height: 30px;
+    border: 7px solid #f3c64d;
+    border-radius: 50% 50% 10% 50%;
+  }
+  .gift-bow-loop--l {
+    right: 2px;
+    transform: rotate(-18deg);
+  }
+  .gift-bow-loop--r {
+    left: 2px;
+    transform: scaleX(-1) rotate(-18deg);
+  }
+  .gift-bow-knot {
+    position: absolute;
+    left: -10px;
+    bottom: -6px;
+    width: 20px;
+    height: 16px;
+    border-radius: 4px;
+    background: #e9b437;
+  }
+
+  /* ---------- Confetti ---------- */
+  .gift-confetti {
+    position: relative;
+    width: 0;
+    height: 0;
+    margin-top: 70px;
+    pointer-events: none;
+  }
+  .gift-confetti :global(i) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    border-radius: 1px;
+  }
+
+  /* ---------- Phiếu ---------- */
+  .gift-card {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.5);
+    text-align: center;
+  }
+  .gift-card-top {
+    padding: 28px 24px 22px;
+  }
+  .gift-card-bottom {
+    padding: 20px 24px 24px;
+  }
+  /* Đường răng cưa + hai khuyết tròn hai bên — cùng ngôn ngữ phiếu với khối Promotions */
+  .gift-card-tear {
+    position: relative;
+    height: 0;
+    border-top: 2px dashed var(--color-border, #e5e5e5);
+    margin: 0 18px;
+  }
+  .gift-card-tear::before,
+  .gift-card-tear::after {
+    content: "";
+    position: absolute;
+    top: -12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgb(15 15 20);
+  }
+  .gift-card-tear::before {
+    left: -30px;
+  }
+  .gift-card-tear::after {
+    right: -30px;
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  const dialog = document.querySelector<HTMLDialogElement>("[data-gift-coupon]");
+
+  if (dialog && typeof dialog.showModal === "function") {
+    const q = <T extends Element = HTMLElement>(sel: string) => dialog.querySelector<T>(sel)!;
+    const intro = q("[data-gift-intro]");
+    const hint = q("[data-gift-hint]");
+    const box = q<HTMLButtonElement>("[data-gift-box]");
+    const lid = q("[data-gift-lid]");
+    const body = q("[data-gift-body]");
+    const confetti = q("[data-gift-confetti]");
+    const card = q("[data-gift-coupon-card]");
+    const amountEl = q("[data-gift-amount]");
+    const closeBtn = q("[data-gift-close]");
+
+    const amount = Number(dialog.dataset.amount) || 0;
+    const endsAt = new Date(dialog.dataset.endsAt ?? "").getTime();
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const forced = new URLSearchParams(location.search).has("gift");
+
+    let wobble: gsap.core.Timeline | null = null;
+    let opened = false;
+
+    const showCardInstantly = () => {
+      intro.hidden = true;
+      box.hidden = true;
+      card.hidden = false;
+    };
+
+    const open = () => {
+      dialog.showModal();
+      document.documentElement.style.overflow = "hidden";
+
+      if (reduceMotion) {
+        showCardInstantly();
+        return;
+      }
+
+      // Hộp rơi vào, rồi lắc nhẹ theo nhịp chờ bấm
+      gsap.fromTo(intro, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(
+        box,
+        { y: -260, rotation: -8, autoAlpha: 0 },
+        { y: 0, rotation: 0, autoAlpha: 1, duration: 0.7, ease: "bounce.out" },
+      );
+      wobble = gsap
+        .timeline({ repeat: -1, repeatDelay: 1.6, delay: 1 })
+        .to(box, { rotation: -5, duration: 0.08 })
+        .to(box, { rotation: 5, duration: 0.12 })
+        .to(box, { rotation: -3, duration: 0.1 })
+        .to(box, { rotation: 0, duration: 0.1 });
+      gsap.to(hint, { autoAlpha: 0.4, duration: 0.9, repeat: -1, yoyo: true, ease: "sine.inOut" });
+    };
+
+    const burstConfetti = () => {
+      const colors = ["#b2182b", "#e2384d", "#f3c64d", "#ffe08a", "#ffffff"];
+      const pieces: HTMLElement[] = [];
+      for (let i = 0; i < 70; i++) {
+        const el = document.createElement("i");
+        const w = gsap.utils.random(6, 11);
+        el.style.width = `${w}px`;
+        el.style.height = `${w * gsap.utils.random(0.4, 1.6)}px`;
+        el.style.background = colors[i % colors.length];
+        confetti.appendChild(el);
+        pieces.push(el);
+      }
+      pieces.forEach((el) => {
+        const angle = gsap.utils.random(-Math.PI * 0.95, -Math.PI * 0.05);
+        const dist = gsap.utils.random(140, 320);
+        gsap
+          .timeline({ onComplete: () => el.remove() })
+          .fromTo(
+            el,
+            { x: 0, y: 0, rotation: 0, autoAlpha: 1, scale: gsap.utils.random(0.6, 1.2) },
+            {
+              x: Math.cos(angle) * dist,
+              y: Math.sin(angle) * dist,
+              rotation: gsap.utils.random(-540, 540),
+              duration: gsap.utils.random(0.7, 1),
+              ease: "power3.out",
+            },
+          )
+          .to(el, {
+            y: `+=${gsap.utils.random(260, 420)}`,
+            x: `+=${gsap.utils.random(-40, 40)}`,
+            rotation: `+=${gsap.utils.random(-360, 360)}`,
+            autoAlpha: 0,
+            duration: gsap.utils.random(1.2, 1.8),
+            ease: "power1.in",
+          });
+      });
+    };
+
+    const burst = () => {
+      if (opened) return;
+      opened = true;
+      wobble?.kill();
+      gsap.killTweensOf(hint);
+
+      if (reduceMotion) {
+        showCardInstantly();
+        return;
+      }
+
+      const counter = { v: 0 };
+      gsap
+        .timeline()
+        .to(intro, { autoAlpha: 0, y: -10, duration: 0.3 })
+        // Nén lấy đà + rung
+        .to(box, { scaleY: 0.86, scaleX: 1.08, rotation: 0, duration: 0.25, ease: "power2.in" }, 0)
+        .to(box, { x: -4, duration: 0.04, repeat: 7, yoyo: true, ease: "none" })
+        .addLabel("pop")
+        .to(box, { scaleY: 1.1, scaleX: 0.95, x: 0, duration: 0.15, ease: "power2.out" }, "pop")
+        // Nắp bật bay lên
+        .to(lid, { y: -260, x: 70, rotation: 38, autoAlpha: 0, duration: 0.85, ease: "power2.out" }, "pop")
+        .add(burstConfetti, "pop")
+        // Thân hộp tụt xuống, mờ đi
+        .to(body, { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.5, ease: "power2.in" }, "pop+=0.15")
+        // Phiếu bật ra từ miệng hộp
+        .add(() => {
+          card.hidden = false;
+        }, "pop+=0.2")
+        .fromTo(
+          card,
+          { y: 80, scale: 0.2, rotation: -6, autoAlpha: 0 },
+          { y: 0, scale: 1, rotation: 0, autoAlpha: 1, duration: 0.8, ease: "back.out(1.6)" },
+          "pop+=0.2",
+        )
+        .add(() => {
+          box.hidden = true;
+        })
+        .fromTo(
+          counter,
+          { v: 0 },
+          {
+            v: amount,
+            duration: 1,
+            ease: "power2.out",
+            onUpdate: () => {
+              amountEl.textContent = (Math.round(counter.v / 1000) * 1000).toLocaleString("vi-VN");
+            },
+          },
+          "pop+=0.4",
+        )
+        .from(card.querySelectorAll(".gift-card-bottom > a"), { y: 12, autoAlpha: 0, stagger: 0.08, duration: 0.4 }, "-=0.5");
+    };
+
+    const close = () => {
+      wobble?.kill();
+      gsap.to(dialog, {
+        autoAlpha: 0,
+        duration: 0.25,
+        onComplete: () => {
+          dialog.close();
+          gsap.set(dialog, { clearProps: "all" });
+        },
+      });
+    };
+
+    box.addEventListener("click", burst);
+    closeBtn.addEventListener("click", close);
+    dialog.addEventListener("close", () => {
+      document.documentElement.style.overflow = "";
+    });
+    dialog.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      close();
+    });
+    // Bấm ra nền tối để đóng
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) close();
+    });
+
+    const active = forced || Date.now() <= endsAt;
+    if (active) window.setTimeout(open, 300);
+  }
+</script>
