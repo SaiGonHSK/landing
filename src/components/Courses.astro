@@ -10,28 +10,13 @@ interface Props {
 }
 const { showHeading = true, limit } = Astro.props;
 
-/*
-  Chương trình lấy từ trang quản trị (bảng `landing_programs`), không còn danh sách
-  cứng trong repo.
-
-  "Nổi bật" là một ô tích ở console, thứ tự là thứ tự trong màn hình Chương trình đào
-  tạo — trung tâm tự quyết trang chủ hiện gì mà không cần deploy. Phần văn dài của
-  trang chi tiết vẫn sinh từ repo và ghép theo `slug`; xem `programsApi.ts`.
-*/
 const all = visiblePrograms();
 const featured = featuredPrograms();
 
-// Chưa tích chương trình nào thì lấy tạm những mục đầu danh sách — một khối trống
-// trên trang chủ tệ hơn nhiều so với việc hiện đại diện vài chương trình.
 const source = featured.length > 0 ? featured : all;
 const list = limit ? source.slice(0, limit) : source;
 const hasMore = list.length < all.length;
 
-/*
-  Thời lượng mỗi lớp, đọc từ `levels[].duration`: "… (3 tháng)." hoặc "3,5 tháng · …" /
-  "… mỗi lớp 3,5 tháng". Gộp thành khoảng. Không đọc được thì trả `null` — không đoán,
-  và KHÔNG cộng tổng cả khoá (cách tính tổng chưa được trung tâm xác nhận).
-*/
 const durationOf = (c: (typeof list)[number]) => {
   const months = (c.levels ?? [])
     .flatMap((l) => l.duration)
@@ -50,15 +35,11 @@ const durationOf = (c: (typeof list)[number]) => {
   return lo === hi ? `${fmt(lo)} tháng/lớp` : `${fmt(lo)}–${fmt(hi)} tháng/lớp`;
 };
 
-/*
-  Bốn thuộc tính, cùng thứ tự ở mọi thẻ. Thiếu dữ liệu thì ô hiện "—" chứ không bỏ ô:
-  bỏ ô là lưới 2×2 của thẻ đó lệch so với thẻ bên cạnh.
-*/
 const attrsOf = (c: (typeof list)[number]) => [
-  { label: "Đầu vào", value: c.entry },
-  { label: "Mục tiêu", value: c.goal },
-  { label: "Lộ trình", value: c.tags[0] ?? "—" },
-  { label: "Thời lượng", value: durationOf(c) ?? "Theo lịch lớp" },
+  { label: "Đầu vào", value: c.entry, icon: ICONS.book },
+  { label: "Mục tiêu", value: c.goal, icon: ICONS.target },
+  { label: "Lộ trình", value: c.tags[0] ?? "—", icon: ICONS.cap },
+  { label: "Thời lượng", value: durationOf(c) ?? "Theo lịch lớp", icon: ICONS.clock },
 ];
 ---
 
@@ -69,23 +50,10 @@ const attrsOf = (c: (typeof list)[number]) => [
         <SectionHeading
           title={hasMore ? "Chương trình" : "Mười chương trình cho"}
           highlight={hasMore ? "nổi bật nhất" : "mọi mục tiêu tiếng Trung"}
-          description="Từ lớp vỡ lòng, luyện thi cam kết đầu ra đến giao tiếp cấp tốc, doanh nghiệp và VIP 1 kèm 1 — chương trình nào cũng rõ lộ trình và chuẩn đầu ra."
         />
       )
     }
 
-    {/*
-      Một khuôn thẻ cho mọi chương trình — mọi thành phần có kích thước, khoảng cách và vị
-      trí cố định, chỉ nội dung thay đổi:
-
-        banner chéo đỏ–trắng (`CourseBadge`, cùng chiều cao mọi thẻ) trong khung xám
-        tên khoá (text-xl, giữ chỗ 2 dòng ở lưới 4 cột)
-        lưới 2×2 thuộc tính, nhãn trên – giá trị dưới
-        "Xem chương trình" ở đáy (mt-auto)
-
-      Lưới hàng chứ không dải cuộn: 1 cột mobile, 2 cột tablet, 4 cột desktop rộng. Các thẻ
-      cùng hàng cao bằng nhau (`h-full`), nên nút ở đáy thẳng hàng.
-    */}
     <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-12 xl:grid-cols-4">
       {
         list.map((c) => (
@@ -103,22 +71,26 @@ const attrsOf = (c: (typeof list)[number]) => [
 
               <div class="flex flex-1 flex-col gap-4 px-2 pt-5 pb-2">
 
-                {/* Tên khoá giữ sẵn chỗ hai dòng ở lưới 4 cột: một tên dài xuống dòng sẽ đẩy
-                    lưới thuộc tính của thẻ đó lệch khỏi ba thẻ bên cạnh. Mục tiêu không nhắc
-                    lại ở đây — nó đã là một ô trong lưới ngay dưới. */}
                 <h3 class="text-xl leading-snug font-bold text-balance text-brand-ink-900 xl:min-h-[2lh]">
                   {c.title}
                 </h3>
 
-                <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border">
+                <dl class="divide-y divide-border border-y border-border">
                   {attrsOf(c).map((a) => (
-                    <div class="bg-background px-3 py-2.5">
-                      <dt class="text-[10.5px] font-semibold tracking-[0.1em] text-brand-ink-400 uppercase">
-                        {a.label}
-                      </dt>
-                      <dd class="mt-1 line-clamp-2 text-[13px] leading-snug font-semibold text-brand-ink-800">
-                        {a.value}
-                      </dd>
+                    <div class="flex items-start gap-3 py-3">
+                      <span
+                        aria-hidden="true"
+                        class="mt-0.5 shrink-0 text-brand-ink-400 [&>svg]:size-[1.125rem]"
+                        set:html={a.icon}
+                      />
+                      <div class="min-w-0">
+                        <dt class="text-[10.5px] font-semibold tracking-[0.1em] text-brand-ink-400 uppercase">
+                          {a.label}
+                        </dt>
+                        <dd class="mt-0.5 line-clamp-2 text-[13px] leading-snug font-semibold text-brand-ink-800">
+                          {a.value}
+                        </dd>
+                      </div>
                     </div>
                   ))}
                 </dl>
@@ -142,7 +114,7 @@ const attrsOf = (c: (typeof list)[number]) => [
         <div class="mt-8 text-center">
           <a
             href="/courses"
-            class="group inline-flex items-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+            class="group inline-flex items-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
           >
             Xem thêm {all.length - list.length} chương trình khác
             <span

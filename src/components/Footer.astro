@@ -1,16 +1,11 @@
 ---
 import { Image } from "astro:assets";
-import { site, contact, footerLinks } from "@/data/site";
+import { site, contact, footerLinks, legal } from "@/data/site";
 import { ICONS } from "@/lib/icons";
 import logoMark from "@/assets/logo-mark.webp";
 
 const year = new Date().getFullYear();
 
-/**
- * Dãy icon footer là glyph một màu trên nền đỏ, nên Zalo ở đây dùng bản đơn sắc vẽ
- * riêng chứ không phải ICONS.zalo — icon app Zalo có màu xanh cố định, đặt lên nền
- * đỏ sẽ lệch hẳn khỏi hàng.
- */
 const glyph = (d: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="${d}"/></svg>`;
 
@@ -24,116 +19,60 @@ const socials = [
       "M12 2C6.5 2 2 5.8 2 10.4c0 2.6 1.4 4.9 3.6 6.5-.1.9-.5 2.3-1.4 3.6-.2.3.1.7.5.6 1.9-.5 3.4-1.5 4.3-2.2 1 .2 1.9.3 3 .3 5.5 0 10-3.8 10-8.4S17.5 2 12 2z",
     ),
   },
-  {
-    label: "Email",
-    href: `mailto:${contact.email}`,
-    icon: glyph(
-      "M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.24-8 5-8-5V6l8 5 8-5z",
-    ),
-  },
 ];
 
-const [coursesGroup, , centerGroup] = footerLinks;
+const [coursesGroup, practiceGroup, centerGroup] = footerLinks;
+
+const HEAD = "border-b border-white/20 pb-3 text-sm font-bold tracking-[0.04em] text-white uppercase";
+const LINK = "text-[15px] text-white/85 transition-colors hover:text-white";
 ---
 
-<footer class="relative">
+<footer class="bg-brand-red-600 text-white">
+  <div class="container mx-auto px-6 pt-14 pb-10 lg:pt-16">
+    <a href="/" class="inline-flex items-center gap-3">
+      <span class="inline-flex size-12 items-center justify-center rounded-full bg-white">
+        <Image
+          src={logoMark}
+          alt={`${site.name} logo`}
+          width={36}
+          densities={[1, 2]}
+          format="webp"
+          quality={90}
+          class="size-9 object-contain"
+        />
+      </span>
+      <span class="text-xl leading-tight font-extrabold tracking-[0.04em] uppercase">
+        Hoa văn<br />SaigonHSK
+      </span>
+    </a>
 
-  <svg
-    class="hidden w-full text-brand-red-600 sm:block"
-    viewBox="0 0 1440 90"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    style="height:60px"
-  >
-    <path fill="currentColor" d="M0,90 C420,0 1020,0 1440,70 L1440,90 Z"></path>
-  </svg>
-
-  <div class="rounded-t-[2rem] bg-brand-red-600 text-white sm:rounded-none">
-    <div class="container mx-auto px-6 pb-10 pt-6 lg:pb-14">
-      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-
-        <div class="order-1 md:order-0">
-          <div class="flex items-center gap-3">
-            <span class="inline-flex size-12 items-center justify-center rounded-full bg-white">
-              <Image
-                src={logoMark}
-                alt={`${site.name} logo`}
-                width={36}
-                densities={[1, 2]}
-                format="webp"
-                quality={90}
-                class="size-9 object-contain"
-              />
-            </span>
-            <span class="text-xl font-extrabold uppercase tracking-[0.06em]">
-              Hoa văn SaigonHSK
-            </span>
-          </div>
-
-          <p class="mt-5 text-base leading-relaxed text-white/80">
-            {site.slogan} — Vì sự thành công của bạn. Trung tâm đào tạo tiếng Trung chất
-            lượng cao, uy tín tại TP.HCM: từ Sơ cấp đến Cao cấp, luyện thi HSK,
-            cam kết 100% đầu ra.
-          </p>
-
-          {/* Dòng pháp lý đặt ở footer nên có mặt trên MỌI trang: đây là tín hiệu tin
-              cậy mà cả người đọc lẫn bot tìm kiếm đều tìm ở chân trang. */}
-          <p class="mt-3 text-base font-semibold leading-relaxed text-white">
-            {site.license.label} — {site.license.authority}.
-          </p>
-
-          <div class="mt-6 flex items-center gap-3">
-            {
-              socials.map(({ href, label, icon }) => (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener"
-                  aria-label={label}
-                  class="flex size-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white hover:text-brand-red-700"
-                >
-                  <span aria-hidden="true" class="[&>svg]:size-4" set:html={icon} />
-                </a>
-              ))
-            }
-          </div>
-        </div>
-
-        <div class="order-3 md:order-0">
-          <h3 class="text-base font-bold uppercase tracking-[0.12em]">Khóa học</h3>
-          <ul class="mt-5 space-y-3">
-            {
-              coursesGroup.items.slice(0, 6).map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    class="text-base text-white/80 transition-colors hover:text-white"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-
-        <div class="order-2 md:order-0">
-          <h3 class="text-base font-bold uppercase tracking-[0.12em]">Liên hệ</h3>
-          <ul class="mt-5 space-y-3 text-base text-white/80">
+    <div class="mt-12 grid gap-12 md:grid-cols-2 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      <div class="flex flex-col gap-10">
+        <section>
+          <h3 class={HEAD}>Cơ sở tại TP.HCM</h3>
+          <ul class="mt-4 space-y-3 text-[15px] text-white/85">
             <li>
-              <a href={contact.mapsUrl} target="_blank" rel="noopener" class="hover:text-white">
+              <span class="font-bold text-white">Cơ sở chính:</span>{" "}
+              <a href={contact.mapsUrl} target="_blank" rel="noopener" class="hover:text-white hover:underline">
                 {contact.address}
               </a>
             </li>
             <li>
+              <span class="font-bold text-white">Giờ làm việc:</span> {contact.workingHours}
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class={HEAD}>Thông tin liên hệ</h3>
+          <ul class="mt-4 space-y-3 text-[15px] text-white/85">
+            <li>
+              <span class="font-bold text-white">Hotline:</span>{" "}
               {
                 contact.phones.map((p, i) => (
                   <>
-                    {i > 0 && <span class="mx-1">–</span>}
-                    <a
-                      href={`tel:${p.replace(/\./g, "")}`}
-                      class="font-semibold text-white hover:underline"
-                    >
+                    {i > 0 && " – "}
+                    <a href={`tel:${p.replace(/\./g, "")}`} class="hover:text-white hover:underline">
                       {p}
                     </a>
                   </>
@@ -141,53 +80,74 @@ const [coursesGroup, , centerGroup] = footerLinks;
               }
             </li>
             <li>
-              <a href={`mailto:${contact.email}`} class="hover:text-white">
-                {contact.email}
+              <span class="font-bold text-white">Email:</span>{" "}
+              <a href={`mailto:${contact.email}`} class="hover:text-white hover:underline">{contact.email}</a>
+            </li>
+            <li>
+              <span class="font-bold text-white">Inbox:</span>{" "}
+              <a href={contact.zalo} target="_blank" rel="noopener" class="hover:text-white hover:underline">
+                Nhắn tin qua Zalo
               </a>
             </li>
-            <li>{contact.workingHours}</li>
           </ul>
+        </section>
 
-          <ul class="mt-5 space-y-3">
+        <section>
+          <h3 class="text-[15px] font-bold">Theo dõi SaigonHSK tại</h3>
+          <div class="mt-4 flex items-center gap-3">
             {
-              centerGroup.items.slice(0, 3).map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    class="text-base text-white/80 transition-colors hover:text-white"
-                  >
-                    {item.label}
-                  </a>
-                </li>
+              socials.map(({ href, label, icon }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label={label}
+                  class="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-brand-red-700"
+                >
+                  <span aria-hidden="true" class="[&>svg]:size-4" set:html={icon} />
+                </a>
               ))
             }
-          </ul>
-        </div>
-
-        <div class="order-4 md:order-0">
-          <h3 class="text-base font-bold uppercase tracking-[0.12em]">Chính sách</h3>
-          <ul class="mt-5 space-y-3">
-            <li>
-              <a href="/privacy" class="text-base text-white/80 transition-colors hover:text-white">
-                Chính sách bảo mật
-              </a>
-            </li>
-          </ul>
-        </div>
+          </div>
+        </section>
       </div>
 
-      <div
-        class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/20 pt-6 text-sm text-white/75 sm:flex-row"
-      >
-        <span>© {year} {site.domain}. All Rights Reserved.</span>
-        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          <a href="/about" class="transition-colors hover:text-white">Giới thiệu</a>
-          <a href="/courses" class="transition-colors hover:text-white">Khóa học</a>
-          <a href="/contact" class="transition-colors hover:text-white">Liên hệ</a>
-          <a href="/privacy" class="transition-colors hover:text-white">Chính sách bảo mật</a>
-        </div>
+      <section>
+        <h3 class={HEAD}>{coursesGroup.title}</h3>
+        <ul class="mt-4 space-y-3">
+          {coursesGroup.items.map((item) => (
+            <li><a href={item.href} class={LINK}>{item.label}</a></li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="flex flex-col gap-10">
+        <section>
+          <h3 class={HEAD}>{practiceGroup.title}</h3>
+          <ul class="mt-4 space-y-3">
+            {practiceGroup.items.map((item) => (
+              <li><a href={item.href} class={LINK}>{item.label}</a></li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h3 class={HEAD}>Về SaigonHSK</h3>
+          <ul class="mt-4 space-y-3">
+            {centerGroup.items.map((item) => (
+              <li><a href={item.href} class={LINK}>{item.label}</a></li>
+            ))}
+            <li><a href="/privacy" class={LINK}>Chính sách bảo mật</a></li>
+          </ul>
+        </section>
       </div>
+    </div>
+
+    <div class="mt-14 space-y-1.5 border-t border-white/20 pt-8 text-[15px] text-white/75">
+      <p>© {year} Hoa văn SaigonHSK. All rights reserved.</p>
+      <p>{site.license.label} — {site.license.authority}.</p>
+      {legal.company && <p>Thuộc sở hữu của {legal.company}</p>}
+      {legal.taxCode && <p>MST: {legal.taxCode}</p>}
     </div>
   </div>
 </footer>
-

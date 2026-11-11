@@ -2,13 +2,9 @@
 import LibraryHub from "@/components/LibraryHub.astro";
 import { articlesInCategory, findLibraryCategory } from "@/data/library";
 
-// Chuyên mục do trang quản trị soạn (bảng `library_categories`), nên danh sách đổi
-// giữa hai lần xem là chuyện thường — tra theo params thay vì getStaticPaths.
 const category = findLibraryCategory(Astro.params.category ?? "");
 if (!category) return new Response(null, { status: 404 });
 
-// Chỉ bài của chuyên mục đang xem: trang không còn hàng chip nên không cần biết
-// các chuyên mục khác có bao nhiêu bài.
 const articles = await articlesInCategory(category.key);
 ---
 

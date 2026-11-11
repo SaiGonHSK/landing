@@ -1,31 +1,9 @@
 ---
-/**
- * Gợi ý "Kéo qua" cho các dải cuộn ngang (khoá học, hoạt động, giảng viên,
- * đánh giá, cơ sở vật chất) — thay cho cặp nút mũi tên hai bên trước đây.
- *
- * Cách dùng: bọc dải cuộn trong một thẻ `.group/rail.relative` có `data-rail`,
- * gắn `data-rail-track` lên chính phần tử cuộn, rồi đặt component này bên trong:
- *
- *   <div data-rail class="group/rail relative">
- *     <div data-rail-track class="flex overflow-x-auto ...">…</div>
- *     <RailHint label="giảng viên" />
- *   </div>
- *
- * Chữ chỉ hiện khi trỏ chuột vào dải, nằm giữa dải nên không chắn thẻ nào, và
- * tự tắt khi dải không tràn (đã đổi sang grid ở breakpoint lớn). Kèm theo là
- * kéo-bằng-chuột thật — nếu không thì chữ "Kéo qua" hứa một thao tác mà
- * `overflow-x-auto` không làm được với chuột. Trên cảm ứng ẩn hẳn: đã swipe sẵn.
- */
 import { ICONS } from "@/lib/icons";
 
 interface Props {
-  /** Danh từ cho người dùng bàn phím / trình đọc, ví dụ "giảng viên". */
   label: string;
 
-  /**
-   * Breakpoint mà dải thôi cuộn vì đổi sang grid — ẩn gợi ý từ đó trở lên.
-   * Bỏ trống nếu dải cuộn ở mọi bề rộng.
-   */
   hideFrom?: "sm" | "md" | "lg";
 }
 
@@ -47,7 +25,6 @@ const hideClass = hideFrom
     "scale-95 opacity-0 shadow-[0_18px_40px_-18px_rgb(15_23_42/0.65)] backdrop-blur-sm",
     "transition duration-200 ease-out",
     "group-hover/rail:scale-100 group-hover/rail:opacity-100",
-    // Đang kéo thì chữ chắn tầm nhìn, mà lúc đó người dùng đã biết cách kéo rồi.
     "group-data-[dragging=true]/rail:opacity-0",
     "data-[scrollable=false]:hidden [@media(hover:none)]:hidden",
     hideClass,
@@ -67,11 +44,6 @@ const hideClass = hideFrom
 
     const overflows = () => track.scrollWidth - track.clientWidth > 1;
 
-    /**
-     * Dải cuộn được thì cho phép focus để dùng mũi tên bàn phím — trước đây hai
-     * nút prev/next lo phần này, giờ bỏ nút nên phải trả lại đường vào cho
-     * bàn phím. Không tràn thì bỏ khỏi tab order để không thêm chặng vô nghĩa.
-     */
     const syncA11y = (on: boolean) => {
       if (on) {
         track.setAttribute("tabindex", "0");
@@ -95,8 +67,6 @@ const hideClass = hideFrom
     track.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", sync);
     sync();
-
-    /* ── Kéo bằng chuột ─────────────────────────────────────────────────── */
 
     let startX = 0;
     let startScroll = 0;
@@ -129,7 +99,6 @@ const hideClass = hideFrom
         dragged = true;
         rail.dataset.dragging = "true";
         track.style.cursor = "grabbing";
-        // snap-mandatory sẽ giật thẻ về trong lúc kéo — tắt tới khi nhả chuột.
         track.style.scrollSnapType = "none";
       }
       event.preventDefault();
@@ -140,7 +109,6 @@ const hideClass = hideFrom
     track.addEventListener("pointercancel", stop);
     track.addEventListener("pointerleave", stop);
 
-    // Kéo xong chuột nhả ra vẫn sinh click — chặn để không mở link của thẻ.
     track.addEventListener(
       "click",
       (event) => {
@@ -152,12 +120,10 @@ const hideClass = hideFrom
       true,
     );
 
-    // Chặn kéo-thả ảnh/link mặc định của trình duyệt khi đang kéo dải.
     track.addEventListener("dragstart", (event) => {
       if (down) event.preventDefault();
     });
 
-    // Không chặn thì kéo ngang qua thẻ sẽ bôi xanh chữ trong thẻ.
     track.addEventListener("selectstart", (event) => {
       if (dragged) event.preventDefault();
     });

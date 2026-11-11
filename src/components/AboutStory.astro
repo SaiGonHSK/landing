@@ -6,14 +6,6 @@ import { about } from "@/data/site";
 import photoClassGroup from "@/assets/facility/facility-2.webp";
 import photoAoDaiLesson from "@/assets/daily/co-giao-ao-dai-giang-bai.webp";
 
-/**
- * "Câu chuyện của chúng tôi": đoạn mở đầu của `content/site.json` đặt thành một câu
- * trích lớn canh giữa, ba cột ảnh lớp thật xếp so le bên cạnh.
- *
- * Đoạn đầu tách khỏi hai đoạn còn lại và phóng to vì nó là câu trả lời cho "trung tâm
- * này là ai" — thứ người mở trang giới thiệu tìm trước tiên; hai đoạn sau là phần khai
- * triển, để cỡ chữ nhỏ hơn nên mắt biết đọc sau.
- */
 interface Props {
   ctaHref?: string;
   ctaLabel?: string;
@@ -23,47 +15,11 @@ const { ctaHref = "/courses", ctaLabel = "Khám phá các khoá học" } = Astro
 
 const [quote, ...rest] = about.paragraphs;
 
-/*
-  HAI tấm ảnh, **không có khung tỉ lệ cố định** — chiều cao mỗi tấm do chính tỉ lệ ảnh
-  quyết định (`h-auto`, không `aspect-*`, không `fit: "cover"`).
-
-  Đây là điểm khác căn bản so với hai bản trước, cả hai đều hỏng vì cùng một lý do: bố
-  cục ấn định trước tỉ lệ khung rồi bắt ảnh vừa vào khung.
-
-  - Bản 1: ba ảnh **ngang** trong `assets/classes/` (1.33–1.5) nhét vào khung 9/17 và
-    9/21 (0.53 và 0.43) ⇒ `object-cover` cắt mất 60–70% bề ngang, chỉ còn một dải dọc
-    giữa ảnh, người bị cắt ngang mặt.
-  - Bản 2: đổi sang ảnh **dọc** và hạ khung xuống 2/3 với 9/16 ⇒ phần cắt còn 4–16%,
-    nhưng vẫn cắt: mấy tấm này chụp bằng điện thoại, người thường đứng sát mép ảnh, nên
-    cắt 4% mỗi bên là đủ để mất tay, mất một người ở rìa.
-
-  Không có phần trăm cắt nào là "an toàn" khi ta không kiểm soát được ảnh chụp vào.
-  Cách duy nhất chắc chắn là bỏ khung: ảnh giữ nguyên tỉ lệ gốc, bố cục chịu chiều cao
-  mà ảnh đưa ra. Cái mất là hàng ảnh không còn phẳng mép dưới — nhưng hai cột so le thì
-  vốn không cần phẳng mép.
-
-  Hai tấm chứ không phải ba: ở khổ này (nửa `container` từ `lg`) ba cột giữ tỉ lệ gốc
-  thì mỗi tấm chỉ còn ~190px, ảnh lớp đông người thu nhỏ cỡ đó là không nhìn ra ai. Hai
-  tấm ~290px thì còn đọc được mặt người.
-
-  Hai tấm này cũng chọn theo hai việc khác nhau — cả lớp ở trung tâm, và một giờ học
-  thật — thay vì hai lát cắt của cùng một buổi.
-*/
 const photos = [
   {
     image: photoClassGroup,
     alt: "Học viên và giảng viên SaigonHSK chụp ảnh ở cầu thang trung tâm dịp Giáng sinh",
-    /*
-      Viền hồng nhạt của thương hiệu dành cho tấm này: nó là tấm có bảng hiệu "HOA VĂN
-      SAIGONHSK" trong ảnh. Tấm còn lại để viền xám — hai tấm cùng viền đỏ thì cả khối
-      thành một dải hồng, không còn là điểm nhấn.
-
-      Viền cũng để tách ảnh khỏi nền sáng: không có nó, mảng tường trắng trong ảnh trôi
-      thẳng ra nền trang, mất mép.
-    */
     tint: "ring-brand-red-100",
-    /* Tấm đầu nhô lên, tấm sau tụt xuống — chỉ so le từ `sm`; dưới đó hai cột đã hẹp,
-       thêm so le thì thành xộc xệch. */
     offset: "",
   },
   {
@@ -79,24 +35,7 @@ const photos = [
   offset: string;
 }[];
 ---
-
-{/*
-  Nền trắng.
-
-  Khối mở đầu ngay trên kết thúc bằng dải xám nhạt nhất của bộ mực, rồi tới khoảng trắng
-  ngăn giữa các section. Cho khối này một nền xám nữa thì đoạn đầu trang thành ba vạch
-  xám–trắng–xám chồng lên nhau. Để trắng thì nó nối liền với khoảng trắng đó, và khối
-  "Bản sắc" nền xám ngay dưới mới là chỗ đổi nền đầu tiên người xem nhận ra.
-*/}
 <section class="relative overflow-hidden bg-background py-16 lg:py-24">
-  {/*
-    Một quầng hồng rất nhạt ở góc phải, thay cho lưới chữ Hán mờ dùng ở bản trước.
-
-    Lưới chữ ấy tuy mờ nhưng vẫn là *chữ*: đặt sau một đoạn văn tiếng Việt thì mắt cứ
-    cố đọc nó, và cả khối ngả sang xám bẩn. Quầng màu thì không có hình để đọc, chỉ làm
-    nền bớt phẳng. Một quầng chứ không phải hai ba quầng nhiều màu: trang này chỉ dùng
-    xám và đỏ thương hiệu.
-  */}
   <div
     aria-hidden="true"
     class="pointer-events-none absolute -right-32 -bottom-40 size-112 rounded-full bg-brand-red-50 opacity-80 blur-3xl"
@@ -111,8 +50,6 @@ const photos = [
         Câu chuyện của chúng tôi
       </h2>
 
-      {/* Vạch mảnh dưới tiêu đề — dấu chấm hết cho phần tiêu đề, thay cho một dòng mô tả
-          nữa mà nội dung ngay dưới đã nói. */}
       <span
         aria-hidden="true"
         class="mt-5 block h-0.5 w-24 rounded-full bg-brand-red-300"></span>
@@ -121,11 +58,6 @@ const photos = [
     <div
       class="mt-12 grid items-center gap-12 lg:mt-16 lg:grid-cols-2 lg:gap-16"
     >
-      {/*
-        Cột chữ canh giữa, không canh trái: cả khối này (tiêu đề, vạch, câu trích, nút)
-        nằm trên một trục dọc ở giữa cột, nên nó đọc như một lời tự giới thiệu chứ không
-        như một đoạn tài liệu.
-      */}
       <div class="flex flex-col items-center text-center">
         <blockquote
           class="max-w-lg text-lg font-medium leading-relaxed text-brand-ink-900 md:text-xl"
@@ -135,19 +67,6 @@ const photos = [
           >
         </blockquote>
 
-        {/*
-          `brand-ink-500` chứ không `muted-foreground`: `muted-foreground` là mức xám
-          nhạt hơn hẳn, đủ dùng cho chú thích nhưng hơi mờ cho hai đoạn văn phải đọc hết.
-          `brand-ink-500` là thang chữ của hệ màu — cùng thang với tiêu đề, chỉ nhạt hơn
-          vài bậc. Áp dụng cho cả ba khối mới của trang này.
-        */}
-        {/*
-          Hai đoạn khai triển canh **trái**, dù tiêu đề và câu trích canh giữa.
-
-          Canh giữa chỉ hợp với khối chữ ngắn vài dòng. Hai đoạn này dài 6–8 dòng, canh
-          giữa thì cả hai mép đều răng cưa và mắt phải dò lại điểm bắt đầu ở từng dòng —
-          rõ nhất trên điện thoại, nơi mỗi đoạn chiếm gần một màn hình.
-        */}
         <div
           class="mt-6 max-w-lg space-y-4 text-left text-[15px] leading-relaxed text-brand-ink-500"
         >
@@ -156,7 +75,7 @@ const photos = [
 
         <a
           href={ctaHref}
-          class="group mt-9 inline-flex items-center gap-2 rounded-full bg-brand-red-600 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-red-600/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-700"
+          class="group mt-9 inline-flex items-center gap-2 rounded-lg bg-brand-red-600 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-red-600/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-700"
         >
           {ctaLabel}
           <span
@@ -166,11 +85,6 @@ const photos = [
         </a>
       </div>
 
-      {/*
-        `items-start`: hai tấm cao khác nhau (tỉ lệ gốc khác nhau) nên phải neo mép trên,
-        không để lưới kéo chúng cao bằng nhau — kéo cao bằng nhau là quay lại đúng cái
-        khung cố định vừa bỏ đi.
-      */}
       <div
         class="mx-auto grid w-full max-w-md grid-cols-2 items-start gap-4 lg:max-w-none lg:gap-5"
       >
@@ -183,15 +97,6 @@ const photos = [
                 p.tint,
               ]}
             >
-              {/*
-                Chỉ có `width`, **không** `height` và **không** `fit: "cover"`: Astro giữ
-                nguyên tỉ lệ ảnh gốc, còn `h-auto` để chiều cao thẻ chạy theo ảnh. Đây là
-                chỗ bảo đảm không cắt tấm nào — xem chú thích ở mảng `photos`.
-
-                520px cho một ô rộng ~290px ở desktop (≈1,8×) — đủ nét trên màn retina mà
-                không tải nguyên bản. `facility-2` gốc chỉ 768px nên đây cũng gần mức tối
-                đa nó gánh được.
-              */}
               <Image
                 src={p.image}
                 alt={p.alt}

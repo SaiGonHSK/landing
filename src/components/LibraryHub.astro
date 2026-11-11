@@ -10,17 +10,6 @@ import { clampDescription, itemListSchema } from "@/lib/seo";
 import { collectionPageSchema } from "@/lib/schema";
 import type { LibraryArticle } from "@/data/library";
 
-/**
- * Khung chung của `/library` và `/library/<chuyên-mục>`.
- *
- * Hai trang chỉ khác nhau ở tiêu đề và danh sách bài, nên chúng dùng chung một
- * khung. Chuyên mục chọn ở menu header (`/library/<chuyên-mục>`) chứ không còn ở
- * hàng chip trong hero: mỗi trang chỉ nạp và liệt kê đúng chuyên mục đang xem.
- *
- * Không có `EnrollCta`/`RegisterSection` ở cuối như các hub khác — Thư viện là tài
- * liệu đọc miễn phí, chèn lời mời ghi danh vào giữa đường đọc làm loãng nội dung.
- */
-
 interface Props {
   title: string;
   metaTitle?: string;
@@ -28,7 +17,6 @@ interface Props {
   crumbs: { label: string; href?: string }[];
   glyph?: string;
 
-  /** Bài hiện trong lưới; ở trang chuyên mục chỉ có bài của chuyên mục đó. */
   articles: LibraryArticle[];
   emptyMessage?: string;
 }
@@ -45,8 +33,6 @@ const {
 
 const origin = Astro.site?.origin ?? "";
 const schemas = [
-  // Trang danh mục: `CollectionPage` gộp vào node `WebPage` của Layout để bot phân
-  // biệt trang liệt kê với trang nội dung, thay vì coi mọi URL là WebPage như nhau.
   collectionPageSchema({ pathname: Astro.url.pathname, site: Astro.site }),
   itemListSchema(
     metaTitle ?? title,

@@ -9,37 +9,12 @@ interface Props {
 
 const { class: className = "" } = Astro.props;
 
-/*
-  Ba con số phụ được **tính ra**, không gõ tay.
-
-  Số năm hoạt động gõ tay là con số tự sai mỗi tháng Giêng, và không ai nhớ ra để sửa
-  — kiểu lỗi làm cả khối số liệu mất tin cậy. Tính từ `foundedYear` thì trang render ở
-  server nên nó đúng mãi. Số giảng viên đếm từ `content/site.json`: thêm một thầy cô
-  vào danh sách là con số ở đây đổi theo, không có cách nào để hai chỗ lệch nhau.
-
-  Riêng số học viên không suy ra được từ dữ liệu nào trên site nên nằm trong
-  `content/site.json` để trung tâm tự sửa.
-*/
 const yearsActive = new Date().getFullYear() - site.foundedYear;
 
-/**
- * 20000 → "20.000". Người Việt dùng dấu chấm phân cách hàng nghìn; để nguyên
- * "20000" thì mắt phải tự đếm chữ số.
- *
- * Tự ghép thay vì `toLocaleString("vi-VN")` vì phần đếm số ở cuối file phải in ra
- * **đúng cùng một dạng** với bản render sẵn — mà nó chạy trong trình duyệt, còn hàm
- * này chạy ở Node. Hai `Intl` khác nhau (Node thiếu ICU thì `vi-VN` lặng lẽ rơi về
- * `en-US`, ra "20,000") là số nhảy dấu ngay khi đếm xong.
- */
 const groupDigits = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 const studentCount = groupDigits(milestones.studentCount);
 
-/*
-  Mỗi con số tách làm `prefix + count + suffix` chứ không phải một chuỗi: phần `count`
-  là thứ chạy từ 0 lên khi khối lọt vào tầm mắt, phần chữ hai bên đứng yên. Ô cuối
-  không có số đếm riêng nên mượn đuôi của nó — "HSK 1–" đứng yên, số 6 chạy lên.
-*/
 const figures = [
   {
     count: milestones.studentCount,
@@ -62,16 +37,6 @@ const figures = [
   },
 ] satisfies { prefix?: string; count: number; suffix?: string; label: string }[];
 ---
-
-{/*
-  Nền sáng, số in đỏ, ô bọc `bg-brand-ink-50` — đúng hệ mà site đang dùng cho số liệu
-  (khối `stats` ở đầu trang /about) và cho dải 4 ô (hàng tiện nghi trong `Facility`).
-
-  Bản đầu của khối này là một dải `bg-brand-ink-900` gần như đen: nó nổi thật, nhưng
-  toàn bộ trang còn lại là nền trắng với điểm nhấn đỏ, nên một khối đen ở giữa đọc như
-  của website khác dán vào. Nổi bật ở đây nên đến từ khổ chữ của con số, không phải từ
-  việc đảo màu nền.
-*/}
 <section id="milestones" class:list={["scroll-mt-24 bg-background", className]}>
   <div class="container mx-auto px-6">
     <SectionHeading
@@ -81,30 +46,12 @@ const figures = [
       description={milestones.description}
     />
 
-    {/*
-      Dải số trần, phân cách bằng vạch dọc mảnh — không ô bọc, không icon.
-
-      Icon đã bỏ: bốn ô vuông chứa icon chiếm gần bằng chỗ của chính con số, mà con số
-      mới là thứ cần đọc trước. Bỏ chúng thì mắt đi thẳng vào "20.000+".
-
-      Vạch dọc chỉ bật từ `sm`: ở 2 cột trên màn hẹp, vạch giữa hai cột cắt ngang
-      giữa khối trông như lỗi hiển thị; hàng ngang 4 cột mới là chỗ vạch có nghĩa.
-
-      Vạch là thẻ riêng chứ không phải `divide-x` của Tailwind vì nó cũng chạy: mỗi
-      vạch kéo dài từ trên xuống khi khối lọt vào tầm mắt (`scaleY`), viền thì không
-      làm được vậy.
-    */}
     <dl
       data-milestones
       class="mt-10 grid grid-cols-2 gap-y-9 sm:mx-auto sm:flex sm:w-fit sm:items-start sm:gap-y-0"
     >
       {
         figures.map((f, i) => (
-          /*
-            `flex-col-reverse` để con số hiện trước nhãn trên màn hình, còn thứ tự thẻ
-            vẫn là `dt` (thuật ngữ = nhãn) rồi `dd` (giá trị = con số) cho đúng nghĩa
-            danh sách định nghĩa.
-          */
           <div class="relative flex flex-col-reverse px-4 text-center sm:px-8">
             {i > 0 && (
               <span
@@ -114,28 +61,10 @@ const figures = [
               />
             )}
 
-            {/*
-              `whitespace-nowrap` chỉ từ `sm`: ở hai cột trên điện thoại mỗi ô rộng
-              chưa tới 170px, mà nhãn dài nhất ("Đào tạo liên tục từ 2019" ở khổ 11px
-              giãn chữ) cần ~200px — ép một dòng thì chữ tràn ra ngoài mép màn hình.
-              Từ `sm` trở lên bốn ô nằm một hàng, lúc đó giữ một dòng mới đúng.
-            */}
             <dt class="mt-2 text-[11px] font-bold uppercase leading-snug tracking-[0.12em] text-muted-foreground sm:whitespace-nowrap">
               {f.label}
             </dt>
 
-            {/*
-              Giá trị render sẵn ở server là giá trị **cuối cùng**: không JS, không
-              IntersectionObserver hay người xem tắt hiệu ứng chuyển động thì con số
-              vẫn đứng đó đúng. Phần đếm bên dưới mới hạ nó về 0 rồi chạy lên.
-
-              `tabular-nums`: chữ số cùng bề rộng nên con số không co giãn từng khung
-              hình lúc đếm — không có nó, cả hàng rung suốt 1,5 giây.
-
-              `font-sans` (Google Sans Flex) chứ không phải `font-heading` như các
-              con số khác trên site: chữ số của nó thẳng và mở, đọc nhanh hơn ở khổ
-              lớn — mà đây là chỗ người xem chỉ liếc qua một nhịp.
-            */}
             <dd
               data-count={f.count}
               data-prefix={"prefix" in f ? f.prefix : ""}
@@ -150,17 +79,6 @@ const figures = [
     </dl>
   </div>
 
-  {/*
-    Số chạy từ 0 lên khi khối lọt vào tầm mắt, mỗi ô trễ hơn ô trước một nhịp.
-
-    `is:inline` (không để Astro gói thành module) vì hạ con số về 0 phải xong **trước
-    khung hình đầu tiên**: module bị hoãn tới sau khi phân tích xong tài liệu, người
-    xem sẽ thấy "20.000+" hiện ra rồi giật về "0+" mới đếm — đúng kiểu lỗi chứ không
-    phải hiệu ứng. Cùng lý do với script trong `Testimonials.astro`.
-
-    Đây cũng là chỗ quyết định không đếm: tắt hiệu ứng chuyển động, hoặc trình duyệt
-    không có IntersectionObserver, thì thoát ngay và giá trị render sẵn ở lại nguyên.
-  */}
   <script is:inline>
     (() => {
       const dl = document.querySelector("[data-milestones]");
@@ -176,8 +94,6 @@ const figures = [
       const cells = Array.from(dl.querySelectorAll("[data-count]"));
       if (!cells.length) return;
 
-      // Bản sao của `groupDigits` phía server — hai bên phải in ra cùng một dạng, nếu
-      // không thì đếm xong con số lại nhảy dấu.
       const group = (value) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
       const paint = (cell, value) => {
@@ -187,7 +103,6 @@ const figures = [
 
       for (const cell of cells) paint(cell, 0);
 
-      /** 1,5 giây: đủ để mắt bắt được nhịp đếm, chưa đủ lâu để phải ngồi chờ số dừng. */
       const DURATION = 1500;
 
       const countUp = (cell) => {
@@ -199,9 +114,6 @@ const figures = [
 
           const t = Math.min(1, (now - started) / DURATION);
           if (t < 1) {
-            // easeOutExpo: bung rất nhanh rồi hãm dần — nhịp "máy đếm dừng lại" quen
-            // mắt hơn tuyến tính. Khung cuối gán thẳng `target`: hàm này về tới
-            // 0,999 chứ không tới 1, làm tròn sẽ thiếu vài đơn vị ở số lớn.
             paint(cell, Math.round(target * (1 - Math.pow(2, -10 * t))));
             requestAnimationFrame(frame);
           } else {
@@ -218,13 +130,10 @@ const figures = [
             if (!entry.isIntersecting) continue;
 
             io.disconnect();
-            // Kéo các vạch dọc xuống cùng lúc — xem khối <style> bên dưới.
             dl.classList.add("milestones-in");
             cells.forEach((cell, i) => setTimeout(() => countUp(cell), i * 130));
           }
         },
-        // Đợi thấy hơn một phần ba khối rồi mới đếm: bắt đầu ngay lúc mép trên vừa ló
-        // ra thì số chạy xong trước khi người xem cuộn tới nơi.
         { threshold: 0.35 },
       );
 
@@ -234,11 +143,6 @@ const figures = [
 </section>
 
 <style>
-  /*
-    Vạch dọc kéo từ trên xuống khi khối vào tầm mắt. Chỉ trong `no-preference`: ở chế
-    độ tắt chuyển động, vạch không mang `scaleY(0)` nên hiện sẵn — script cũng thoát
-    sớm và không bao giờ gắn `milestones-in`.
-  */
   @media (prefers-reduced-motion: no-preference) {
     .milestone-rule {
       transform: scaleY(0);

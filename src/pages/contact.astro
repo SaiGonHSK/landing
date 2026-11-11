@@ -10,14 +10,6 @@ import { contact, site } from "@/data/site";
 import { clampDescription } from "@/lib/seo";
 import { contactPageSchema } from "@/lib/schema";
 
-/*
-  `ContactPage` gộp vào node `WebPage` của Layout và trỏ `mainEntity` về tổ chức.
-
-  Địa chỉ, hotline và giờ mở cửa đã nằm trong node `#organization` mà mọi trang đều
-  mang, nên ở đây không khai lại — chỉ cần nói "trang này là trang liên hệ *của* tổ
-  chức đó". Khai lại địa chỉ ở trang này sẽ tạo bản thứ hai, và ngày nào đổi địa chỉ mà
-  quên một chỗ thì AI sẽ đọc được hai địa chỉ khác nhau.
-*/
 const schemas = [contactPageSchema({ pathname: Astro.url.pathname, site: Astro.site })];
 ---
 

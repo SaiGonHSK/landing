@@ -1,44 +1,4 @@
 ---
-/**
- * Bộ giáo trình của trung tâm, vẽ lại bằng vector.
- *
- * Dựng từ chính những cuốn sách trong ảnh chụp học viên ở `src/assets/hero/`:
- * `hoc-vien-hsk1-hsk4-tach-nen.webp` (GIÁO TRÌNH HSK1 và HSK4.1), `hoc-vien-giao-trinh.webp`
- * (NGỮ PHÁP HSK1, HSK4) và bốn ảnh gốc `1786586…jpg` (GIÁO TRÌNH HSK4.2, NGỮ PHÁP HSK3,
- * TỪ VỰNG HSK4, LUYỆN VIẾT HSK1). Chín cuốn đó dùng đúng MỘT template bìa, chỉ đổi bốn
- * biến: màu khối chéo góc trên, tên loại sách ở ô dưới trái, mã cấp ở ô dưới phải, và
- * ảnh bìa (Thượng Hải cho HSK4.x, Trường Thành cho HSK1, vườn – đình cho HSK3).
- *
- * Nên component này khai template một lần rồi trải sáu cuốn, thay vì vẽ tay từng bìa.
- * Mọi tỉ lệ đo từ cuốn TỪ VỰNG HSK4 trong `1786586378012…jpg` — cuốn duy nhất trong cả
- * bộ ảnh được cầm gần chính diện, thấy trọn bìa từ mép trên đến mép dưới.
- *
- * ── Vì sao có ngần này lớp cho một hình phẳng ──────────────────────────────────────
- * Bản đầu chỉ có khối màu và chữ: đúng bố cục bìa nhưng nhìn ra ngay là hình vẽ dán lên
- * nền, không ra cuốn sách. Bốn thứ dưới đây mới là phần làm nó thành *vật thể*, và mỗi
- * thứ đều lấy từ một chi tiết thấy được trong ảnh chụp:
- *
- *   1. Lò xo (`coil`) — cuộn thép trắng quặp qua mép trái, chi tiết nhận ra cuốn sách
- *      này nhanh nhất. Vẽ đủ ba phần: vòng dây trước bìa, vòng dây chìm sau bìa, và
- *      hàng lỗ đục. Bản trước rút gọn thành hàng viên nhựa nằm ngang nên trông như
- *      hoa văn in trên bìa.
- *   2. Bề dày (`edge`) — dải giấy ở mép phải và bóng gáy tối dần về phía lò xo. Bìa
- *      không có bề dày thì nằm bẹt trên nền dù bóng đổ có mềm cỡ nào.
- *   3. Ánh sáng (`sheen`) — bìa cán bóng, sáng chéo từ trên trái, tối dần xuống dưới
- *      phải. Đây là thứ tách "giấy in" khỏi "ô màu CSS".
- *   4. Bóng đổ hai tầng — một tầng ngắn sát chân sách, một tầng rộng và mờ. Bóng một
- *      tầng thì hoặc quá cứng, hoặc quá xa, không bao giờ ra bóng thật.
- *
- * Ảnh bìa cũng vẽ theo lớp có mù (haze) giữa các tầng núi và tầng nhà, vì ảnh chụp
- * phong cảnh nào cũng nhạt dần về phía xa — thiếu lớp mù đó thì rặng núi xa và rặng núi
- * gần cùng một độ đậm, mắt đọc ra tranh vẽ ngay.
- *
- * Vì sao vector chứ không phải ảnh chụp chồng sách: khối này nằm trên nền `brand-ink-50`
- * cùng ba tab kia. Ảnh chụp sách thật đặt trên bàn thì kéo theo nền bàn, ánh sáng phòng
- * và bóng đổ — ba mảng màu lạ giữa một khối phẳng. Vẽ lại thì sáu bìa nằm thẳng trên
- * đúng nền xám đó, và chữ trên bìa là chữ SVG nên sắc ở mọi dpr, không như chữ in trong
- * ảnh chụp (vấn đề đã gặp ở ảnh ghép giảng viên, xem WhyUs.astro).
- */
 
 interface Props {
   class?: string;
@@ -46,17 +6,13 @@ interface Props {
 
 const { class: className = "" } = Astro.props;
 
-/* ── Bảng màu lấy từ bìa thật ─────────────────────────────────────────────── */
-const MAROON = "#9c2b2c"; // khối chéo đỏ gạch — cuốn hay gặp nhất
-const GREEN = "#5f7d4d"; // khối chéo xanh rêu — bộ HSK1
-const NAVY = "#33527a"; // khối chéo xanh mực — bộ HSK4.2
-const STEEL = "#5b8cbe"; // ô tên loại sách màu xanh thép
-const LEVEL = "#a5262b"; // ô mã cấp, luôn đỏ
+const MAROON = "#9c2b2c";
+const GREEN = "#5f7d4d";
+const NAVY = "#33527a";
+const STEEL = "#5b8cbe";
+const LEVEL = "#a5262b";
 const PAPER = "#fdfcfb";
 
-/* ── Ba ảnh bìa, vẽ trong khung 240×133 ───────────────────────────────────── */
-
-/** Bến Thượng Hải: tháp Đông Phương Minh Châu và Thượng Hải Tower nhìn từ bờ Puxi. */
 const CITY = `
 <rect width="240" height="133" fill="url(#tbs-sky)"/>
 <circle cx="196" cy="26" r="30" fill="#fff" opacity=".28"/>
@@ -104,7 +60,6 @@ const CITY = `
 <rect x="96" y="103" width="12" height="30" fill="#c98994" opacity=".3"/>
 `;
 
-/** Trường Thành nhìn từ trên: núi phủ kín khung, tường lượn chéo lên góc phải. */
 const WALL = `
 <rect width="240" height="133" fill="url(#tbs-sky)"/>
 <path d="M0 24 44 12 94 22 140 8 192 20 240 10V133H0Z" fill="#87ac68"/>
@@ -134,7 +89,6 @@ const WALL = `
 </g>
 `;
 
-/** Đình mái đỏ bên hồ trong vườn — ảnh bìa của bộ HSK3. */
 const GARDEN = `
 <rect width="240" height="133" fill="url(#tbs-sky)"/>
 <path d="M0 32 54 22 112 30 168 18 240 28V133H0Z" fill="#87ac68"/>
@@ -168,14 +122,10 @@ const GARDEN = `
 </g>
 `;
 
-/* ── Sáu cuốn, xếp theo cấp từ thấp (sau, bên trái) lên cao (trước, bên phải) ── */
 type Book = {
-  /** Tên loại sách ở ô dưới trái, tách sẵn hai dòng đúng như bìa in */
   kind: [string, string];
   level: string;
-  /** Màu khối chéo góc trên trái */
   accent: string;
-  /** Màu ô tên loại sách — bộ HSK4.x dùng xanh thép, còn lại trùng màu khối chéo */
   kindFill: string;
   scene: string;
 };
@@ -189,43 +139,19 @@ const BOOKS: Book[] = [
   { kind: ["GIÁO", "TRÌNH"], level: "HSK4.1", accent: MAROON, kindFill: STEEL, scene: CITY },
 ];
 
-/* ── Khổ bìa và cách trải ─────────────────────────────────────────────────── */
-const W = 304; // bìa A4: 304 × 430 ≈ 1 : 1,414
+const W = 304;
 const H = 430;
-const STEP = 128; // 42% bề ngang — vừa đủ để lộ khối chéo và trọn tên loại sách
+const STEP = 128;
 const LAST = BOOKS.length - 1;
 
-/**
- * Cuốn bên phải nằm TRÊN cuốn bên trái, nên phần lộ ra của mỗi cuốn phía sau là mép
- * trái: lò xo, khối màu chéo và ô tên loại sách. Xếp ngược lại thì phần lộ ra là mép
- * phải — gần như toàn giấy trắng, sáu cuốn thành một dải trắng nhờ.
- *
- * Cuốn trước cùng nằm thấp nhất và không nghiêng; càng ra sau càng nhích lên và ngả
- * thêm về trái, quanh trục ở đáy bìa. Độ ngả tối đa giữ ở 6°: ngả hơn thì góc trên bên
- * trái của cuốn sau cùng quét ra ngoài `viewBox`, mà nới `viewBox` cho vừa thì cả xấp
- * co lại và chữ trên bìa nhỏ theo.
- *
- * Lưu ý khi đọc phần dựng khung ảnh: `clip-path` và `transform` phải nằm trên HAI thẻ
- * <g> lồng nhau, không gộp một thẻ. Với `clipPathUnits="userSpaceOnUse"` (mặc định),
- * hình cắt được đọc trong hệ toạ độ của chính thẻ tham chiếu nó — tức hệ ĐÃ áp
- * `transform` của thẻ đó. Gộp cả hai lên một <g transform="translate(35 129)"> thì rect
- * cắt bị dịch gấp đôi: khung giấy trắng vẫn đúng chỗ nhưng ảnh bên trong bị đẩy chéo
- * xuống và cắt còn một góc.
- */
 const book = (b: Book, i: number) => {
   const x = 60 + i * STEP;
   const y = 78 + i * 9;
   const tilt = -(LAST - i) * 1.2;
   const clip = `tbs-clip-${i}`;
 
-  // "HSK4.1" dài hơn "HSK1" nên phải hạ cỡ chữ, không thì tràn khỏi ô đỏ rộng 148.
   const levelSize = b.level.length > 4 ? 32 : 38;
 
-  /*
-    Lò xo: 26 vòng thép, mỗi vòng ba nét — nét chìm sau bìa (vẽ trước, tối hơn), lỗ đục
-    trên giấy, rồi nét nổi trước bìa. Thiếu nét chìm thì cuộn dây trông như dán lên mặt
-    bìa; thiếu lỗ đục thì không thấy dây xuyên qua giấy.
-  */
   const coilBack = Array.from({ length: 26 }, (_, k) => {
     const cy = 14 + k * 16;
     return `<path d="M15 ${cy}C4 ${cy} -6 ${cy + 3} -6 ${cy + 8}" stroke="#a8a9ae" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
@@ -323,14 +249,12 @@ const label = `Bộ giáo trình Hoa văn SaigonHSK: ${BOOKS.map(
   <title id="tbs-title">{label}</title>
 
   <defs>
-    {/* Trời của ba ảnh bìa — xanh đậm trên đỉnh, nhạt dần xuống chân trời */}
     <linearGradient id="tbs-sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#a9cbe6"></stop>
       <stop offset=".7" stop-color="#d8e8f3"></stop>
       <stop offset="1" stop-color="#eef4f8"></stop>
     </linearGradient>
 
-    {/* Mù giữa các tầng cảnh — lớp làm rặng xa nhạt hơn rặng gần */}
     <linearGradient id="tbs-haze" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#eef4f8" stop-opacity=".8"></stop>
       <stop offset="1" stop-color="#eef4f8" stop-opacity="0"></stop>
@@ -346,17 +270,12 @@ const label = `Bộ giáo trình Hoa văn SaigonHSK: ${BOOKS.map(
       <stop offset="1" stop-color="#a9727d"></stop>
     </linearGradient>
 
-    {/* Bóng khối cầu / khối hộp trong ảnh bìa */}
     <linearGradient id="tbs-gloss" x1="0" y1="0" x2=".8" y2="1">
       <stop offset="0" stop-color="#fff" stop-opacity=".45"></stop>
       <stop offset=".55" stop-color="#fff" stop-opacity="0"></stop>
       <stop offset="1" stop-color="#000" stop-opacity=".18"></stop>
     </linearGradient>
 
-    {/*
-      Ánh sáng trên bìa cán bóng: sáng chéo từ trên trái, gần như tắt ở giữa, tối lại ở
-      góc dưới phải. Biên độ để thấp (14% / 9%) — mạnh hơn là thành vệt loá giả.
-    */}
     <linearGradient id="tbs-sheen" x1="0" y1="0" x2=".85" y2="1">
       <stop offset="0" stop-color="#fff" stop-opacity=".14"></stop>
       <stop offset=".42" stop-color="#fff" stop-opacity="0"></stop>
@@ -364,24 +283,18 @@ const label = `Bộ giáo trình Hoa văn SaigonHSK: ${BOOKS.map(
       <stop offset="1" stop-color="#121316" stop-opacity=".09"></stop>
     </linearGradient>
 
-    {/* Bóng gáy: bìa cong vào chỗ lò xo nên tối dần về mép trái */}
     <linearGradient id="tbs-gutter" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#121316" stop-opacity=".16"></stop>
       <stop offset=".55" stop-color="#121316" stop-opacity=".04"></stop>
       <stop offset="1" stop-color="#121316" stop-opacity="0"></stop>
     </linearGradient>
 
-    {/* Dây thép của lò xo — sáng ở đỉnh vòng, tối ở hai đầu */}
     <linearGradient id="tbs-wire" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#b9babf"></stop>
       <stop offset=".35" stop-color="#fbfbfc"></stop>
       <stop offset="1" stop-color="#c8c9ce"></stop>
     </linearGradient>
 
-    {/*
-      Hai tầng bóng đổ: tầng ngắn sát chân sách cho ra chỗ tiếp đất, tầng rộng và mờ cho
-      ra khối trong không gian. Một tầng thì hoặc cứng như viền, hoặc mờ như sương.
-    */}
     <filter id="tbs-shadow" x="-20%" y="-20%" width="150%" height="150%">
       <feDropShadow
         dx="6"
@@ -403,7 +316,6 @@ const label = `Bộ giáo trình Hoa văn SaigonHSK: ${BOOKS.map(
     </radialGradient>
   </defs>
 
-  {/* Bóng chung dưới cả xấp — thứ neo sáu cuốn xuống cùng một mặt phẳng */}
   <ellipse cx="530" cy="566" rx="446" ry="30" fill="url(#tbs-ground)"></ellipse>
 
   <Fragment set:html={fan} />

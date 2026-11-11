@@ -6,31 +6,12 @@ import { courseOptions, resolveCourseOption } from "@/lib/registerLink";
 import { schedule } from "@/data/schedule";
 
 interface Props {
-  /**
-   * Form nằm trong cột hẹp (khoảng nửa trang) thì hàng đầu chỉ đủ chỗ cho 2 field,
-   * và nút gửi nên chiếm hết bề rộng thay vì bó lại giữa khung.
-   */
   dense?: boolean;
 
-  /**
-   * Khoá học chọn sẵn — slug hoặc đúng nhãn trong `courseOptions`.
-   *
-   * Khách tới form từ một trang khoá cụ thể thì đã trả lời xong câu "học khoá nào";
-   * bắt chọn lại là hỏi hai lần cùng một chuyện. Slug lạ (giáo trình, trang kỹ năng)
-   * không khớp gì thì select về lại trạng thái chưa chọn như cũ.
-   */
   course?: string;
 
-  /**
-   * Dòng lịch chọn sẵn ở ô "Lớp muốn giữ chỗ" — id trong `enrollment_schedule_items`.
-   *
-   * Chỗ gọi phải truyền id đã giải được thành một dòng có thật của đợt đang đăng (xem
-   * `findRowById`), không phải chuỗi thô từ URL: id không khớp dòng nào thì select lặng
-   * lẽ về "Chưa chọn" và khách tưởng mình đã giữ chỗ.
-   */
   itemId?: string;
 
-  /** Ghi chú điền sẵn — xem `registerNote` ở `lib/registerLink.ts`. */
   note?: string;
 }
 
@@ -38,21 +19,6 @@ const { dense = false, course, itemId, note = "" } = Astro.props;
 
 const selectedCourse = resolveCourseOption(course);
 
-/**
- * Các lớp khách có thể xin giữ chỗ ngay trên form này — các dòng của đợt đang đăng.
- *
- * Ô này không ghi vào bảng nào cả: nó chỉ chở tên lớp vào ghi chú của lead, để giáo vụ
- * gọi lại đúng việc. Không còn danh sách chờ theo lớp nữa — xem `lib/leads.ts`.
- *
- * Lấy thẳng từ `schedule` (đợt đang đăng) chứ không nhận qua prop, giống cách file lấy
- * `courseOptions`: mọi chỗ đặt form đều muốn cùng một danh sách, và truyền tay thì có
- * chỗ quên. API nội dung chết thì `schedule` rỗng — select chỉ còn dòng "Chưa chọn" và
- * form vẫn gửi được lead, đúng thứ tự ưu tiên: mất ô chọn lớp còn hơn mất cả lead.
- *
- * Chỉ lớp có ngày khai giảng: lớp lịch linh hoạt (GT1, GT2, VIP) trên thẻ lịch cũng
- * không có nút đăng ký mà là "Gọi để xếp lớp" — giữ chỗ một lớp chưa có ngày là hứa một
- * thứ trung tâm chưa chốt.
- */
 const openingClasses = schedule.filter((row) => row.openDateISO);
 
 const levels = [
@@ -65,7 +31,6 @@ const levels = [
 
 const field =
   "h-11 w-full rounded-sm border border-border bg-background px-3.5 text-sm text-foreground outline-none transition-colors focus:border-brand-red-500";
-// Bản không JS vẫn là select thật — bỏ mũi tên hệ điều hành, chừa chỗ cho mũi tên của SelectField.
 const selectField = `${field} cursor-pointer appearance-none pr-10 invalid:text-muted-foreground`;
 const label = "mb-1.5 block text-sm font-semibold text-foreground";
 ---
@@ -92,13 +57,6 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         <label class={label} for="rf-phone">
           Số điện thoại <span class="text-brand-red-600">*</span>
         </label>
-        {/*
-          Ô này chỉ nhận chữ số và tối đa 10 ký tự — script dưới lọc lại mọi thứ gõ hay
-          dán vào, `maxlength`/`pattern` ở đây là lưới chắn cho lúc JS chưa chạy.
-
-          `inputmode="numeric"` để điện thoại bật bàn phím số thuần; `type="tel"` giữ
-          nguyên cho autofill và cho iOS hiểu đây là số điện thoại.
-        */}
         <input
           id="rf-phone"
           name="phone"
@@ -159,21 +117,10 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
     </div>
 
     {
-      /*
-        Ô chọn lớp — thứ biến form này từ "để lại số điện thoại" thành "giữ chỗ đúng một
-        lớp". Có nó thì mọi CTA đổ về `/register` (hero, footer, trang khoá) đều ghi được
-        vào danh sách chờ của lớp, chứ không chỉ nút trên thẻ lịch khai giảng.
-
-        Không `required`: giữ chỗ là bước thêm, không phải điều kiện để gửi lead. Khách
-        chưa biết học lớp nào vẫn phải gửi được — đó là phần lớn người vào trang này.
-
-        Cả khối biến mất khi chưa có lớp nào đang tuyển: một select chỉ có đúng dòng
-        "Chưa chọn" là một câu hỏi không có câu trả lời nào.
-      */
       openingClasses.length > 0 && (
         <div>
           <label class={label} for="rf-class">
-            Lớp muốn giữ chỗ{" "}
+            Lớp muốn đăng ký{" "}
             <span class="font-normal text-muted-foreground">(không bắt buộc)</span>
           </label>
           <SelectField>
@@ -209,11 +156,6 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
       >
     </div>
 
-    {/*
-      Đồng ý xử lý dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP): `required` để trình duyệt
-      chặn submit như mọi field bắt buộc khác. Ô này không đi vào payload — `/leads`
-      dựng từng field, và đã gửi được thì nghĩa là khách đã tick.
-    */}
     <label class="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
       <input
         type="checkbox"
@@ -241,7 +183,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
     <button
       type="submit"
       class:list={[
-        "mx-auto flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand-red-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-brand-red-600/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-700 disabled:cursor-not-allowed disabled:opacity-70",
+        "mx-auto flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-red-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-brand-red-600/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-700 disabled:cursor-not-allowed disabled:opacity-70",
         !dense && "sm:max-w-sm",
       ]}
     >
@@ -257,21 +199,10 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
     </p>
   </form>
 
-  <!--
-    Báo thành công bằng modal chứ không phải panel thay chỗ form.
-
-    Form nằm ở nhiều vị trí trên trang — có chỗ ở cuối bài dài, có chỗ trong cột hẹp
-    bên phải; đổi ruột form thành một panel chữ thì lời báo có thể nằm ngoài khung
-    nhìn và khách tưởng bấm hụt. `<dialog>` nổi lên top layer nên luôn thấy, và trình
-    duyệt lo sẵn phần bẫy focus + đóng bằng Esc.
-  -->
   <dialog
     data-register-success
     aria-labelledby="rf-success-title"
     class:list={[
-      // `m-auto` bắt buộc: preflight của Tailwind đặt `margin: 0` cho mọi thẻ, mà
-      // `dialog:modal` canh giữa màn hình bằng đúng `margin: auto` của trình duyệt —
-      // thiếu dòng này modal dính góc trên bên trái.
       "m-auto w-[min(29rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto",
       "rounded-3xl border border-border bg-background p-0 text-foreground shadow-2xl",
     ]}
@@ -289,11 +220,6 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         Chúc mừng bạn đã đăng ký thành công!
       </p>
 
-      {/*
-        Câu này đổi theo việc dòng giữ chỗ lớp có ghi được hay không — xem cuối script.
-        Chữ ở đây là bản mặc định, dùng cho lượt gửi không chọn lớp và cho cả trường hợp
-        JS chưa kịp chạy.
-      */}
       <p
         data-register-success-detail
         class="mt-3 text-sm leading-relaxed text-muted-foreground"
@@ -317,15 +243,10 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         > nhé.
       </p>
 
-      <!--
-        Thẻ `<a>` chứ không phải `<button>`: đóng modal là về trang chủ, nên để nó là
-        một liên kết thật — bấm giữ / chuột giữa vẫn mở tab mới được, và không có JS
-        thì nó vẫn đi đúng chỗ.
-      -->
       <a
         href="/"
         data-register-close
-        class="mt-7 flex w-full items-center justify-center rounded-full bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+        class="mt-7 flex w-full items-center justify-center rounded-lg bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
       >
         Đã hiểu
       </a>
@@ -334,18 +255,10 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
 </div>
 
 <style>
-  /*
-    Nền mờ viết bằng màu thẳng, không qua token của theme: `::backdrop` nằm ở top
-    layer nên không phải trình duyệt nào cũng cho nó kế thừa custom property khai ở
-    `:root` — dùng `var(--color-brand-ink-900)` thì màu ra rỗng và nền không tối đi.
-    Giá trị lấy đúng `--brand-ink-900` trong global.css.
-  */
   dialog[data-register-success]::backdrop {
     background-color: rgb(18 19 22 / 0.6);
   }
 
-  /* Modal mở ra là một thay đổi đột ngột giữa trang; nhích lên một chút để mắt bắt
-     được nó vừa xuất hiện thay vì tự hỏi trang đã đổi cái gì. */
   dialog[data-register-success][open] {
     animation: register-success-in 180ms ease-out;
   }
@@ -390,17 +303,8 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
     );
     if (!form || !success) return;
 
-    /** Câu mặc định trong modal báo thành công, giữ lại để trả về sau mỗi lượt gửi. */
     const successDefault = successDetail?.textContent ?? "";
 
-    /**
-     * Dòng lịch đang chọn ở ô "Lớp muốn giữ chỗ", đọc tại thời điểm gửi.
-     *
-     * Mã đi vào ghi chú của lead (bảng `leads` không có cột lớp), tên để viết câu báo
-     * thành công; id chỉ để phân biệt hai ca cùng mã trong lúc đọc select. `null` khi
-     * khách để "Chưa chọn", hoặc khi đợt không có dòng nào nên cả ô cũng không được
-     * render.
-     */
     const pickedClass = () => {
       const select = form.querySelector<HTMLSelectElement>('select[name="scheduleItemId"]');
       const id = select?.value.trim();
@@ -414,31 +318,15 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
       };
     };
 
-    /*
-      Số điện thoại: kiểm bằng `setCustomValidity` chứ không phải tự vẽ dòng báo lỗi.
-
-      Làm vậy thì `form.reportValidity()` ngay dưới lo hết phần còn lại — hiện bong
-      bóng đúng chỗ, cuộn tới field, chặn submit — và số điện thoại được đối xử giống
-      hệt các field bắt buộc khác thay vì có một đường báo lỗi riêng.
-    */
     const phone = form.querySelector<HTMLInputElement>('input[name="phone"]');
 
     const checkPhone = () => {
       if (!phone) return;
-      // Bỏ trống thì để `required` lên tiếng — hai lời báo cho cùng một ô là thừa.
       const invalid = phone.value.trim() !== "" && !isValidPhone(phone.value);
       phone.setCustomValidity(invalid ? PHONE_ERROR : "");
     };
 
     phone?.addEventListener("input", () => {
-      /*
-        Lọc ngay trong lúc gõ: chữ cái bị bỏ, quá 10 số bị cắt.
-
-        `maxlength` chặn được phần gõ tay nhưng không chặn chữ cái, và `type="tel"` thì
-        trình duyệt cho gõ mọi ký tự. Nên phải tự lọc, và phải giữ lại vị trí con trỏ —
-        gán `value` mới là con trỏ nhảy về cuối, sửa một số ở giữa thành ra không sửa
-        được. Chỉ gán khi giá trị thật sự đổi, để lúc gõ bình thường không đụng gì.
-      */
       const cleaned = sanitizePhoneInput(phone.value);
       if (cleaned !== phone.value) {
         const caret = phone.selectionStart ?? phone.value.length;
@@ -448,39 +336,23 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         phone.setSelectionRange(next, next);
       }
 
-      // Xoá lỗi ngay khi khách sửa: giữ nguyên `customValidity` cũ thì ô vẫn bị coi là
-      // sai kể cả sau khi đã nhập đúng, vì trình duyệt không tự tính lại.
       phone.setCustomValidity("");
       phone.classList.remove(INVALID);
     });
     phone?.addEventListener("blur", checkPhone);
     bindConsent(form);
 
-    /*
-      Đóng modal là kết thúc luồng đăng ký → đưa khách về trang chủ.
-
-      Bắt ở sự kiện `close` của dialog chứ không phải ở cú bấm nút: nút "Đã hiểu" đã
-      là một `<a href="/">` tự đi rồi, còn đây lo nốt đường thoát bằng Esc — không thì
-      nhấn Esc lại rơi về đúng cái form vừa gửi xong, trông như đăng ký chưa ăn.
-    */
     success.addEventListener("close", () => window.location.assign("/"));
 
-    /** `detail` để trống thì dùng lại câu mặc định của modal. */
     const showSuccess = (detail?: string) => {
-      // Reset trước khi mở: form ở lại trên trang (chỉ bị modal che), nên phải sạch
-      // để lần gửi sau không mang theo thông tin của người vừa gửi. `reset()` trả về
-      // giá trị mặc định của HTML, tức khoá học chọn sẵn theo trang vẫn còn.
       form.reset();
       if (error) error.hidden = true;
       if (successDetail) successDetail.textContent = detail || successDefault;
 
-      // `showModal` không có ở trình duyệt quá cũ — vẫn phải hiện được lời báo, chỉ
-      // là không có backdrop và bẫy focus.
       if (typeof success.showModal === "function") success.showModal();
       else success.setAttribute("open", "");
     };
 
-    /** Xoá viền đỏ do lần gửi trước để lỗi cũ không dính vào field đã sửa. */
     const clearFieldErrors = () => {
       form
         .querySelectorAll<HTMLElement>(`.${INVALID}`)
@@ -493,7 +365,6 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         error.hidden = false;
       }
 
-      // Server đã đặt tên field theo json tag, trùng `name=` của input.
       const first = Object.keys(fields ?? {})[0];
       const input = first
         ? form.querySelector<HTMLElement>(`[name="${first}"]`)
@@ -507,13 +378,6 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
       checkPhone();
       if (!form.reportValidity()) return;
 
-      /*
-        Ghi lại số đã chuẩn hoá vào chính ô nhập trước khi đọc FormData.
-
-        Gửi đi bản "0912 345 678" hay "+84912345678" thì cùng một người có thể vào
-        CRM thành mấy lead khác nhau, và tìm theo số cũng không ra. Ghi ngược lên ô
-        nhập chứ không chỉ sửa payload để khách thấy đúng số sắp gửi đi.
-      */
       if (phone) phone.value = normalizePhone(phone.value);
 
       const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
@@ -521,10 +385,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         string,
         string
       >;
-      // Kênh khách vào site (Facebook/Zalo/website) — bắt từ lúc đáp trang, xem
-      // lib/attribution.ts. Không phải field khách nhập nên nằm ngoài FormData.
       const source = leadSource();
-      // Đọc trước khi `showSuccess` gọi `form.reset()` — sau reset thì select về mặc định.
       const picked = pickedClass();
       if (error) error.hidden = true;
       clearFieldErrors();
@@ -541,16 +402,8 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
           email: data.email,
           course: data.course,
           level: data.level,
-          /*
-            Mã lớp ghép vào trước phần khách tự viết, và đây là chỗ DUY NHẤT chở nó: lead
-            dedupe theo số điện thoại nên không có cột lớp, và không còn bảng danh sách
-            chờ nào để ghi riêng.
-
-            `data.scheduleItemId` không có mặt ở đây: payload dựng từng field nên ô chọn
-            lớp không lọt vào body của `/leads`, nơi không biết field đó là gì.
-          */
           note: [
-            picked?.code ? `Đăng ký giữ chỗ lớp ${picked.code}.` : "",
+            picked?.code ? `Đăng ký lớp ${picked.code}.` : "",
             data.note,
           ]
             .filter(Boolean)
@@ -569,14 +422,9 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
           return;
         }
 
-        /*
-          Một request là hết: lớp khách chọn đã nằm trong ghi chú của chính lead vừa ghi.
-          Trước đây còn một request thứ hai ghi vào danh sách chờ của lớp đó, và cả một
-          đoạn xử lý "lead vào được nhưng dòng giữ chỗ trượt" — không còn gì để lệch nữa.
-        */
         showSuccess(
           picked
-            ? `Trung tâm đã nhận yêu cầu giữ chỗ ${picked.name || "lớp bạn chọn"} và sẽ liên hệ để xác nhận chỗ, báo học phí và hướng dẫn nhập học.`
+            ? `Trung tâm đã nhận đăng ký ${picked.name || "lớp bạn chọn"} và sẽ liên hệ để xác nhận, báo học phí và hướng dẫn nhập học.`
             : undefined,
         );
         return;
@@ -588,9 +436,7 @@ const label = "mb-1.5 block text-sm font-semibold text-foreground";
         data.email ? `Email: ${data.email}` : null,
         `Khoá học quan tâm: ${data.course}`,
         `Trình độ hiện tại: ${data.level}`,
-        // Không có API thì mail là tất cả những gì tới được trung tâm — lớp khách chọn
-        // phải nằm trong đó, không thì giáo vụ đọc mail xong vẫn phải hỏi lại.
-        picked ? `Lớp muốn giữ chỗ: ${picked.code} — ${picked.name}` : null,
+        picked ? `Lớp muốn đăng ký: ${picked.code} — ${picked.name}` : null,
         data.note ? `Ghi chú: ${data.note}` : null,
         `Nguồn: ${SOURCE_LABELS[source]}`,
       ]

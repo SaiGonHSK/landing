@@ -3,17 +3,12 @@ import CatalogDetail from "@/components/CatalogDetail.astro";
 import { examPrepResources } from "@/data/catalog";
 import { keywordsFor } from "@/lib/seo";
 
-// Tra cứu theo params — xem ghi chú ở src/pages/courses/[slug].astro.
 const item = examPrepResources.find((entry) => entry.slug === Astro.params.slug);
 if (!item) return new Response(null, { status: 404 });
 
 const level = item.slug.replace("hsk-", "");
 
 const related = [
-  // Liên kết sang trang lớp học cùng cấp: người đang tra tài liệu là đối tượng gần
-  // nhất với nhu cầu đăng ký lớp, và liên kết này nói rõ với Google hai trang phục
-  // vụ hai mục đích khác nhau. Trung tâm chỉ mở lớp luyện thi tới HSK5, cấp HSK6
-  // trỏ về khoá học theo cấp để không dẫn sang trang không tồn tại.
   Number(level) <= 5
     ? {
         label: `Lớp luyện thi HSK${level} có giảng viên`,

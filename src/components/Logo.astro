@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import logoMark from "@/assets/logo-mark.webp";
 import { site } from "@/data/site";
+import { currentSeason } from "@/data/giftPromos";
 
 interface Props {
 
@@ -11,6 +12,8 @@ interface Props {
   class?: string;
 }
 const { markOnly = false, onDark = false, class: className = "" } = Astro.props;
+
+const season = currentSeason();
 ---
 
 <a
@@ -21,6 +24,42 @@ const { markOnly = false, onDark = false, class: className = "" } = Astro.props;
     className,
   ]}
 >
+  <span class="relative shrink-0">
+  {
+    season === "christmas" && (
+      <svg
+        class="pointer-events-none absolute top-[-22.92%] left-[-10.42%] z-10 h-[133.33%] w-[133.33%] drop-shadow-sm"
+        viewBox="-20 -44 256 256"
+        aria-hidden="true"
+      >
+        <path d="M55 9C62-30 120-48 168-38C198-31 216-8 218 24L204 28C200 8 188-6 172-10C184 10 190 40 189 71A96 96 0 0 0 55 9Z" fill="#d62839" />
+        <path d="M172-10C184 10 190 40 189 71L180 66C181 38 176 14 166-4Z" fill="#a51d2d" opacity=".55" />
+        <path d="M168-38C198-31 216-8 218 24L204 28C200 8 186-12 168-38Z" fill="#a51d2d" opacity=".35" />
+        <path d="M52 14A93 93 0 0 1 191 76" fill="none" stroke="#e7e0d6" stroke-width="24" stroke-linecap="round" transform="translate(1 3)" />
+        <path d="M52 14A93 93 0 0 1 191 76" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" />
+        <circle cx="212" cy="32" r="17" fill="#e7e0d6" />
+        <circle cx="210" cy="30" r="16" fill="#fff" />
+        <g transform="translate(14 170) rotate(-20)">
+          <path d="M0 0C-6-14-22-18-32-10c6 2 6 9 12 9-2 6 4 10 20 1z" fill="#1e7d4c" stroke="#fff" stroke-width="2" />
+          <path d="M0 0C14-6 28 0 32 12c-6-1-9 5-14 2-1 6-8 7-18-14z" fill="#1e7d4c" stroke="#fff" stroke-width="2" />
+          <circle cx="-2" cy="4" r="6" fill="#e8334a" stroke="#fff" stroke-width="1.5" />
+          <circle cx="8" cy="6" r="5.5" fill="#e8334a" stroke="#fff" stroke-width="1.5" />
+          <circle cx="2" cy="-6" r="5" fill="#e8334a" stroke="#fff" stroke-width="1.5" />
+        </g>
+      </svg>
+    )
+  }
+  {
+    season === "luna" && (
+      <svg
+        class="pointer-events-none absolute top-[-22.92%] left-[-10.42%] z-10 h-[133.33%] w-[133.33%] drop-shadow-sm"
+        viewBox="-20 -44 256 256"
+        aria-hidden="true"
+      >
+        <Fragment set:html={`<path d="M25.1 17.2A106 106 0 0 1 199.7 74.0" fill="none" stroke="#6b3e1f" stroke-width="7" stroke-linecap="round"/><path d="M70.4 -6.9Q56.1 -14.9 35.9 -17.0" fill="none" stroke="#6b3e1f" stroke-width="4" stroke-linecap="round"/><path d="M139.1 -0.8Q156.9 -9.3 168.7 -11.8" fill="none" stroke="#6b3e1f" stroke-width="4" stroke-linecap="round"/><path d="M183.9 36.7Q186.7 18.0 183.5 5.4" fill="none" stroke="#6b3e1f" stroke-width="4" stroke-linecap="round"/><ellipse cx="51.2" cy="4.1" rx="8.2" ry="6.3" transform="rotate(10.0 51.2 4.1)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="43.3" cy="11.7" rx="8.2" ry="6.3" transform="rotate(82.0 43.3 11.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="33.6" cy="6.5" rx="8.2" ry="6.3" transform="rotate(154.0 33.6 6.5)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="35.5" cy="-4.2" rx="8.2" ry="6.3" transform="rotate(226.0 35.5 -4.2)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="46.4" cy="-5.7" rx="8.2" ry="6.3" transform="rotate(298.0 46.4 -5.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="42.0" cy="2.5" r="4.5" fill="#e2611b"/><circle cx="46.4" cy="7.0" r="1.4" fill="#b8410e"/><circle cx="39.0" cy="8.0" r="1.4" fill="#b8410e"/><circle cx="35.8" cy="1.4" r="1.4" fill="#b8410e"/><circle cx="41.1" cy="-3.8" r="1.4" fill="#b8410e"/><circle cx="47.7" cy="-0.3" r="1.4" fill="#b8410e"/><ellipse cx="110.3" cy="-17.7" rx="9.9" ry="7.6" transform="rotate(-20.0 110.3 -17.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="106.7" cy="-5.1" rx="9.9" ry="7.6" transform="rotate(52.0 106.7 -5.1)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="93.6" cy="-4.7" rx="9.9" ry="7.6" transform="rotate(124.0 93.6 -4.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="89.1" cy="-17.0" rx="9.9" ry="7.6" transform="rotate(196.0 89.1 -17.0)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="99.4" cy="-25.1" rx="9.9" ry="7.6" transform="rotate(268.0 99.4 -25.1)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="99.8" cy="-13.9" r="5.4" fill="#e2611b"/><circle cx="107.1" cy="-11.8" r="1.4" fill="#b8410e"/><circle cx="100.1" cy="-6.4" r="1.4" fill="#b8410e"/><circle cx="92.7" cy="-11.3" r="1.4" fill="#b8410e"/><circle cx="95.2" cy="-19.9" r="1.4" fill="#b8410e"/><circle cx="104.1" cy="-20.2" r="1.4" fill="#b8410e"/><ellipse cx="163.9" cy="6.0" rx="8.8" ry="6.7" transform="rotate(30.0 163.9 6.0)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="153.3" cy="10.7" rx="8.8" ry="6.7" transform="rotate(102.0 153.3 10.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="145.5" cy="2.1" rx="8.8" ry="6.7" transform="rotate(174.0 145.5 2.1)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="151.3" cy="-8.0" rx="8.8" ry="6.7" transform="rotate(246.0 151.3 -8.0)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="162.7" cy="-5.6" rx="8.8" ry="6.7" transform="rotate(318.0 162.7 -5.6)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="155.4" cy="1.0" r="4.8" fill="#e2611b"/><circle cx="158.1" cy="7.2" r="1.4" fill="#b8410e"/><circle cx="150.4" cy="5.5" r="1.4" fill="#b8410e"/><circle cx="149.5" cy="-2.3" r="1.4" fill="#b8410e"/><circle cx="156.7" cy="-5.6" r="1.4" fill="#b8410e"/><circle cx="162.0" cy="0.3" r="1.4" fill="#b8410e"/><ellipse cx="200.0" cy="46.1" rx="7.7" ry="5.9" transform="rotate(5.0 200.0 46.1)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="193.3" cy="53.8" rx="7.7" ry="5.9" transform="rotate(77.0 193.3 53.8)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="183.9" cy="49.8" rx="7.7" ry="5.9" transform="rotate(149.0 183.9 49.8)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="184.8" cy="39.6" rx="7.7" ry="5.9" transform="rotate(221.0 184.8 39.6)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="194.7" cy="37.3" rx="7.7" ry="5.9" transform="rotate(293.0 194.7 37.3)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="191.4" cy="45.3" r="4.2" fill="#e2611b"/><circle cx="195.8" cy="49.2" r="1.4" fill="#b8410e"/><circle cx="189.1" cy="50.7" r="1.4" fill="#b8410e"/><circle cx="185.5" cy="44.8" r="1.4" fill="#b8410e"/><circle cx="190.0" cy="39.6" r="1.4" fill="#b8410e"/><circle cx="196.4" cy="42.3" r="1.4" fill="#b8410e"/><ellipse cx="167.2" cy="-16.6" rx="5.5" ry="4.2" transform="rotate(0.0 167.2 -16.6)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="162.9" cy="-10.7" rx="5.5" ry="4.2" transform="rotate(72.0 162.9 -10.7)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="156.0" cy="-12.9" rx="5.5" ry="4.2" transform="rotate(144.0 156.0 -12.9)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="156.0" cy="-20.2" rx="5.5" ry="4.2" transform="rotate(216.0 156.0 -20.2)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="162.9" cy="-22.5" rx="5.5" ry="4.2" transform="rotate(288.0 162.9 -22.5)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="161.0" cy="-16.6" r="3.0" fill="#e2611b"/><circle cx="164.4" cy="-14.1" r="1.4" fill="#b8410e"/><circle cx="159.7" cy="-12.6" r="1.4" fill="#b8410e"/><circle cx="156.8" cy="-16.6" r="1.4" fill="#b8410e"/><circle cx="159.7" cy="-20.6" r="1.4" fill="#b8410e"/><circle cx="164.4" cy="-19.1" r="1.4" fill="#b8410e"/><ellipse cx="57.2" cy="-18.8" rx="5.0" ry="3.8" transform="rotate(40.0 57.2 -18.8)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="50.8" cy="-17.2" rx="5.0" ry="3.8" transform="rotate(112.0 50.8 -17.2)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="47.3" cy="-22.8" rx="5.0" ry="3.8" transform="rotate(184.0 47.3 -22.8)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="51.6" cy="-27.8" rx="5.0" ry="3.8" transform="rotate(256.0 51.6 -27.8)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><ellipse cx="57.6" cy="-25.4" rx="5.0" ry="3.8" transform="rotate(328.0 57.6 -25.4)" fill="#ffcc2e" stroke="#e8a317" stroke-width="1.2"/><circle cx="52.9" cy="-22.4" r="2.7" fill="#e2611b"/><circle cx="53.8" cy="-18.7" r="1.4" fill="#b8410e"/><circle cx="49.7" cy="-20.4" r="1.4" fill="#b8410e"/><circle cx="50.0" cy="-24.8" r="1.4" fill="#b8410e"/><circle cx="54.3" cy="-25.9" r="1.4" fill="#b8410e"/><circle cx="56.7" cy="-22.1" r="1.4" fill="#b8410e"/><circle cx="78.7" cy="-26.8" r="4.5" fill="#ffcc2e" stroke="#e8a317" stroke-width="1"/><circle cx="189.5" cy="17.6" r="4.5" fill="#ffcc2e" stroke="#e8a317" stroke-width="1"/><circle cx="16.3" cy="29.2" r="4.5" fill="#ffcc2e" stroke="#e8a317" stroke-width="1"/><circle cx="206.9" cy="55.6" r="4.5" fill="#ffcc2e" stroke="#e8a317" stroke-width="1"/><path d="M198.9 70.4L206.9 100.4" stroke="#e8a317" stroke-width="1.6"/><rect x="197.9" y="98.4" width="18" height="5" rx="1.5" fill="#f2b632"/><ellipse cx="206.9" cy="122.4" rx="20" ry="20" fill="#e3262f" stroke="#fff" stroke-width="1.6"/><path d="M206.9 102.4C197.9 112.4 197.9 132.4 206.9 142.4M206.9 102.4C215.9 112.4 215.9 132.4 206.9 142.4" fill="none" stroke="#a51d2d" stroke-width="1.4"/><text x="206.9" y="128.4" text-anchor="middle" font-size="17" font-weight="700" fill="#ffd76a" >福</text><rect x="197.9" y="141.4" width="18" height="5" rx="1.5" fill="#f2b632"/><path d="M202.9 146.4v14M206.9 146.4v17M210.9 146.4v14" stroke="#f2b632" stroke-width="1.8" stroke-linecap="round"/>`} />
+      </svg>
+    )
+  }
   <Image
     src={logoMark}
     alt={`Logo ${site.fullName}`}
@@ -34,14 +73,13 @@ const { markOnly = false, onDark = false, class: className = "" } = Astro.props;
       onDark && "rounded-full bg-white p-0.5",
     ]}
   />
+  </span>
 
   {
     !markOnly && (
       <span class="flex flex-col gap-0.5">
         <span
           class:list={[
-            /* `whitespace-nowrap`: tên luôn trên một hàng — ô logo trong header là cột
-               `flex-1 basis-0`, ở khổ vừa nó hẹp lại và tên bị bẻ thành hai dòng. */
             "text-sm font-extrabold whitespace-nowrap uppercase tracking-[0.08em] md:text-base",
             onDark ? "text-white" : "text-foreground",
           ]}

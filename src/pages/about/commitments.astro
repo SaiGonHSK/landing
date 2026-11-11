@@ -11,21 +11,8 @@ import { commitments, contact, site } from "@/data/site";
 import { ICONS } from "@/lib/icons";
 import { aboutPageSchema } from "@/lib/schema";
 
-/* Trang nhánh của mục Giới thiệu: khai `AboutPage` gộp vào node `WebPage` của Layout,
-   `mainEntity` trỏ về `#organization` để AI biết trang này nói *về* trung tâm. */
 const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site })];
 
-/*
-  Bốn dữ kiện của giấy phép, tách khỏi đoạn văn xuôi bên cạnh.
-
-  Cam kết đầu ra là lời hứa của trung tâm, giấy phép là thứ do bên ngoài cấp — nên nó
-  đứng thành khối riêng chứ không thành thẻ thứ tư trong lưới cam kết (lưới đó là
-  `md:grid-cols-3`, thêm một thẻ nữa là mồ côi một ô ở hàng dưới).
-
-  Không ghi số quyết định vì trung tâm chưa cung cấp: khai một con số sai trên trang
-  pháp lý còn tệ hơn là không khai. Thêm được thì bổ sung vào `site.license` trong
-  `content/site.json`, dòng dưới đây tự hiện.
-*/
 const licenseFacts = [
   { label: "Cơ quan cấp phép", value: site.license.authority },
   {
@@ -49,8 +36,6 @@ const licenseFacts = [
 >
   <Header />
   <main id="main" class="flex flex-col gap-16 lg:gap-24">
-    {/* Banner cùng kiểu trang Giới thiệu. Ba dữ kiện là ba cam kết của chính trang này,
-        rút gọn — chi tiết ở các thẻ ngay bên dưới. */}
     <AboutHero
       eyebrow="Cam kết của trung tâm"
       motion="circle"
@@ -125,14 +110,6 @@ const licenseFacts = [
           </dl>
         </div>
 
-        {/*
-          Lời mời tới xem lớp đặt SAU phần cam kết và giấy phép, không chen vào giữa.
-
-          Thứ tự của trang là chuỗi lập luận: trung tâm hứa gì → có đủ tư cách pháp lý
-          để hứa → mời tới kiểm chứng tận nơi. Đặt nút "Đăng ký học thử" ngay sau lưới
-          cam kết như trước là cắt ngang lập luận ở giữa, và người đọc gặp CTA trước khi
-          đọc xong phần chứng minh.
-        */}
         <div
           class="mt-6 flex flex-col items-center justify-between gap-6 rounded-3xl bg-brand-ink-50 p-8 md:flex-row md:p-10"
         >
@@ -148,7 +125,7 @@ const licenseFacts = [
           </div>
           <a
             href="/trial"
-            class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-red-600 px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+            class="group inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand-red-600 px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
           >
             Đăng ký học thử
             <span

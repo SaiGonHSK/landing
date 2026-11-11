@@ -1,0 +1,881 @@
+---
+import "@fontsource/fuzzy-bubbles/700.css";
+import "@fontsource/luckiest-guy/400.css";
+import { hero } from "@/data/site";
+import { ICONS } from "@/lib/icons";
+
+interface Props {
+  gated?: boolean;
+}
+const { gated = false } = Astro.props;
+
+let seed = 23;
+const rand = () => {
+  seed = (seed * 16807) % 2147483647;
+  return seed / 2147483647;
+};
+
+const SHAPES = {
+  stockingRed: `<path d="M14 14H44V52l2 8c2 14-8 24-22 22l-14-2c-10-2-10-16 0-18l4-2z" fill="#d93a3a"/><path d="M16 30h26M16 40h26" stroke="#f6e7d8" stroke-width="3" stroke-dasharray="4 3"/><path d="M8 66c-6 2-6 12 2 14l10 2c-4-6-6-12-12-16z" fill="#f6e7d8"/><rect x="10" y="3" width="38" height="15" rx="4" fill="#f6e7d8"/>`,
+  stockingGreen: `<path d="M14 14H44V52l2 8c2 14-8 24-22 22l-14-2c-10-2-10-16 0-18l4-2z" fill="#2f8f4e"/><circle cx="22" cy="30" r="2.4" fill="#f6e7d8"/><circle cx="34" cy="38" r="2.4" fill="#f6e7d8"/><circle cx="24" cy="48" r="2.4" fill="#f6e7d8"/><circle cx="36" cy="26" r="2" fill="#f6e7d8"/><path d="M8 66c-6 2-6 12 2 14l10 2c-4-6-6-12-12-16z" fill="#f6e7d8"/><rect x="10" y="3" width="38" height="15" rx="4" fill="#f6e7d8"/>`,
+  baubleRed: `<rect x="19" y="4" width="12" height="9" rx="2" fill="#e0a92e"/><circle cx="25" cy="35" r="20" fill="#d93a3a"/><path d="M6 31h38M6 39h38" stroke="#f6e7d8" stroke-width="3"/><path d="M15 35l5-5 5 5 5-5 5 5" fill="none" stroke="#f6e7d8" stroke-width="2"/><ellipse cx="17" cy="25" rx="5" ry="3" fill="#fff" opacity=".35"/>`,
+  baubleGreen: `<rect x="19" y="4" width="12" height="9" rx="2" fill="#e0a92e"/><circle cx="25" cy="35" r="20" fill="#2f8f4e"/><path d="M5 35h40" stroke="#f6e7d8" stroke-width="4"/><circle cx="16" cy="35" r="2" fill="#d93a3a"/><circle cx="25" cy="35" r="2" fill="#d93a3a"/><circle cx="34" cy="35" r="2" fill="#d93a3a"/><ellipse cx="17" cy="25" rx="5" ry="3" fill="#fff" opacity=".35"/>`,
+  baubleWhite: `<rect x="19" y="4" width="12" height="9" rx="2" fill="#e0a92e"/><circle cx="25" cy="35" r="20" fill="#f3eee4"/><path d="M6 29h38M5 35h40M6 41h38" stroke="#d9b45a" stroke-width="2"/><ellipse cx="17" cy="25" rx="5" ry="3" fill="#fff" opacity=".7"/>`,
+  cane: `<path d="M14 96V30a12 12 0 0 1 24 0v8" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/><path d="M14 96V30a12 12 0 0 1 24 0v8" fill="none" stroke="#d93a3a" stroke-width="9" stroke-dasharray="6 7"/>`,
+  ginger: `<circle cx="25" cy="13" r="9" fill="#d9984f"/><path d="M15 22h20l10 8-4 5-6-4v9l6 14h-9l-7-11-7 11H9l6-14v-9l-6 4-4-5z" fill="#d9984f"/><path d="M20 12h0M30 12h0" stroke="#4a2a12" stroke-width="3" stroke-linecap="round"/><path d="M21 17q4 3 8 0M8 31l3-2M42 31l-3-2M13 50l3 1M37 50l-3 1" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="25" cy="28" r="1.8" fill="#d93a3a"/><circle cx="25" cy="34" r="1.8" fill="#2f8f4e"/>`,
+  star: `<polygon points="20,3 25,14 37,15 28,23 31,35 20,29 9,35 12,23 3,15 15,14" fill="#e8b23a" stroke="#b9821c" stroke-width="1.2" stroke-linejoin="round"/>`,
+};
+
+const GARLAND = { w: 1000, h: 230, y0: 18, sag: 70 };
+const garlandY = (x: number) => {
+  const t = x / GARLAND.w;
+  return (1 - t) ** 2 * GARLAND.y0 + 2 * (1 - t) * t * GARLAND.sag + t ** 2 * GARLAND.y0;
+};
+const garlandItems = [
+  { x: 95, shape: "stockingGreen", w: 60, h: 90, drop: 6 },
+  { x: 205, shape: "baubleRed", w: 46, h: 55, drop: 14 },
+  { x: 305, shape: "stockingRed", w: 60, h: 90, drop: 4 },
+  { x: 420, shape: "baubleGreen", w: 46, h: 55, drop: 18 },
+  { x: 520, shape: "stockingGreen", w: 60, h: 90, drop: 2 },
+  { x: 620, shape: "cane", w: 26, h: 66, drop: 6 },
+  { x: 720, shape: "stockingRed", w: 60, h: 90, drop: 4 },
+  { x: 830, shape: "ginger", w: 46, h: 55, drop: 6 },
+  { x: 920, shape: "baubleRed", w: 40, h: 48, drop: 12 },
+].map((it) => ({ ...it, y: garlandY(it.x) }));
+
+const sideHangs = [
+  { left: 3.5, len: 110, shape: "baubleWhite", size: 46 },
+  { left: 7.5, len: 210, shape: "star", size: 30, desktop: true },
+  { left: 5, len: 260, shape: "baubleWhite", size: 56, desktop: true },
+  { left: 1.5, len: 300, shape: "star", size: 22, desktop: true },
+  { left: 96.5, len: 120, shape: "baubleWhite", size: 46 },
+  { left: 92.5, len: 210, shape: "star", size: 30, desktop: true },
+  { left: 95, len: 270, shape: "baubleWhite", size: 56, desktop: true },
+  { left: 98.5, len: 300, shape: "star", size: 22, desktop: true },
+];
+const sideBox: Record<string, string> = { baubleWhite: "0 0 50 60", star: "0 0 40 40" };
+
+const WIRE = Array.from({ length: 121 }, (_, i) => {
+  const x = 50 + i * 5;
+  const y = 40 + Math.sin(i / 7) * 14 + Math.sin(i / 3.1) * 4;
+  return `${i ? "L" : "M"}${x} ${y.toFixed(1)}`;
+}).join("");
+const BULB_COLORS = ["#e53935", "#f4c430", "#7bc043", "#f4c430", "#e53935", "#7bc043"];
+const bulbs = Array.from({ length: 13 }, (_, k) => {
+  const i = 5 + k * 9;
+  const x = 50 + i * 5;
+  const y = 40 + Math.sin(i / 7) * 14 + Math.sin(i / 3.1) * 4;
+  return { x, y: y + 9, color: BULB_COLORS[k % BULB_COLORS.length], delay: Math.round(rand() * 1800) };
+});
+
+const tiers = Array.from({ length: 5 }, (_, k) => {
+  const top = 34 + k * 58;
+  const bottom = top + 112;
+  const half = 44 + k * 24;
+  const teeth = 6 + k * 2;
+  const zig: string[] = [];
+  for (let j = 0; j <= teeth; j++) {
+    const x = 150 + half - (2 * half * j) / teeth;
+    zig.push(`${x.toFixed(1)} ${(bottom - (j % 2 ? 10 : 0)).toFixed(1)}`);
+  }
+  const balls = Array.from({ length: 3 + k }, () => {
+    const v = 0.45 + rand() * 0.45;
+    const y = top + (bottom - top) * v;
+    const x = 150 + (rand() * 2 - 1) * half * v * 0.8;
+    return { x, y, r: 5 + rand() * 3, delay: Math.round(rand() * 2000) };
+  });
+  return {
+    path: `M150 ${top}L${zig.join("L")}Z`,
+    snow: `M${zig.join("L")}`,
+    fill: k % 2 ? "#3a8a57" : "#2f744a",
+    balls,
+  };
+}).reverse();
+
+const frond = (x0: number, y0: number, len: number, angle: number) => {
+  const a = (angle * Math.PI) / 180;
+  const x1 = x0 + Math.cos(a) * len;
+  const y1 = y0 + Math.sin(a) * len;
+  const needles: string[] = [];
+  for (let d = 10; d < len; d += 7) {
+    const px = x0 + Math.cos(a) * d;
+    const py = y0 + Math.sin(a) * d;
+    const n = 18 * (1 - d / len) + 6;
+    for (const s of [-1, 1]) {
+      const na = a + s * 0.9;
+      needles.push(`M${px.toFixed(1)} ${py.toFixed(1)}l${(Math.cos(na) * n).toFixed(1)} ${(Math.sin(na) * n).toFixed(1)}`);
+    }
+  }
+  return `M${x0} ${y0}L${x1.toFixed(1)} ${y1.toFixed(1)}${needles.join("")}`;
+};
+const fronds = [
+  frond(0, 90, 170, 18),
+  frond(0, 230, 200, -8),
+  frond(0, 360, 180, 12),
+  frond(0, 500, 210, -14),
+  frond(0, 600, 160, -30),
+].join("");
+
+
+type Letter = { ch: string; skin: string; snow?: boolean; deco?: string };
+const MERRY: Letter[] = [
+  { ch: "M", skin: "red", snow: true, deco: "hat" },
+  { ch: "E", skin: "green", snow: true, deco: "lights" },
+  { ch: "R", skin: "cream", deco: "antlers" },
+  { ch: "R", skin: "green", snow: true, deco: "flake" },
+  { ch: "Y", skin: "cane" },
+];
+const CHRISTMAS: Letter[] = [
+  { ch: "C", skin: "ginger", deco: "holly" },
+  { ch: "H", skin: "cream", snow: true, deco: "tree" },
+  { ch: "R", skin: "dots", snow: true },
+  { ch: "I", skin: "candle", deco: "flame" },
+  { ch: "S", skin: "green", snow: true, deco: "flakes" },
+  { ch: "T", skin: "gift", deco: "bow" },
+  { ch: "M", skin: "cream", snow: true },
+  { ch: "A", skin: "green", snow: true, deco: "tree" },
+  { ch: "S", skin: "ginger" },
+];
+
+const flakePath = Array.from({ length: 6 }, (_, k) => {
+  const a = (k * Math.PI) / 3;
+  const p = (r: number, da = 0) => `${(Math.cos(a + da) * r).toFixed(1)} ${(Math.sin(a + da) * r).toFixed(1)}`;
+  const b = (r: number, s: number) => {
+    const bx = Math.cos(a) * r;
+    const by = Math.sin(a) * r;
+    const ba = a + s * 0.75;
+    return `M${bx.toFixed(1)} ${by.toFixed(1)}l${(Math.cos(ba) * 14).toFixed(1)} ${(Math.sin(ba) * 14).toFixed(1)}`;
+  };
+  return `M0 0L${p(44)}${b(26, 1)}${b(26, -1)}`;
+}).join("");
+
+const DECO: Record<string, { box: string; svg: string }> = {
+  snow: {
+    box: "0 0 100 44",
+    svg: `<path d="M3 26C0 14 10 6 22 8c6-7 20-8 28-2 9-6 25-5 33 2 10-1 17 6 15 15-1 6-6 8-10 6-1 9-9 12-14 6-3 9-13 10-16 2-4 6-12 6-14-1-5 5-13 4-15-3-5 3-10 1-10-4-6 3-12 1-11-5-4 0-7-2-8-4z" fill="#fff"/><path d="M14 18c10-6 26-8 40-5M60 12c10 0 20 2 28 7" fill="none" stroke="#dbe9f5" stroke-width="3" stroke-linecap="round"/>`,
+  },
+  hat: {
+    box: "0 0 120 100",
+    svg: `<path d="M18 70C24 34 56 6 94 13c15 3 21 16 15 30-8-8-20-6-24 4l-4 25z" fill="#e53935"/><path d="M86 18c12 3 18 12 16 22-6-5-12-6-17-3z" fill="#b71c1c" opacity=".55"/><path d="M30 60c10-22 30-38 52-42" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>${[14, 26, 38, 50, 62, 74, 86].map((x, k) => `<circle cx="${x}" cy="${74 + (k % 2) * 3}" r="10" fill="#fff" stroke="#e2dccf" stroke-width="1.2"/>`).join("")}<circle cx="110" cy="46" r="11" fill="#fff" stroke="#e2dccf" stroke-width="1.2"/>`,
+  },
+  lights: {
+    box: "0 0 100 100",
+    svg: `<path d="M4 34C26 52 58 20 96 40M4 72C30 88 62 58 96 78" fill="none" stroke="#2b3a1f" stroke-width="2.5"/>${[[16, 42], [38, 40], [60, 32], [82, 36], [16, 79], [40, 77], [62, 70], [84, 75]].map(([x, y], k) => `<g class="xc-twinkle" style="animation-delay:${k * 260}ms"><rect x="${x - 3}" y="${y - 2}" width="6" height="5" rx="1" fill="#6b6b5a"/><ellipse cx="${x}" cy="${y + 8}" rx="5.5" ry="7.5" fill="#ffd54a"/><ellipse cx="${x - 2}" cy="${y + 6}" rx="1.6" ry="2.6" fill="#fff" opacity=".7"/></g>`).join("")}`,
+  },
+  antlers: {
+    box: "0 0 120 64",
+    svg: `<g fill="none" stroke="#a0662f" stroke-width="8" stroke-linecap="round"><path d="M38 62C34 42 26 30 12 22M28 36C18 36 10 32 6 24M22 28C22 18 18 10 12 4"/><path d="M82 62C86 42 94 30 108 22M92 36C102 36 110 32 114 24M98 28C98 18 102 10 108 4"/></g>`,
+  },
+  flake: {
+    box: "-50 -50 100 100",
+    svg: `<path d="${flakePath}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>`,
+  },
+  flakes: {
+    box: "0 0 100 100",
+    svg: `<g transform="translate(30 30) scale(.3)"><path d="${flakePath}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/></g><g transform="translate(70 72) scale(.26)"><path d="${flakePath}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/></g>`,
+  },
+  holly: {
+    box: "0 0 120 120",
+    svg: `<path d="M60 64C42 58 22 44 14 22c10 2 14-6 22-2 0-10 10-10 14-4 4-8 12-4 12 4 6-4 12 2 8 10 8 4 4 14-2 14 4 8-2 14-8 12z" fill="#3aa635"/><path d="M60 64C40 46 30 36 20 26" stroke="#1f6d24" stroke-width="2" fill="none"/><path d="M60 64c16-14 34-20 52-16-6 8 0 14-6 18 6 6 2 14-6 12 2 8-6 12-12 6-2 8-12 8-14 0-6 4-12-2-10-8-6-2-6-10 0-10z" fill="#2f8f2b"/><circle cx="56" cy="70" r="9" fill="#e53935"/><circle cx="70" cy="76" r="8" fill="#d32f2f"/><circle cx="58" cy="86" r="8" fill="#e53935"/><circle cx="53" cy="67" r="2.5" fill="#fff" opacity=".6"/>`,
+  },
+  tree: {
+    box: "0 0 60 80",
+    svg: `<rect x="26" y="66" width="8" height="12" fill="#7a4a24"/><path d="M30 8 52 40H42L56 66H4L18 40H8z" fill="#1f7a2a"/><path d="M30 8 52 40H42L56 66H4L18 40H8z" fill="none" stroke="#e9f6ea" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="50" r="3" fill="#e53935"/><circle cx="36" cy="58" r="3" fill="#ffd54a"/><circle cx="32" cy="32" r="2.6" fill="#ffd54a"/><polygon points="30,0 33,7 40,7 34,11 36,18 30,14 24,18 26,11 20,7 27,7" fill="#ffd54a"/>`,
+  },
+  flame: {
+    box: "0 0 40 64",
+    svg: `<path d="M20 2C30 18 36 28 36 40a16 16 0 0 1-32 0C4 28 12 20 20 2z" fill="#ff9f1c"/><path d="M20 22c6 9 9 14 9 20a9 9 0 0 1-18 0c0-6 4-11 9-20z" fill="#ffe066"/><rect x="18.5" y="52" width="3" height="12" fill="#3b2a1a"/>`,
+  },
+  bow: {
+    box: "0 0 120 60",
+    svg: `<path d="M60 40C44 10 10 6 14 30c2 14 30 14 46 10zM60 40c16-30 50-34 46-10-2 14-30 14-46 10z" fill="#f6c443" stroke="#c9922a" stroke-width="3"/><path d="M56 42l-14 18M64 42l14 18" stroke="#f6c443" stroke-width="8" stroke-linecap="round"/><circle cx="60" cy="40" r="9" fill="#e9b232" stroke="#c9922a" stroke-width="3"/>`,
+  },
+};
+
+const SNOWMAN = `<path d="M84 12l10-10M98 16l12-2M92 4l2-4" stroke="#ffd54a" stroke-width="4" stroke-linecap="round"/><g fill="none" stroke="#6b3f1f" stroke-width="4" stroke-linecap="round"><path d="M28 100 6 82M12 86l-8 2M14 88l-2-8"/><path d="M92 100l20-22M106 84l8 0M104 86l2-8"/></g><circle cx="60" cy="130" r="38" fill="#fff"/><circle cx="60" cy="72" r="28" fill="#fff"/><path d="M28 140a38 38 0 0 0 64 8" fill="none" stroke="#d6e4f0" stroke-width="6"/><circle cx="60" cy="118" r="4" fill="#222"/><circle cx="60" cy="136" r="4" fill="#222"/><circle cx="50" cy="66" r="3.6" fill="#222"/><circle cx="70" cy="66" r="3.6" fill="#222"/><path d="M60 74l22 6-22 4z" fill="#ff8a1f"/><path d="M48 86q12 7 24 0" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round"/><path d="M34 94q26 12 52 0v10q-26 12-52 0z" fill="#e53935"/><path d="M70 100l6 30h-12z" fill="#e53935"/><path d="M42 98v8M54 101v8M66 101v8M78 98v8" stroke="#fff" stroke-width="3"/><rect x="36" y="44" width="48" height="6" rx="2" fill="#1c1c1c"/><rect x="44" y="14" width="32" height="32" rx="3" fill="#1c1c1c"/><rect x="44" y="36" width="32" height="6" fill="#e53935"/>`;
+
+const sparkles = [
+  { left: 6, top: 30, s: 18 },
+  { left: 92, top: 26, s: 22 },
+  { left: 86, top: 52, s: 14 },
+  { left: 12, top: 60, s: 14 },
+  { left: 72, top: 8, s: 12 },
+  { left: 30, top: 6, s: 10 },
+];
+---
+
+<section id={gated ? "hero-christmas" : "hero"} class="xc-hero relative isolate overflow-hidden" data-gated={gated ? "true" : undefined}>
+  <script is:inline>
+    (function (hero) {
+      if (!hero) return;
+      var head = document.getElementById("site-header");
+      var overlay = head && head.dataset.glass === "true";
+      if (head) {
+        hero.style.setProperty("--xc-head", overlay ? "0px" : head.offsetHeight + "px");
+        hero.style.setProperty("--xc-top", overlay ? head.offsetHeight + "px" : "0px");
+        if (overlay) document.documentElement.style.setProperty("--header-overlap", head.offsetHeight + "px");
+      }
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      hero.dataset.intro = "pending";
+      if (hero.dataset.gated) return;
+      setTimeout(function () {
+        if (!hero.dataset.introJs) delete hero.dataset.intro;
+      }, 3000);
+    })(document.currentScript && document.currentScript.parentElement);
+  </script>
+
+  {
+    !gated && (
+      <>
+        <h1 class="sr-only">{hero.titleLine1} {hero.titleLine2}</h1>
+        <p class="sr-only" data-speakable>
+          Trung tâm Hoa văn SaigonHSK — dạy tiếng Trung và luyện thi HSK tại TP.HCM (Sài Gòn), cam kết 100% đầu ra.
+        </p>
+      </>
+    )
+  }
+
+  <canvas data-xc-snow class="xc-snow" aria-hidden="true"></canvas>
+
+  <svg class="xc-fronds xc-fronds--left" viewBox="0 0 220 640" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
+    <path d={fronds} />
+  </svg>
+  <svg class="xc-fronds xc-fronds--right" viewBox="0 0 220 640" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
+    <path d={fronds} />
+  </svg>
+
+  <svg class="xc-garland xc-anim" viewBox={`0 0 ${GARLAND.w} ${GARLAND.h}`} aria-hidden="true">
+    <path d={`M0 ${GARLAND.y0}Q${GARLAND.w / 2} ${GARLAND.sag * 2 - GARLAND.y0} ${GARLAND.w} ${GARLAND.y0}`} class="xc-cord" />
+    {
+      garlandItems.map((it, i) => (
+        <g class="xc-swing" style={`transform-origin:${it.x}px ${it.y.toFixed(1)}px;animation-delay:${(i * 410) % 2400}ms`}>
+          <path d={`M${it.x} ${it.y.toFixed(1)}v${it.drop}`} class="xc-thread" />
+          <rect x={it.x - 3} y={it.y - 3} width="6" height="8" rx="1.5" fill="#c9a24a" />
+          <svg
+            x={it.x - it.w / 2}
+            y={it.y + it.drop}
+            width={it.w}
+            height={it.h}
+            viewBox={it.shape.startsWith("stocking") ? "0 0 60 90" : it.shape === "cane" ? "0 0 40 100" : "0 0 50 60"}
+            set:html={SHAPES[it.shape as keyof typeof SHAPES]}
+          />
+        </g>
+      ))
+    }
+  </svg>
+
+  {
+    sideHangs.map((h, i) => (
+      <div
+        class:list={["xc-hang xc-anim", h.desktop && "hidden md:block"]}
+        style={`left:${h.left}%;--len:${h.len}px;--size:${h.size}px;animation-delay:${(i * 530) % 2600}ms`}
+        aria-hidden="true"
+      >
+        <svg viewBox={sideBox[h.shape]} set:html={SHAPES[h.shape as keyof typeof SHAPES]} />
+      </div>
+    ))
+  }
+
+  <svg class="xc-tree xc-anim" viewBox="0 0 300 430" aria-hidden="true">
+    <rect x="137" y="372" width="26" height="58" fill="#6b4226" />
+    {
+      tiers.map((t) => (
+        <g>
+          <path d={t.path} fill={t.fill} />
+          <path d={t.snow} class="xc-tree-snow" />
+          {t.balls.map((b) => (
+            <circle cx={b.x.toFixed(1)} cy={b.y.toFixed(1)} r={b.r.toFixed(1)} class="xc-tree-ball xc-twinkle" style={`animation-delay:${b.delay}ms`} />
+          ))}
+        </g>
+      ))
+    }
+    <polygon points="150,4 157,20 174,21 161,32 165,49 150,40 135,49 139,32 126,21 143,20" fill="#f4c430" stroke="#c99a1a" stroke-width="1.5" />
+  </svg>
+
+  <svg class="xc-gifts xc-anim" viewBox="0 0 280 430" aria-hidden="true">
+    <defs>
+      <pattern id="xc-stripe-red" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(90)">
+        <rect width="14" height="14" fill="#d93a3a" /><rect width="6" height="14" fill="#f07070" />
+      </pattern>
+      <pattern id="xc-stripe-blue" width="16" height="16" patternUnits="userSpaceOnUse">
+        <rect width="16" height="16" fill="#2f6fb5" /><rect width="16" height="6" fill="#e05252" />
+      </pattern>
+      <pattern id="xc-dots" width="18" height="18" patternUnits="userSpaceOnUse">
+        <rect width="18" height="18" fill="#f3d9b5" /><circle cx="9" cy="9" r="2.4" fill="#e7a7a7" />
+      </pattern>
+      <pattern id="xc-stars" width="34" height="34" patternUnits="userSpaceOnUse">
+        <rect width="34" height="34" fill="#4aa3df" />
+        <polygon points="17,6 20,13 27,13 21,18 24,25 17,21 10,25 13,18 7,13 14,13" fill="#2f78b8" />
+      </pattern>
+    </defs>
+    <g class="xc-gift">
+      <rect x="0" y="360" width="70" height="70" fill="url(#xc-dots)" />
+      <rect x="0" y="352" width="70" height="12" fill="#f0c99a" />
+      <path d="M31 352v78" stroke="#d93a3a" stroke-width="8" />
+      <path d="M35 352c-10-14-24-10-18 0zM35 352c10-14 24-10 18 0z" fill="#d93a3a" />
+    </g>
+    <g class="xc-gift">
+      <rect x="76" y="372" width="64" height="58" fill="#2e9e8f" />
+      <path d="M86 410l8-14 8 14zM112 404l8-14 8 14z" fill="#1f7a6d" />
+      <path d="M108 372v58M76 400h64" stroke="#f4c430" stroke-width="6" />
+      <path d="M108 372c-8-12-20-8-14 0zM108 372c8-12 20-8 14 0z" fill="none" stroke="#f4c430" stroke-width="4" />
+    </g>
+    <g class="xc-gift">
+      <rect x="150" y="345" width="125" height="85" fill="url(#xc-stripe-blue)" />
+    </g>
+    <g class="xc-gift">
+      <rect x="156" y="255" width="118" height="90" fill="#f4c430" />
+      <path d="M156 285h118" stroke="#3a7bd5" stroke-width="7" />
+      <path d="M232 255v90" stroke="#3a7bd5" stroke-width="7" />
+    </g>
+    <g class="xc-gift">
+      <rect x="150" y="165" width="124" height="90" fill="url(#xc-stripe-red)" />
+      <path d="M150 205h124M212 165v90" stroke="#2f8f4e" stroke-width="9" />
+    </g>
+    <g class="xc-gift">
+      <rect x="154" y="70" width="116" height="95" fill="url(#xc-stars)" />
+      <path d="M154 112h116M212 70v95" stroke="#d93a3a" stroke-width="6" />
+      <path d="M212 70c-14-22-38-16-26 0zM212 70c14-22 38-16 26 0z" fill="none" stroke="#d93a3a" stroke-width="5" />
+      <path d="M212 70l-10 18M212 70l10 18" stroke="#d93a3a" stroke-width="4" />
+    </g>
+  </svg>
+
+  <div class="xc-stage">
+    <div class="xc-lockup">
+      {sparkles.map((sp) => (
+        <svg class="xc-sparkle xc-twinkle" viewBox="0 0 20 20" style={`left:${sp.left}%;top:${sp.top}%;width:${sp.s}px`} aria-hidden="true">
+          <path d="M10 0C11 7 13 9 20 10 13 11 11 13 10 20 9 13 7 11 0 10 7 9 9 7 10 0Z" />
+        </svg>
+      ))}
+
+      <p class="xc-words" aria-hidden="true">
+        {[MERRY, CHRISTMAS].map((row, r) => (
+          <span class:list={["xc-row", r ? "xc-christmas" : "xc-merry"]}>
+            {row.map((l) => (
+              <span class="xc-letter">
+                <span class="xc-glyph" data-skin={l.skin}>{l.ch}</span>
+                {l.snow && <svg class="xc-snowcap" viewBox={DECO.snow.box} preserveAspectRatio="none" set:html={DECO.snow.svg} />}
+                {l.deco && (
+                  <svg class:list={["xc-deco", `xc-deco--${l.deco}`]} viewBox={DECO[l.deco].box} set:html={DECO[l.deco].svg} />
+                )}
+              </span>
+            ))}
+            {r === 0 && <svg class="xc-snowman" viewBox="0 0 120 170" set:html={SNOWMAN} />}
+          </span>
+        ))}
+      </p>
+
+      <svg class="xc-lights" viewBox="0 0 700 90" aria-hidden="true">
+        <svg x="4" y="2" width="34" height="86" viewBox="0 0 40 100" set:html={SHAPES.cane} />
+        <svg x="662" y="2" width="34" height="86" viewBox="0 0 40 100">
+          <g transform="translate(40 0) scale(-1 1)" set:html={SHAPES.cane} />
+        </svg>
+        <path d={WIRE} class="xc-wire" />
+        {bulbs.map((b) => (
+          <g class="xc-bulb">
+            <rect x={b.x - 3} y={b.y - 9} width="6" height="5" rx="1" fill="#e8e1d2" />
+            <ellipse cx={b.x} cy={b.y} rx="6" ry="8" fill={b.color} class="xc-twinkle" style={`animation-delay:${b.delay}ms`} />
+          </g>
+        ))}
+      </svg>
+
+      <p class="xc-happy xc-fade">AND HAPPY NEW YEAR</p>
+    </div>
+
+    <div class="xc-fade mt-[clamp(14px,2.4vh,26px)] flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+      <a
+        href="/register"
+        class="inline-flex h-11 items-center justify-center rounded-lg bg-[#e53935] px-6 text-sm font-bold text-white transition-colors hover:bg-[#c62828] sm:h-12 sm:px-7 sm:text-[0.95rem]"
+      >
+        Đăng ký nhận ưu đãi
+      </a>
+      <a
+        href="/schedule"
+        class="group inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-white/50 px-6 text-sm font-bold text-white transition-colors hover:bg-white/10 sm:h-12 sm:px-7 sm:text-[0.95rem]"
+      >
+        Xem lịch khai giảng
+        <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-[1.1rem]" set:html={ICONS.arrow} />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .xc-hero {
+    height: calc(100svh - var(--xc-head, 68px));
+    min-height: 560px;
+    display: grid;
+    background: radial-gradient(ellipse at 50% 40%, #17473a 0%, #10352b 55%, #0b261f 100%);
+    color: #fff;
+  }
+
+  .xc-snow {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .xc-fronds {
+    position: absolute;
+    top: 50%;
+    z-index: 0;
+    height: 92%;
+    translate: 0 -50%;
+    fill: none;
+    stroke: #2a6a50;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .xc-fronds--left {
+    left: 0;
+  }
+  .xc-fronds--right {
+    right: 0;
+    scale: -1 1;
+  }
+
+  .xc-garland {
+    position: absolute;
+    top: var(--xc-top, 0px);
+    left: 50%;
+    z-index: 2;
+    width: min(72vw, 920px);
+    translate: -50% 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .xc-cord {
+    fill: none;
+    stroke: #c62828;
+    stroke-width: 3;
+  }
+  .xc-thread {
+    stroke: #c9a24a;
+    stroke-width: 1.5;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .xc-swing {
+      animation: xc-swing 3.2s ease-in-out infinite alternate;
+    }
+    .xc-hang {
+      animation: xc-hang 3.6s ease-in-out infinite alternate;
+    }
+    .xc-twinkle {
+      animation: xc-twinkle 2.2s ease-in-out infinite;
+    }
+  }
+  @keyframes xc-swing {
+    from {
+      rotate: -4deg;
+    }
+    to {
+      rotate: 4deg;
+    }
+  }
+  @keyframes xc-hang {
+    from {
+      rotate: -3deg;
+    }
+    to {
+      rotate: 3deg;
+    }
+  }
+  @keyframes xc-twinkle {
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  .xc-hang {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    width: var(--size);
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    padding-top: calc(var(--len) + var(--xc-top, 0px));
+    pointer-events: none;
+  }
+  .xc-hang::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1.5px;
+    height: calc(var(--len) + var(--xc-top, 0px) + 6px);
+    background: #d9b45a;
+  }
+  .xc-hang svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .xc-tree {
+    position: absolute;
+    left: max(2vw, 12px);
+    bottom: 0;
+    z-index: 2;
+    height: min(52%, 440px);
+    pointer-events: none;
+  }
+  .xc-tree-snow {
+    fill: none;
+    stroke: #eaf3ec;
+    stroke-width: 3;
+    stroke-linejoin: round;
+    opacity: 0.55;
+  }
+  .xc-tree-ball {
+    fill: #f6f1e6;
+  }
+  .xc-gifts {
+    position: absolute;
+    right: max(2vw, 12px);
+    bottom: 0;
+    z-index: 2;
+    height: min(56%, 460px);
+    pointer-events: none;
+  }
+  @media (max-width: 767px) {
+    .xc-tree {
+      height: 24%;
+      left: 0;
+    }
+    .xc-gifts {
+      height: 26%;
+      right: 0;
+    }
+    .xc-fronds {
+      opacity: 0.35;
+    }
+  }
+
+  .xc-stage {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: calc(clamp(90px, 16vh, 170px) + var(--xc-top, 0px)) 16px clamp(110px, 18vh, 170px);
+  }
+  .xc-lockup {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    --xc-size: clamp(3rem, min(10.5vw, 14vh), 9rem);
+  }
+  .xc-words {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.14em;
+    font-family: "Luckiest Guy", "Fuzzy Bubbles", var(--font-sans);
+    font-size: var(--xc-size);
+    line-height: 1;
+    text-align: center;
+  }
+  .xc-row {
+    position: relative;
+    display: flex;
+    gap: 0.08em;
+    white-space: nowrap;
+  }
+  .xc-christmas {
+    font-size: 0.86em;
+  }
+  .xc-letter {
+    position: relative;
+    display: inline-block;
+    padding-top: 0.12em;
+  }
+  .xc-glyph {
+    --gloss: radial-gradient(ellipse 60% 34% at 32% 24%, rgb(255 255 255 / 0.6), transparent 70%),
+      linear-gradient(to bottom, transparent 58%, rgb(0 0 0 / 0.16));
+    display: block;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0.05em 0 var(--edge)) drop-shadow(0 0.11em 0.08em rgb(0 0 0 / 0.38));
+  }
+  .xc-glyph[data-skin="red"] {
+    --edge: #8a1410;
+    background-image: var(--gloss), linear-gradient(#ff6b5e, #e23b2e 55%, #b71f1a);
+  }
+  .xc-glyph[data-skin="green"] {
+    --edge: #1a5414;
+    background-image: var(--gloss), linear-gradient(#72d152, #3b9b30 55%, #24701d);
+  }
+  .xc-glyph[data-skin="cream"] {
+    --edge: #b39c78;
+    background-image: var(--gloss), linear-gradient(#ffffff, #f8f1e4 55%, #e3d4ba);
+  }
+  .xc-glyph[data-skin="candle"] {
+    --edge: #b39c78;
+    background-image: var(--gloss), linear-gradient(90deg, #ecdcbe, #fffaf0 40%, #e6d3b2);
+  }
+  .xc-glyph[data-skin="cane"] {
+    --edge: #a51d1d;
+    background-image: var(--gloss), repeating-linear-gradient(-50deg, #fff 0 0.1em, #e53935 0.1em 0.2em);
+  }
+  .xc-glyph[data-skin="dots"] {
+    --edge: #8a1410;
+    background-image: var(--gloss), radial-gradient(circle, #fff 0 0.035em, transparent 0.042em),
+      linear-gradient(#ff6b5e, #e23b2e 55%, #b71f1a);
+    background-size: auto, auto, 0.2em 0.2em, auto;
+  }
+  .xc-glyph[data-skin="ginger"] {
+    --edge: #6e3c14;
+    background-image: var(--gloss), linear-gradient(#eaa968, #c57a35 55%, #9c5a22);
+    -webkit-text-stroke: 0.028em #fff3df;
+  }
+  .xc-glyph[data-skin="gift"] {
+    --edge: #8a1410;
+    background-image: var(--gloss), linear-gradient(90deg, transparent 42%, #f6c443 42% 58%, transparent 58%),
+      linear-gradient(transparent 30%, #f6c443 30% 40%, transparent 40%), linear-gradient(#ff6b5e, #e23b2e 55%, #b71f1a);
+  }
+  .xc-snowcap,
+  .xc-deco {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .xc-snowcap {
+    top: 0.04em;
+    left: 16%;
+    width: 68%;
+    height: 0.14em;
+    filter: drop-shadow(0 0.02em 0.02em rgb(0 0 0 / 0.2));
+  }
+  .xc-deco {
+    filter: drop-shadow(0 0.03em 0.03em rgb(0 0 0 / 0.3));
+  }
+  .xc-deco--hat {
+    left: -0.2em;
+    top: -0.24em;
+    width: 0.6em;
+    rotate: -16deg;
+  }
+  .xc-deco--lights {
+    left: 0;
+    top: 0.2em;
+    width: 100%;
+  }
+  .xc-deco--antlers {
+    left: 50%;
+    top: -0.2em;
+    width: 0.66em;
+    translate: -50% 0;
+  }
+  .xc-deco--flake {
+    left: 0.13em;
+    top: 0.3em;
+    width: 0.3em;
+  }
+  .xc-deco--flakes {
+    left: 0.06em;
+    top: 0.24em;
+    width: 0.6em;
+  }
+  .xc-deco--holly {
+    left: -0.06em;
+    top: 0.04em;
+    width: 0.46em;
+  }
+  .xc-deco--tree {
+    left: 50%;
+    bottom: 0.3em;
+    width: 0.24em;
+    translate: -50% 0;
+  }
+  .xc-deco--flame {
+    left: 50%;
+    top: -0.1em;
+    width: 0.17em;
+    translate: -50% 0;
+    transform-origin: 50% 90%;
+  }
+  .xc-deco--bow {
+    left: 50%;
+    top: 0;
+    width: 0.48em;
+    translate: -50% 0;
+  }
+  .xc-snowman {
+    position: absolute;
+    left: 100%;
+    bottom: -0.05em;
+    width: 0.78em;
+    margin-left: 0.14em;
+    filter: drop-shadow(0 0.04em 0.04em rgb(0 0 0 / 0.35));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .xc-deco--flame {
+      animation: xc-flicker 0.9s ease-in-out infinite alternate;
+    }
+    .xc-snowman {
+      transform-origin: 50% 100%;
+      animation: xc-hang 2.4s ease-in-out infinite alternate;
+    }
+  }
+  @keyframes xc-flicker {
+    from {
+      scale: 1 1;
+    }
+    to {
+      scale: 0.9 1.08;
+    }
+  }
+  .xc-lights {
+    width: calc(var(--xc-size) * 4.6);
+    max-width: 94vw;
+    margin-top: calc(var(--xc-size) * 0.08);
+    overflow: visible;
+  }
+  .xc-wire {
+    fill: none;
+    stroke: #f3efe6;
+    stroke-width: 2;
+  }
+  .xc-happy {
+    margin-top: calc(var(--xc-size) * 0.12);
+    font-size: clamp(0.95rem, calc(var(--xc-size) * 0.22), 1.6rem);
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    color: #fff;
+    text-align: center;
+  }
+  .xc-sparkle {
+    position: absolute;
+    fill: #fff;
+    pointer-events: none;
+  }
+
+  [data-intro="pending"] :is(.xc-anim, .xc-letter, .xc-fade, .xc-deco, .xc-snowman, .xc-bulb, .xc-gift) {
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  const hero = document.querySelector<HTMLElement>(".xc-hero");
+  if (hero?.dataset.gated) {
+    hero.addEventListener(
+      "xc:open",
+      () => (hero.dataset.intro === "pending" ? intro(hero) : snow(hero.querySelector<HTMLCanvasElement>("[data-xc-snow]")!)),
+      { once: true },
+    );
+  } else if (hero?.dataset.intro === "pending") intro(hero);
+
+  function intro(hero: HTMLElement) {
+    hero.dataset.introJs = "1";
+    const $ = <T extends Element = HTMLElement>(sel: string) => gsap.utils.toArray<T>(sel, hero);
+    const garland = hero.querySelector<SVGElement>(".xc-garland");
+    const hangs = $(".xc-hang");
+    const merry = $(".xc-merry .xc-letter");
+    const christmas = $(".xc-christmas .xc-letter");
+    const decos = $<SVGElement>(".xc-deco");
+    const snowman = hero.querySelector<SVGElement>(".xc-snowman");
+    const wire = hero.querySelector<SVGPathElement>(".xc-wire");
+    const bulbs = $<SVGElement>(".xc-bulb");
+    const fades = $(".xc-fade");
+    const tree = hero.querySelector<SVGElement>(".xc-tree");
+    const gifts = $<SVGElement>(".xc-gift");
+    const canvas = hero.querySelector<HTMLCanvasElement>("[data-xc-snow]")!;
+    const wireLen = wire?.getTotalLength() ?? 0;
+
+    gsap.set(garland, { y: -140 });
+    gsap.set(hangs, { y: -400 });
+    gsap.set([...merry, ...christmas], { scale: 0, rotation: () => gsap.utils.random(-30, 30), transformOrigin: "50% 80%" });
+    gsap.set(decos, { y: -40, scale: 0.4, autoAlpha: 0, transformOrigin: "50% 100%" });
+    gsap.set(snowman, { scale: 0, transformOrigin: "50% 100%" });
+    if (wire) gsap.set(wire, { strokeDasharray: wireLen, strokeDashoffset: wireLen });
+    gsap.set(bulbs, { scale: 0, transformOrigin: "50% 0%", transformBox: "fill-box" });
+    gsap.set(fades, { y: 16, autoAlpha: 0 });
+    gsap.set(tree, { scaleY: 0, transformOrigin: "50% 100%" });
+    gsap.set(gifts, { y: -320, autoAlpha: 0 });
+    delete hero.dataset.intro;
+
+    gsap
+      .timeline({ delay: 0.1 })
+      .to(garland, { y: 0, duration: 1.2, ease: "elastic.out(1, 0.55)" }, 0)
+      .to(hangs, { y: 0, duration: 1.4, ease: "elastic.out(1, 0.5)", stagger: 0.08 }, 0.1)
+      .to(tree, { scaleY: 1, duration: 0.9, ease: "back.out(1.4)" }, 0.2)
+      .to(gifts, { y: 0, autoAlpha: 1, duration: 0.7, ease: "bounce.out", stagger: 0.12 }, 0.35)
+            .to(merry, { scale: 1, rotation: 0, duration: 0.7, ease: "back.out(2.2)", stagger: 0.07 }, 0.45)
+      .to(decos, { y: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: "bounce.out", stagger: 0.08 }, 1.1)
+      .to(christmas, { scale: 1, rotation: 0, duration: 0.7, ease: "back.out(2.2)", stagger: 0.05 }, 0.8)
+      .to(snowman, { scale: 1, duration: 0.8, ease: "elastic.out(1, 0.5)" }, 1.3)
+      .to(wire, { strokeDashoffset: 0, duration: 1, ease: "power2.inOut" }, 1.3)
+      .to(bulbs, { scale: 1, duration: 0.35, ease: "back.out(3)", stagger: 0.06 }, 1.5)
+      .to(fades, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.12, ease: "power3.out" }, 1.8)
+      .add(() => snow(canvas), 0);
+  }
+
+  function snow(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0;
+    let h = 0;
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    type Flake = { x: number; y: number; r: number; a: number; vx: number; vy: number };
+    const flakes: Flake[] = [];
+    const max = Math.round(Math.min(200, w / 7));
+    const spawn = (): Flake => ({
+      x: Math.random() * w,
+      y: -10,
+      r: 1 + Math.random() * 3,
+      a: 0.3 + Math.random() * 0.6,
+      vx: -0.3 + Math.random() * 0.6,
+      vy: 0.6 + Math.random() * 0.7,
+    });
+
+    let running = true;
+    let raf = 0;
+    const tick = () => {
+      if (flakes.length < max) flakes.push(spawn());
+      ctx.clearRect(0, 0, w, h);
+      for (const f of flakes) {
+        f.vx += (Math.random() - 0.5) * 0.08;
+        f.x += f.vx;
+        f.y += f.vy;
+        if (f.y > h + 10) Object.assign(f, spawn());
+        ctx.fillStyle = `rgba(255,255,255,${f.a})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (running) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !running) {
+        running = true;
+        raf = requestAnimationFrame(tick);
+      } else if (!entry.isIntersecting) {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    }).observe(canvas);
+  }
+</script>

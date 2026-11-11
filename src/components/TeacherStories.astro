@@ -4,16 +4,6 @@ import SectionHeading from "@/components/SectionHeading.astro";
 import { teacherStories } from "@/data/teacherStories";
 import { imageAsset } from "@/data/imageAssets";
 
-/**
- * Chia sẻ của giảng viên về con đường giảng dạy.
- *
- * Dải ảnh `Teacher` trả lời "họ là ai" bằng học vị và trường; khối này trả lời "vì sao
- * họ đi dạy" — thứ mà bằng cấp không nói được, và cũng là thứ người đang chọn trung tâm
- * đọc để đoán xem mình sẽ học với người thế nào.
- *
- * Chưa có chia sẻ nào thì không dựng gì cả: một tiêu đề to đứng trên khoảng trống nhìn
- * như trang lỗi.
- */
 ---
 
 {
@@ -32,7 +22,6 @@ import { imageAsset } from "@/data/imageAssets";
             <article
               class:list={[
                 "grid gap-8 rounded-3xl border border-border bg-background p-6 md:p-10 lg:gap-12",
-                // So le trái–phải để dãy thẻ dài không thành một cột ảnh chạy thẳng đuột.
                 i % 2 === 1 ? "lg:grid-cols-[1fr_15rem]" : "lg:grid-cols-[15rem_1fr]",
               ]}
             >
@@ -42,10 +31,6 @@ import { imageAsset } from "@/data/imageAssets";
                   i % 2 === 1 && "lg:order-last",
                 ]}
               >
-                {/* Chiều cao để `auto` cho `aspect-square` quyết định. Đặt `size-full`
-                    là height:100% ăn theo ô grid — ô này bị đoạn chia sẻ bên cạnh kéo
-                    cao nên khung thành dọc, và ảnh card đã nướng sẵn tên + học vị vào
-                    trong sẽ bị object-cover cắt mất logo bên trái, chữ bên phải. */}
                 {imageAsset(teacher.image) && (
                   <Image
                     src={imageAsset(teacher.image)!}
@@ -76,7 +61,6 @@ import { imageAsset } from "@/data/imageAssets";
               </div>
 
               <blockquote class="relative">
-                {/* Ngoặc kép chữ Hán, cùng họ với các chữ nền 课 / 师 của site. */}
                 <span
                   aria-hidden="true"
                   class="pointer-events-none absolute -left-2 -top-6 select-none text-[5rem] font-black leading-none text-brand-red-900/6 md:text-[7rem]"

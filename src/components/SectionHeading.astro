@@ -3,10 +3,8 @@ interface Props {
   title: string;
 
   highlight?: string;
-  /** true: highlight nằm cùng hàng với title (không xuống dòng) */
   inlineHighlight?: boolean;
   description?: string;
-  /** Nhãn viết tay nghiêng nằm trên tiêu đề */
   note?: string;
   align?: "center" | "left";
   className?: string;
@@ -56,10 +54,6 @@ const wrap =
     }
   </h2>
 
-  {/* `text-balance` ở mô tả: khung rộng `max-w-2xl` chứa ~82 ký tự một dòng, nên một
-      câu hơi dài là dòng cuối chỉ còn vài chữ lọt thỏm giữa khối chữ canh giữa. Cân
-      dòng cho các dòng dài gần bằng nhau — mô tả ở đây luôn là câu ngắn 2–3 dòng, đúng
-      phạm vi `text-wrap: balance` xử lý được. */}
   {
     description && (
       <p

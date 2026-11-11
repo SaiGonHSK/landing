@@ -1,13 +1,3 @@
-/**
- * Nén card giảng viên từ src/assets/teacher/ ra src/assets/teachers/<slug>.webp.
- *
- * Ảnh gốc do bộ phận truyền thông xuất là card vuông 2560×2560 đã nướng sẵn logo,
- * panel đỏ và tên + học vị vào trong ảnh. Giữ nguyên khung card đó — không cắt —
- * nên việc duy nhất cần làm là hạ kích thước và đổi sang WebP: bản gốc ~0.5 MB
- * mỗi ảnh là quá nặng để nhét 8 ảnh vào một trang.
- *
- * Chạy: yarn gen:teachers
- */
 import sharp from "sharp";
 import { readdir, mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -15,10 +5,6 @@ import path from "node:path";
 const SOURCE_DIR = "src/assets/teacher";
 const OUTPUT_DIR = "src/assets/teachers";
 
-/**
- * Card hiển thị rộng tối đa 24rem (384px), nhân 2 cho màn retina rồi làm tròn lên
- * cho ảnh lightbox mở to vẫn còn nét.
- */
 const OUT_SIZE = 1080;
 
 await mkdir(OUTPUT_DIR, { recursive: true });

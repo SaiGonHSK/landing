@@ -49,7 +49,7 @@ const {
         <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href={primaryHref}
-            class="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold text-brand-red-700 transition-transform hover:-translate-y-0.5 sm:w-auto"
+            class="group inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-7 py-4 text-sm font-bold text-brand-red-700 transition-transform hover:-translate-y-0.5 sm:w-auto"
           >
             {primaryLabel}
             <span
@@ -59,7 +59,7 @@ const {
           </a>
           <a
             href={`tel:${contact.phonePrimaryRaw}`}
-            class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/15 px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 sm:w-auto"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white/15 px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 sm:w-auto"
           >
             <span class="[&>svg]:size-4" set:html={ICONS.phone} />
             {contact.phonePrimary}

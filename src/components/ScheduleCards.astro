@@ -5,19 +5,6 @@ import { contact } from "@/data/site";
 import { ICONS } from "@/lib/icons";
 import { registerHref } from "@/lib/registerLink";
 
-/**
- * Lưới thẻ lịch khai giảng: badge chương trình (cùng `CourseBadge` với lưới khoá học ở
- * trang chủ) rồi tên lớp và các dòng thông tin có icon — ngày khai giảng, từng buổi học
- * trong tuần, nhịp học, nơi học.
- *
- * Vì sao dạng thẻ này chứ không chỉ bảng (`ScheduleBoard`): bảng tuần trả lời "lớp nào
- * học buổi nào", còn người đang chọn lớp cần đọc trọn một lớp trong một khối — ngày khai
- * giảng, giờ, thời lượng, nơi học — rồi bấm đăng ký ngay tại đó. Hai thành phần bổ sung
- * nhau, không thay nhau.
- *
- * Chỉ có lưới, không có `<section>` hay tiêu đề: trang lịch đặt lưới này trong từng khối
- * chương trình đã có tiêu đề riêng, còn `Schedule.astro` bọc thêm tiêu đề cho trang chủ.
- */
 interface Props {
   rows: ScheduleRow[];
   class?: string;
@@ -31,10 +18,6 @@ const MODE_LABELS: Record<string, string> = {
   hybrid: "Kết hợp",
 };
 
-/**
- * Nơi học. Địa chỉ đầy đủ chỉ có ở lớp offline và viết ngắn: mười lăm thẻ offline cùng
- * một địa chỉ, in đủ mỗi thẻ thì dòng dài nhất của thẻ lại là dòng ít phân biệt nhất.
- */
 const placeOf = (row: ScheduleRow) =>
   row.mode === "online"
     ? "Học online, lớp trực tuyến tương tác"
@@ -42,13 +25,7 @@ const placeOf = (row: ScheduleRow) =>
       ? "Kết hợp online và học tại trung tâm"
       : `Học tại trung tâm · ${contact.addressShort.split(",")[0]}`;
 
-
-/**
- * Bốn dòng thông tin của một thẻ. Mỗi dòng là một mảng chuỗi vì lớp học nhiều buổi mỗi
- * tuần thì phần giờ học chiếm mấy dòng liền nhau dưới cùng một icon.
- */
 const detailsOf = (row: ScheduleRow) => {
-  /** Lớp GT1, GT2, VIP xếp lịch theo học viên nên `slots` rỗng — dùng `cadenceNote`. */
   const fixed = row.slots.length > 0;
 
   return [
@@ -81,7 +58,6 @@ const detailsOf = (row: ScheduleRow) => {
   ];
 };
 
-/** Chuỗi để lọc client-side (`[data-schedule-search]`), bỏ dấu để gõ không dấu vẫn ra. */
 const searchKey = (row: ScheduleRow) =>
   `${row.code} ${row.name} ${row.target} ${row.cadence}`
     .toLowerCase()
@@ -91,46 +67,18 @@ const searchKey = (row: ScheduleRow) =>
 
 const cards = rows.map((row) => ({
   row,
-  /**
-   * Chữ trên badge.
-   *
-   * Nhãn khối giáo vụ gõ ("Tiếng Trung Sơ cấp") vì badge là thứ gom cả lưới thẻ về một
-   * mối; dòng không có nhãn thì rơi về tên lớp. Không tra sang `programs` nữa — một dòng
-   * lịch không nối tới chương trình nào, xem `data/scheduleApi.ts`.
-   */
   courseTitle: row.group || row.name,
   details: detailsOf(row),
-  /**
-   * Khách bấm "Đăng ký giữ chỗ" trên đúng một dòng thì form phải biết dòng nào — mang
-   * theo nhãn khối (thử chọn sẵn trong select khoá) lẫn mã lớp (vào ghi chú của lead).
-   *
-   * Nhãn khối là chữ tự do nên có thể không khớp lựa chọn nào trong select khoá học;
-   * khi đó `resolveCourseOption` trả `undefined` và select ở `/register` giữ nguyên
-   * trạng thái chưa chọn, không đoán bừa một khoá gần giống.
-   *
-   * Vẫn giữ dù trang lịch đã có modal (`ClassRegisterDialog`): nút là `<a>` thật, và
-   * script chỉ chặn khi modal dựng được. Không JS thì khách vẫn tới được form.
-   */
   href: registerHref({
     course: row.group,
     classCode: row.code,
-    // `itemId` để `/register` chọn sẵn đúng ca trong ô "Lớp muốn giữ chỗ". Mã lớp một
-    // mình không đủ: nhiều ca dùng chung một mã.
     itemId: row.id,
   }),
-  /** Dòng phụ trong modal, nhắc lại lớp nào để khách không phải nhớ mình vừa bấm gì. */
   meta: [row.openDate && `Khai giảng ${row.openDate}`, row.cadence, placeOf(row)]
     .filter(Boolean)
     .join(" · "),
 }));
 ---
-
-{/*
-  Thẻ lớp, thứ tự thông tin cố định cho mọi lớp để so được bằng mắt:
-    mã lớp + hình thức → tên lớp → NGÀY KHAI GIẢNG (khối nổi bật) → lịch học trong tuần
-    → thời lượng & nơi học (chữ phụ) → nút đăng ký.
-  Nút luôn ở đáy thẻ (`mt-auto`), các thẻ cùng hàng cao bằng nhau nhờ lưới.
-*/}
 <div class:list={["grid gap-5 md:grid-cols-2 lg:grid-cols-3", className]}>
   {
     cards.map(({ row, courseTitle, details, href, meta }) => (
@@ -165,8 +113,6 @@ const cards = rows.map((row) => ({
           </h3>
         </div>
 
-        {/* Ngày khai giảng — thứ người tìm lớp so trước tiên, nên nó là khối nổi bật duy
-            nhất trong thẻ. */}
         <div class="mx-5 mt-4 flex items-center gap-3 rounded-xl bg-brand-red-50 px-4 py-3">
           <span class="text-brand-red-700 [&>svg]:size-5" set:html={ICONS.calendar} />
           <div class="min-w-0">
@@ -203,15 +149,6 @@ const cards = rows.map((row) => ({
 
         <div class="mt-auto border-t border-border p-5">
           {row.openDate ? (
-            /*
-              `<a>` thật, không phải `<button>`: `ClassRegisterDialog` chặn cú bấm và mở
-              modal ngay tại trang, nhưng chỉ khi modal dựng được — không JS, hoặc trình
-              duyệt không có `dialog.showModal`, thì link vẫn đưa khách tới `/register`.
-
-              `data-class-id` là id dòng lịch: modal in tên đúng ca vào ghi chú của lead,
-              và mang theo khi phải lùi sang `/register`. Mã lớp không dùng được vì nhiều
-              ca chung một mã.
-            */
             <a
               href={href}
               data-class-register
@@ -220,14 +157,14 @@ const cards = rows.map((row) => ({
               data-class-code={row.code}
               data-course={row.group}
               data-class-meta={meta}
-              class="block rounded-full bg-brand-red-600 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+              class="block rounded-lg bg-brand-red-600 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
             >
-              Đăng ký giữ chỗ
+              Đăng ký ngay
             </a>
           ) : (
             <a
               href={`tel:${contact.phonePrimaryRaw}`}
-              class="flex items-center justify-center gap-2 rounded-full border border-border py-3 text-center text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+              class="flex items-center justify-center gap-2 rounded-lg border border-border py-3 text-center text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
             >
               <span class="[&>svg]:size-4" set:html={ICONS.phone} />
               Gọi để xếp lớp

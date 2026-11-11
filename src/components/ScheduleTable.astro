@@ -1,0 +1,254 @@
+---
+import type { ScheduleRow } from "@/data/schedule";
+import { contact } from "@/data/site";
+import { ICONS } from "@/lib/icons";
+import { registerHref } from "@/lib/registerLink";
+
+interface Props {
+  title: string;
+  rows: ScheduleRow[];
+  class?: string;
+}
+
+const { title, rows, class: className = "" } = Astro.props;
+
+// Ngày hôm nay theo giờ Việt Nam (YYYY-MM-DD) để xác định lớp còn nhận đăng ký.
+const todayISO = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Ho_Chi_Minh",
+}).format(new Date());
+
+const longDate = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return y && m && d ? `${d} tháng ${m}, ${y}` : "";
+};
+
+const dayRank = (weekday: number) => (weekday === 0 ? 7 : weekday);
+
+// "Thứ 2/4/6" + "18:00 – 20:00", gom theo khung giờ.
+const sessionsOf = (row: ScheduleRow) => {
+  if (row.slots.length === 0) {
+    return [{ days: "Linh hoạt", time: row.cadenceNote || "Xếp theo học viên" }];
+  }
+
+  const byTime = new Map<string, number[]>();
+  for (const slot of row.slots) {
+    const time = `${slot.startTime} – ${slot.endTime}`;
+    byTime.set(time, [...(byTime.get(time) ?? []), slot.weekday]);
+  }
+
+  return [...byTime.entries()].map(([time, weekdays]) => {
+    const labels = [...new Set(weekdays)]
+      .sort((a, b) => dayRank(a) - dayRank(b))
+      .map((day) => (day === 0 ? "CN" : String(day + 1)));
+    return { days: `Thứ ${labels.join("/")}`, time };
+  });
+};
+
+const placeOf = (row: ScheduleRow) =>
+  row.mode === "online"
+    ? { label: "Online", note: "Lớp trực tuyến tương tác" }
+    : row.mode === "hybrid"
+      ? { label: "Kết hợp", note: "Online & tại trung tâm" }
+      : { label: "Tại trung tâm", note: contact.addressShort.split(",")[0] };
+
+const searchKey = (row: ScheduleRow) =>
+  `${title} ${row.code} ${row.name} ${row.target} ${row.cadence}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d");
+
+const items = rows
+  .map((row) => {
+    const status = !row.openDateISO
+      ? ("flexible" as const)
+      : row.openDateISO >= todayISO
+        ? ("open" as const)
+        : ("started" as const);
+    const place = placeOf(row);
+    const sessions = sessionsOf(row);
+
+    return {
+      row,
+      status,
+      place,
+      sessions,
+      date: row.openDateISO ? longDate(row.openDateISO) : "Linh hoạt",
+      href: registerHref({ course: row.group, classCode: row.code, itemId: row.id }),
+      meta: [
+        row.openDate && `Khai giảng ${row.openDate}`,
+        row.cadence,
+        place.label,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  })
+  .sort((a, b) =>
+    (a.row.openDateISO || "9999").localeCompare(b.row.openDateISO || "9999"),
+  );
+
+const ROW_GRID =
+  "lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_8.5rem]";
+const HEAD = "text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-brand-ink-500";
+const LABEL = "text-[0.625rem] font-bold uppercase tracking-[0.12em] text-brand-ink-400 lg:hidden";
+---
+
+<div
+  data-schedule-table
+  class:list={[
+    "overflow-hidden rounded-3xl border border-border bg-background shadow-[0_24px_60px_-40px_rgb(17_24_39/0.35)]",
+    className,
+  ]}
+>
+  <!-- Header: giống tiêu đề modal của bảng lịch -->
+  <div class="flex items-center gap-4 border-b border-border px-5 py-5 md:px-8 md:py-6">
+    <div class="min-w-0 flex-1">
+      <h2 class="truncate font-heading text-xl font-black tracking-tight text-brand-ink-900 md:text-[1.75rem]">
+        {title}
+      </h2>
+    </div>
+    <button
+      type="button"
+      data-schedule-toggle
+      aria-expanded="true"
+      aria-label={`Thu gọn ${title}`}
+      class="grid size-11 shrink-0 place-items-center rounded-xl border border-border text-brand-ink-700 transition-colors hover:bg-brand-ink-50"
+    >
+      <span
+        class="transition-transform duration-300 [&>svg]:size-4"
+        set:html={ICONS.chevron}
+        style="transform: rotate(180deg)"
+        data-schedule-chevron
+      />
+    </button>
+  </div>
+
+  <div data-schedule-body>
+    <!-- Hàng tiêu đề cột (desktop) -->
+    <div class="hidden border-b border-border bg-brand-ink-50/60 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <div class:list={[HEAD, "px-8 py-4"]}>Khóa học</div>
+      <div class:list={["grid items-center gap-4 px-6 py-4", ROW_GRID]}>
+        <span class={HEAD}>Trình độ</span>
+        <span class:list={[HEAD, "flex items-center gap-1.5 [&>svg]:size-3.5"]}>
+          <Fragment set:html={ICONS.cap} />Lớp khai giảng
+        </span>
+        <span class:list={[HEAD, "flex items-center gap-1.5 [&>svg]:size-3.5"]}>
+          <Fragment set:html={ICONS.clock} />Buổi học
+        </span>
+        <span class:list={[HEAD, "flex items-center gap-1.5 [&>svg]:size-3.5"]}>
+          <Fragment set:html={ICONS.pin} />Học tại
+        </span>
+        <span class="sr-only">Đăng ký</span>
+      </div>
+    </div>
+
+    <div class="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <!-- Cột khóa học -->
+      <div class="hidden px-8 py-7 lg:block lg:border-r lg:border-border">
+        <div class="lg:sticky lg:top-28">
+          <p class="font-heading text-lg leading-tight font-black text-brand-red-600">{title}</p>
+        </div>
+      </div>
+
+      <!-- Danh sách lớp -->
+      <ul class="divide-y divide-border">
+        {
+          items.map(({ row, status, place, sessions, date, href, meta }) => {
+            const muted = status === "started";
+            return (
+              <li
+                data-class-card
+                data-search={searchKey(row)}
+                class:list={[
+                  "grid grid-cols-2 gap-x-4 gap-y-4 px-5 py-5 transition-colors md:px-8 lg:items-center lg:gap-4 lg:px-6 lg:py-6",
+                  ROW_GRID,
+                  muted ? "text-brand-ink-400" : "hover:bg-brand-red-50/30",
+                ]}
+              >
+                <div class="col-span-2 lg:col-span-1">
+                  <p class:list={["leading-snug font-bold", muted ? "text-brand-ink-400" : "text-brand-ink-900"]}>
+                    {row.name}
+                  </p>
+                </div>
+
+                <div>
+                  <p class={LABEL}>Lớp khai giảng</p>
+                  <p class:list={["mt-1 lg:mt-0", muted ? "text-brand-ink-400" : "font-semibold text-brand-ink-900"]}>
+                    {date}
+                  </p>
+                </div>
+
+                <div>
+                  <p class={LABEL}>Buổi học</p>
+                  {sessions.map((s) => (
+                    <div class="mt-1 first:mt-1 lg:first:mt-0">
+                      <p class:list={["text-sm", muted ? "" : "font-semibold text-brand-ink-900"]}>{s.days}</p>
+                      <p class:list={["text-sm", muted ? "" : "text-brand-ink-700"]}>{s.time}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <p class={LABEL}>Học tại</p>
+                  <p class:list={["mt-1 text-sm lg:mt-0", muted ? "" : "font-semibold text-brand-ink-900"]}>
+                    {place.label}
+                  </p>
+                  <p class:list={["text-sm", muted ? "" : "text-brand-ink-600"]}>{place.note}</p>
+                </div>
+
+                <div class="col-span-2 lg:col-span-1 lg:text-right">
+                  {status === "started" ? (
+                    <a
+                      href={`tel:${contact.phonePrimaryRaw}`}
+                      class="inline-flex w-full items-center justify-center rounded-lg border border-border px-4 py-2.5 text-xs font-bold text-brand-ink-600 transition-colors hover:bg-brand-ink-50 lg:w-auto"
+                    >
+                      Hỏi lớp tiếp theo
+                    </a>
+                  ) : status === "flexible" ? (
+                    <a
+                      href={`tel:${contact.phonePrimaryRaw}`}
+                      class="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2.5 text-xs font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50 lg:w-auto [&>svg]:size-3.5"
+                    >
+                      <Fragment set:html={ICONS.phone} />
+                      Gọi xếp lớp
+                    </a>
+                  ) : (
+                    <a
+                      href={href}
+                      data-class-register
+                      data-class-id={row.id}
+                      data-class-name={row.name}
+                      data-class-code={row.code}
+                      data-course={row.group}
+                      data-class-meta={meta}
+                      class="inline-flex w-full items-center justify-center rounded-lg bg-brand-red-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-brand-red-700 lg:w-auto"
+                    >
+                      Đăng ký ngay
+                    </a>
+                  )}
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-schedule-table]").forEach((table) => {
+    const toggle = table.querySelector<HTMLButtonElement>("[data-schedule-toggle]");
+    const body = table.querySelector<HTMLElement>("[data-schedule-body]");
+    const chevron = table.querySelector<HTMLElement>("[data-schedule-chevron]");
+    if (!toggle || !body) return;
+
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(expanded));
+      body.hidden = !expanded;
+      if (chevron) chevron.style.transform = expanded ? "rotate(180deg)" : "";
+    });
+  });
+</script>

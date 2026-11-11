@@ -14,27 +14,12 @@ const origin = Astro.site?.origin ?? "";
 const summary = reviewsSummary();
 const reviews = orderedTestimonials();
 
-/*
-  `Review` ở đây cố tình KHÔNG có `reviewRating`, và trang không khai
-  `aggregateRating` — kể cả sau khi mỗi cảm nhận đã có trường `rating` thật.
-
-  Lý do đã đổi, kết luận thì không. Trước đây là vì trung tâm chưa thu điểm số nào.
-  Giờ điểm đã có, nhưng nó là điểm học viên chấm TRÊN GOOGLE, và chính sách dữ liệu
-  có cấu trúc của Google loại đánh giá lấy lại từ nguồn thứ ba khỏi diện được hiển thị
-  — trang tự khai `aggregateRating` cho một điểm không do mình thu là đúng thứ chính
-  sách đó gọi là tự đánh giá mình. Hậu quả áp lên cả tên miền, không chỉ node này.
-
-  Điểm số vẫn hiện đầy đủ cho người đọc và dẫn thẳng ra trang Google để tự kiểm — xem
-  `ReviewsDetail.astro`. Cảm nhận dạng văn xuôi vẫn được AI trích dẫn bình thường.
-*/
 const schemas = [
   aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site }),
   {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Cảm nhận của học viên Hoa văn SaigonHSK",
-    // Cùng thứ tự với thứ mục in ra: `position` của ItemList phải khớp thứ tự trên
-    // trang, không thì nó mô tả một trang không tồn tại.
     numberOfItems: reviews.length,
     itemListElement: reviews.map((t, i) => ({
       "@type": "ListItem",

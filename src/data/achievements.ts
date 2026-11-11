@@ -3,30 +3,16 @@ import poster2 from "@/assets/archivements/a2.webp";
 import poster3 from "@/assets/archivements/a3.webp";
 import poster4 from "@/assets/archivements/a4.webp";
 
-/**
- * Poster vinh danh học viên do trung tâm công bố — điểm bên dưới chép lại
- * đúng bảng điểm in trên poster.
- * Ảnh nằm ở src/assets/archivements/ để Astro nén và xuất WebP lúc build,
- * bản gốc 2526×2526 nên không được nhúng thẳng.
- */
 export type HonorPoster = {
   image: ImageMetadata;
-  /** Tên học viên, in dưới ảnh */
   name: string;
-  /** Tiêu đề poster, dùng làm chú thích khi phóng to */
   title: string;
-  /** Kỳ thi, vd "HSK5" */
   exam: string;
-  /** Tổng điểm và thang điểm */
   total: string;
   max: string;
-  /** Ngày thi ghi trên bảng điểm */
   testDate: string;
-  /** Điểm từng kỹ năng, đều thang 100 */
   parts: { label: string; score: string }[];
-  /** Ghi chú nhỏ, vd phần nói chưa công bố */
   note?: string;
-  /** Kết quả tóm tắt một dòng, dùng ở trang chủ */
   result: string;
 };
 

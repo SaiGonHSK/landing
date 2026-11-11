@@ -3,24 +3,15 @@ import { Image } from "astro:assets";
 import { ICONS } from "@/lib/icons";
 import registerTeacher from "@/assets/register-teacher.webp";
 
-/**
- * CTA ghi danh: panel đỏ hai cột, badge khai giảng + gạch đầu dòng cam kết bên
- * trái, ảnh lớp học bên phải. Dùng cho các trang khoá học và lịch khai giảng.
- */
 interface Props {
   badge?: string;
   title?: string;
-  /** Dòng thứ hai của tiêu đề, xuống hàng riêng */
   subtitle?: string;
   lines?: string[];
   href?: string;
   label?: string;
   image?: ImageMetadata;
   imageAlt?: string;
-  /**
-   * Ảnh đã tách nền, neo đáy panel thay vì nằm trong cột phải. Mặc định bật khi
-   * dùng ảnh giảng viên tách nền sẵn của component.
-   */
   cutout?: boolean;
   class?: string;
 }
@@ -41,10 +32,6 @@ const {
   class: className = "",
 } = Astro.props;
 
-/**
- * Ảnh giảng viên đã tách nền và mặc áo đỏ trùng màu panel, nên phải đặt trên khung
- * sáng thì mới nổi. Các ảnh khác (ảnh lớp học chụp thường) thì hiển thị full-bleed.
- */
 const isCutout = cutout ?? image === registerTeacher;
 ---
 
@@ -61,11 +48,6 @@ const isCutout = cutout ?? image === registerTeacher;
       {
         isCutout && (
           <>
-            {/*
-              Khối sáng mờ phía sau chủ thể. Bắt buộc phải có: áo polo của giảng
-              viên cùng tông đỏ với panel, không có nền sáng thì phần thân sẽ chìm
-              hẳn vào nền.
-            */}
             <span
               aria-hidden="true"
               class="pointer-events-none absolute -bottom-10 right-4 hidden size-[24rem] rounded-full bg-white/25 blur-2xl lg:block xl:right-16"
@@ -81,23 +63,14 @@ const isCutout = cutout ?? image === registerTeacher;
       <div
         class:list={[
           "relative",
-          // Ảnh cutout nằm absolute nên cột phải không còn nội dung: giới hạn bề
-          // rộng khối chữ để tiêu đề không chạy xuống dưới ảnh.
           isCutout
             ? "lg:max-w-[31rem] xl:max-w-[39rem]"
             : "grid items-center gap-10 lg:grid-cols-[1fr_0.8fr]",
         ]}
       >
         <div>
-          <span
-            class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-red-700"
-          >
-            <span class="[&>svg]:size-3.5" set:html={ICONS.calendar} />
-            {badge}
-          </span>
-
           <h2
-            class="mt-6 text-[2rem] font-black leading-[1.1] tracking-tight text-balance text-white md:text-[2.5rem]"
+            class="text-[2rem] font-black leading-[1.1] tracking-tight text-balance text-white md:text-[2.5rem]"
           >
             {title}
             {subtitle && <span class="block">{subtitle}</span>}
@@ -121,7 +94,7 @@ const isCutout = cutout ?? image === registerTeacher;
 
           <a
             href={href}
-            class="group mt-9 inline-flex items-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold text-brand-red-700 transition-transform hover:-translate-y-0.5"
+            class="group mt-9 inline-flex items-center gap-2 rounded-lg bg-white px-7 py-4 text-sm font-bold text-brand-red-700 transition-transform hover:-translate-y-0.5"
           >
             {label}
             <span
@@ -148,11 +121,6 @@ const isCutout = cutout ?? image === registerTeacher;
         }
       </div>
 
-      {/*
-        Ảnh neo đáy panel và cao hơn panel một chút để phần chân bị cắt bởi
-        overflow-hidden — tạo cảm giác người bước ra khỏi khung.
-        drop-shadow tạo viền sáng mảnh, tách áo đỏ khỏi nền đỏ.
-      */}
       {
         isCutout && (
           <Image

@@ -1,13 +1,6 @@
 ---
 import { ICONS } from "@/lib/icons";
 ---
-
-{/*
-  Không dùng backdrop-blur ở đây: blur cả viewport buộc trình duyệt vẽ lại nền mờ
-  mỗi khung hình mà nội dung bên dưới thay đổi (ảnh thu nhỏ đang chạy nốt
-  group-hover:scale, các .reveal, hay người ta cuộn trang) — mở lightbox là giật.
-  Nền đục hơn cho cùng hiệu quả tách lớp mà chỉ tốn một lần composite.
-*/}
 <div
   id="app-lightbox"
   data-open="false"
@@ -24,10 +17,6 @@ import { ICONS } from "@/lib/icons";
     set:html={ICONS.close}
   />
 
-  {/*
-    Khung ảnh chốt kích thước theo overlay, không theo ảnh: lúc fade-in ảnh chưa
-    tải xong vẫn không có layout nào nhảy, tải xong chỉ fade ảnh vào chỗ có sẵn.
-  */}
   <figure class="flex h-full w-full max-w-6xl flex-col items-center justify-center gap-4">
     <div class="flex min-h-0 w-full flex-1 items-center justify-center">
       <img
@@ -51,17 +40,12 @@ import { ICONS } from "@/lib/icons";
   const img = box?.querySelector<HTMLImageElement>("[data-lightbox-image]");
   const caption = box?.querySelector<HTMLElement>("[data-lightbox-caption]");
 
-  /* Mỗi lần mở là một lượt. Ảnh của lượt cũ tải xong sau khi đã đổi sang ảnh
-     khác thì bỏ, khỏi hiện chồng lên ảnh đang xem. */
   let turn = 0;
 
   const close = () => {
     if (!box) return;
     box.dataset.open = "false";
     turn++;
-    /* Scroller của trang là <html> (xem scrollbar-gutter: stable trong
-       global.css), khoá ở <body> không chặn được cuộn. Gutter vẫn được giữ khi
-       overflow: hidden nên không lệch layout lúc khoá. */
     document.documentElement.style.overflow = "";
   };
 
@@ -78,18 +62,13 @@ import { ICONS } from "@/lib/icons";
     box.dataset.open = "true";
     document.documentElement.style.overflow = "hidden";
 
-    /* decode() để biết ảnh đã vẽ được, thay vì bật hiện ngay rồi chờ trình
-       duyệt tự giải mã giữa lúc transition đang chạy. */
     try {
       await img.decode();
     } catch {
-      /* src bị đổi giữa đường, hoặc ảnh lỗi — cứ hiện, để trình duyệt xử lý. */
     }
     if (turn === mine) img.dataset.ready = "true";
   };
 
-  /* Ảnh phóng to là bản dẫn xuất khác với ảnh thu nhỏ nên chưa có trong cache.
-     Nạp sẵn từ lúc trỏ chuột/focus vào để tới lúc bấm là mở ra có ảnh liền. */
   const warmed = new Set<string>();
   const warm = (src?: string) => {
     if (!src || warmed.has(src)) return;
@@ -117,9 +96,6 @@ import { ICONS } from "@/lib/icons";
   });
 
   box?.querySelector("[data-lightbox-close]")?.addEventListener("click", close);
-  /* Khung <figure> giờ chiếm hết chiều cao overlay để giữ layout, nên không so
-     target === box được nữa: bấm khoảng trống cạnh ảnh sẽ rơi vào figure. Cứ
-     coi mọi chỗ ngoài ảnh và chú thích là nền. */
   box?.addEventListener("click", (event) => {
     const target = event.target as HTMLElement | null;
     if (target?.closest("[data-lightbox-image], [data-lightbox-caption]")) return;

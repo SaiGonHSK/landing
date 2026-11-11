@@ -1,19 +1,12 @@
 ---
-/**
- * Badge tên khoá học: chia chéo dọc — nửa trái đỏ chữ trắng, nửa phải trắng chữ đỏ.
- */
 interface Props {
-  /** Tên khoá đầy đủ, ví dụ "Tiếng Trung Giao tiếp Cấp tốc" */
   title: string;
   class?: string;
-  /** SVG thô của icon chương trình (`COURSE_ICONS`). Có thì vẽ ở góc trên–phải của nửa
-   *  trắng — chi tiết riêng của từng khoá, để các badge không còn giống hệt nhau. */
   icon?: string;
 }
 
 const { title, class: className = "", icon } = Astro.props;
 
-/** Tách "Luyện thi HSK" → LUYỆN THI | HSK, "Tiếng Trung Sơ cấp" → TIẾNG TRUNG | SƠ CẤP */
 const PREFIXES: { match: string; label: string }[] = [
   { match: "Luyện thi", label: "Luyện thi" },
   { match: "Tiếng Trung", label: "Tiếng Trung" },
@@ -34,7 +27,6 @@ const split = (name: string) => {
 
 const { lead, tail } = split(title);
 
-/** Chữ dài thì thu nhỏ để không tràn khỏi nửa badge. */
 const sizeOf = (text: string) =>
   text.length > 16
     ? "text-[0.8125rem] md:text-sm"

@@ -14,8 +14,6 @@ import { valuePanels } from "@/data/valuePanels";
 import { ICONS } from "@/lib/icons";
 import { aboutPageSchema } from "@/lib/schema";
 
-/* Trang nhánh của mục Giới thiệu: khai `AboutPage` gộp vào node `WebPage` của Layout,
-   `mainEntity` trỏ về `#organization` để AI biết trang này nói *về* trung tâm. */
 const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site })];
 ---
 
@@ -80,8 +78,6 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
                   ) : v.illustration ? (
                     <TextbookSet class="h-auto w-full lg:size-full" />
                   ) : v.devices ? (
-                    /* Hai khung cạnh nhau, không đè, không nghiêng — cách tính bề ngang
-                       và vì sao chỉ hai ghi ở `WhyUs.astro`. */
                     <div class="flex h-full items-center justify-center gap-[3%]">
                       {v.devices.map((device, k) => (
                         <div
@@ -90,9 +86,6 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
                             k % 2 === 0 ? "translate-y-[-2%]" : "translate-y-[2%]",
                           ]}
                         >
-                          {/* `quality` 95: ảnh chụp giao diện, chữ nhỏ và nét mảnh 1px.
-                              Ghi chú đặt ngoài thẻ — chú thích nhét vào giữa attribute
-                              của thẻ Image bị Astro đọc thành attribute rời. */}
                           <Image
                             src={device.src}
                             alt={device.alt}
@@ -108,14 +101,6 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
                       ))}
                     </div>
                   ) : v.contain ? (
-                    /* `class`: dưới `lg` ảnh chạy theo bề ngang (tối đa 24rem, canh giữa)
-                       rồi để ô cao theo ảnh — cùng lý do đã ghi ở `WhyUs.astro`: ô ảnh ở
-                       khổ hẹp thấp hơn ảnh nhiều nên bó theo chiều cao thì ảnh còn bằng
-                       con tem.
-
-                       Chú thích để NGOÀI thẻ: nhét vào giữa các attribute thì Astro đọc
-                       từng chữ trong chú thích thành một attribute rời và `astro check`
-                       báo lỗi type (`Property 'Dưới' does not exist`). */
                     <Image
                       src={v.image}
                       alt={`${v.title} — ${v.note}`}
@@ -128,7 +113,6 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
                       class="mx-auto h-auto w-full max-w-96 rounded-2xl object-contain lg:size-full lg:max-w-none"
                     />
                   ) : (
-                    /* Ảnh chụp lớp học phủ kín nửa thẻ — cắt cạnh thay vì hiện trọn. */
                     <Image
                       src={v.image}
                       alt={v.title}

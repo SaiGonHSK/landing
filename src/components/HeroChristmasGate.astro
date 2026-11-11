@@ -1,0 +1,495 @@
+---
+import { hero } from "@/data/site";
+import HeroChristmas from "@/components/HeroChristmas.astro";
+
+let seed = 7;
+const rand = () => {
+  seed = (seed * 16807) % 2147483647;
+  return seed / 2147483647;
+};
+
+const FOREST_W = 1600;
+const FOREST_H = 160;
+const ORNAMENT_COLORS = ["#e8334a", "#fdc56d", "#ffffff", "#5ab0ff", "#ff9f43"];
+
+const tree = (x: number, h: number, perTier: number, ornR: number) => {
+  const w = h * 0.55;
+  const b = FOREST_H;
+  const ornaments: { x: number; y: number; r: number; color: string; delay: number }[] = [];
+  const path = [0, 0.32, 0.6]
+    .map((t) => {
+      const top = b - h + t * h;
+      const half = (w / 2) * (0.55 + t * 0.6);
+      const bottom = Math.min(b, top + h * 0.48);
+      for (let k = 0; k < perTier; k++) {
+        const u = 0.45 + rand() * 0.45;
+        ornaments.push({
+          x: x + (rand() * 2 - 1) * half * u * 0.75,
+          y: top + (bottom - top) * u,
+          r: ornR * (0.8 + rand() * 0.4),
+          color: ORNAMENT_COLORS[Math.floor(rand() * ORNAMENT_COLORS.length)],
+          delay: Math.round(rand() * 2400),
+        });
+      }
+      return `M${x} ${top}L${x + half} ${bottom}H${x - half}Z`;
+    })
+    .join("");
+  const tw = Math.max(3, h * 0.07);
+  const trunk = `M${x - tw / 2} ${b - 6}h${tw}v6h${-tw}Z`;
+  const sy = b - h;
+  const sr = Math.max(3, h * 0.06);
+  const star =
+    Array.from({ length: 10 }, (_, i) => {
+      const a = (Math.PI / 5) * i - Math.PI / 2;
+      const r = i % 2 ? sr * 0.45 : sr;
+      return `${i ? "L" : "M"}${(x + Math.cos(a) * r).toFixed(1)} ${(sy + Math.sin(a) * r).toFixed(1)}`;
+    }).join("") + "Z";
+  return { path, trunk, star, ornaments };
+};
+
+const forestBack = Array.from({ length: 46 }, (_, i) => tree(i * 36 + rand() * 20, 70 + rand() * 60, 1, 1.6));
+const forestFront = Array.from({ length: 30 }, (_, i) => tree(i * 56 + 20 + rand() * 24, 55 + rand() * 50, 2, 2.6));
+---
+
+<div class="xg relative isolate" data-xg>
+  <section id="hero" class="xg-hero relative isolate overflow-hidden" data-xg-intro>
+    <script is:inline>
+      (function (hero) {
+        if (!hero) return;
+        var head = document.getElementById("site-header");
+        if (!head) return;
+        var overlay = head.dataset.glass === "true";
+        hero.style.setProperty("--xg-head", overlay ? "0px" : head.offsetHeight + "px");
+        hero.style.setProperty("--xg-top", overlay ? head.offsetHeight + "px" : "0px");
+        if (overlay) document.documentElement.style.setProperty("--header-overlap", head.offsetHeight + "px");
+      })(document.currentScript && document.currentScript.parentElement);
+    </script>
+
+    <canvas data-xg-snow class="xg-snow" aria-hidden="true"></canvas>
+
+    <svg class="xg-forest" viewBox={`0 0 ${FOREST_W} ${FOREST_H}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <rect x="0" y={FOREST_H - 14} width={FOREST_W} height="14" class="xg-forest-back" />
+      <path d={forestBack.map((t) => t.trunk).join("")} class="xg-trunk" />
+      <path d={forestBack.map((t) => t.path).join("")} class="xg-forest-back" />
+      {
+        forestBack.flatMap((t) =>
+          t.ornaments.map((o) => (
+            <circle cx={o.x.toFixed(1)} cy={o.y.toFixed(1)} r={o.r.toFixed(1)} class="xg-light xg-light--back" style={`animation-delay:${o.delay}ms`} />
+          )),
+        )
+      }
+      <path d={forestFront.map((t) => t.trunk).join("")} class="xg-trunk" />
+      <path d={forestFront.map((t) => t.path).join("")} class="xg-forest-front" />
+      <path d={forestFront.map((t) => t.star).join("")} class="xg-tree-star" />
+      {
+        forestFront.flatMap((t) =>
+          t.ornaments.map((o) => (
+            <circle cx={o.x.toFixed(1)} cy={o.y.toFixed(1)} r={o.r.toFixed(1)} fill={o.color} class="xg-light" style={`animation-delay:${o.delay}ms`} />
+          )),
+        )
+      }
+    </svg>
+
+    <div class="xg-wrap">
+      <div class="xg-heading">
+        <h1 class="text-[2.6rem] leading-[1.08] font-extrabold tracking-[-0.035em] text-balance text-white sm:text-[4rem] lg:text-[5.5rem]">
+          <span class="block">{hero.titleLine1}</span>
+          <span class="block text-[#fdc56d]">{hero.titleLine2}</span>
+        </h1>
+        <p class="mx-auto mt-6 max-w-152 text-base leading-relaxed font-medium text-balance text-white/80 lg:text-lg">
+          {hero.description}
+        </p>
+        <p class="sr-only" data-speakable>
+          Trung tâm Hoa văn SaigonHSK — dạy tiếng Trung và luyện thi HSK tại TP.HCM (Sài Gòn), cam kết 100% đầu ra.
+        </p>
+      </div>
+
+      <button type="button" data-xg-box class="xg-box" aria-label="Mở hộp quà Giáng sinh">
+        <span data-xg-lid class="xg-lid"><span class="xg-bow"></span></span>
+        <span data-xg-body class="xg-body"></span>
+        <span data-xg-hint class="xg-hint">Chạm để mở quà</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="xg-xmas" data-xg-xmas>
+    <HeroChristmas gated />
+  </div>
+
+  <div class="xg-burst" data-xg-burst aria-hidden="true"></div>
+</div>
+
+<style>
+  .xg-hero {
+    --xg-gold: #fdc56d;
+    --xg-box: #2c3e50;
+    height: calc(100svh - var(--xg-head, 68px));
+    min-height: 560px;
+    display: grid;
+    background: var(--color-brand-red-600);
+  }
+  .xg-snow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .xg-forest {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 110px;
+    pointer-events: none;
+  }
+  @media (min-width: 768px) {
+    .xg-forest {
+      height: 160px;
+    }
+  }
+  .xg-forest-back {
+    fill: #0f4a2c;
+  }
+  .xg-forest-front {
+    fill: #1e7d4c;
+  }
+  .xg-trunk {
+    fill: #5a3418;
+  }
+  .xg-tree-star {
+    fill: #fdc56d;
+  }
+  .xg-light--back {
+    fill: #fdc56d;
+    opacity: 0.85;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .xg-light {
+      animation: xg-twinkle 2.4s ease-in-out infinite;
+    }
+    .xg-box:not([disabled]) {
+      animation: xg-nudge 2.6s ease-in-out infinite;
+    }
+  }
+  @keyframes xg-twinkle {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes xg-nudge {
+    0%,
+    70%,
+    100% {
+      rotate: 0deg;
+    }
+    76% {
+      rotate: 4deg;
+    }
+    82% {
+      rotate: -3deg;
+    }
+    88% {
+      rotate: 2deg;
+    }
+  }
+
+  .xg-wrap {
+    position: relative;
+    z-index: 1;
+    margin: calc(16px + var(--xg-top, 0px)) 16px 16px;
+  }
+  @media (min-width: 768px) {
+    .xg-wrap {
+      margin: calc(32px + var(--xg-top, 0px)) 40px 32px;
+    }
+  }
+  .xg-heading {
+    position: absolute;
+    inset: 0 0 26%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    text-align: center;
+  }
+
+  .xg-box {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    z-index: 3;
+    width: 210px;
+    height: 154px;
+    margin-left: -105px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    transform-origin: 50% 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (max-width: 640px) {
+    .xg-box {
+      width: 150px;
+      height: 110px;
+      margin-left: -75px;
+    }
+  }
+  .xg-box:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 10px;
+  }
+  .xg-lid,
+  .xg-body {
+    position: absolute;
+    background: var(--xg-box);
+  }
+  .xg-lid::before,
+  .xg-body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 18%;
+    height: 100%;
+    translate: -50% 0;
+    background: var(--xg-gold);
+  }
+  .xg-lid {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    z-index: 2;
+  }
+  .xg-body {
+    bottom: 0;
+    left: 5%;
+    right: 5%;
+    height: 80%;
+    z-index: 1;
+  }
+  .xg-body::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 14%;
+    background: #0000001f;
+  }
+  .xg-bow {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 22%;
+    aspect-ratio: 1;
+    translate: -50% 0;
+  }
+  .xg-bow::before,
+  .xg-bow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 10px var(--xg-gold);
+  }
+  .xg-bow::before {
+    transform: translate(-45%) skewY(40deg);
+  }
+  .xg-bow::after {
+    transform: translate(45%) skewY(-40deg);
+  }
+  .xg-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    z-index: 3;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    rotate: -12deg;
+    transform-origin: 0 0;
+    pointer-events: none;
+  }
+
+  .xg-xmas {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 5;
+    visibility: hidden;
+  }
+  .xg-burst {
+    position: fixed;
+    inset: 0;
+    z-index: 36;
+    pointer-events: none;
+  }
+  .xg-burst :global(i) {
+    position: absolute;
+    display: block;
+    border-radius: 2px;
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  const root = document.querySelector<HTMLElement>("[data-xg]");
+  if (root) setup(root);
+
+  function setup(root: HTMLElement) {
+    const intro = root.querySelector<HTMLElement>("[data-xg-intro]")!;
+    const box = root.querySelector<HTMLButtonElement>("[data-xg-box]")!;
+    const lid = root.querySelector<HTMLElement>("[data-xg-lid]")!;
+    const body = root.querySelector<HTMLElement>("[data-xg-body]")!;
+    const hint = root.querySelector<HTMLElement>("[data-xg-hint]")!;
+    const heading = root.querySelector<HTMLElement>(".xg-heading")!;
+    const xmasWrap = root.querySelector<HTMLElement>("[data-xg-xmas]")!;
+    const xmas = xmasWrap.querySelector<HTMLElement>(".xc-hero")!;
+    const burst = root.querySelector<HTMLElement>("[data-xg-burst]")!;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const stopSnow = reduced ? () => {} : snow(intro.querySelector<HTMLCanvasElement>("[data-xg-snow]")!);
+    if (!reduced) gsap.from(box, { y: 40, autoAlpha: 0, duration: 0.6, ease: "back.out(1.7)" });
+
+    box.addEventListener("click", open, { once: true });
+
+    function finish() {
+      stopSnow();
+      intro.hidden = true;
+      intro.removeAttribute("id");
+      xmas.id = "hero";
+      gsap.set(xmasWrap, { clearProps: "clipPath", position: "relative", visibility: "visible" });
+      burst.remove();
+      window.dispatchEvent(new Event("scroll"));
+    }
+
+    function open() {
+      box.disabled = true;
+      if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+
+      if (reduced) {
+        xmas.dispatchEvent(new Event("xc:open"));
+        finish();
+        return;
+      }
+
+      gsap
+        .timeline()
+        .to(hint, { autoAlpha: 0, duration: 0.2 }, 0)
+        .to(heading, { autoAlpha: 0, y: -24, duration: 0.45, ease: "power2.in" }, 0)
+        .to(box, { keyframes: [{ rotation: 4 }, { rotation: -2 }, { rotation: 0 }], duration: 0.5, repeat: 1, ease: "none" }, 0)
+        .addLabel("burst")
+        .add(() => confetti(), "burst")
+        .to(lid, { y: -1000, rotation: 20, duration: 0.5, ease: "power1.out" }, "burst")
+        .to(lid, { autoAlpha: 0, duration: 0.1 }, "burst+=0.35")
+        .to(body, { yPercent: 100, autoAlpha: 0, duration: 0.25, ease: "power1.in" }, "burst+=0.05")
+        .add(() => reveal(), "burst+=0.15");
+    }
+
+    function snow(canvas: HTMLCanvasElement) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return () => {};
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let w = 0;
+      let h = 0;
+      const resize = () => {
+        w = canvas.clientWidth;
+        h = canvas.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      type Flake = { x: number; y: number; r: number; a: number; vx: number; vy: number };
+      const max = Math.round(Math.min(220, w / 6));
+      const spawn = (y = -10): Flake => ({
+        x: Math.random() * w,
+        y,
+        r: 1 + Math.random() * 3.2,
+        a: 0.35 + Math.random() * 0.6,
+        vx: -0.3 + Math.random() * 0.6,
+        vy: 0.6 + Math.random() * 0.8,
+      });
+      const flakes = Array.from({ length: Math.round(max * 0.6) }, () => spawn(Math.random() * h));
+      let running = true;
+      let raf = 0;
+      const tick = () => {
+        if (flakes.length < max) flakes.push(spawn());
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#fff";
+        for (const f of flakes) {
+          f.vx += (Math.random() - 0.5) * 0.08;
+          f.x += f.vx;
+          f.y += f.vy;
+          if (f.y > h + 10) Object.assign(f, spawn());
+          ctx.globalAlpha = f.a;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        if (running) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      const io = new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !running) {
+          running = true;
+          raf = requestAnimationFrame(tick);
+        } else if (!e.isIntersecting) {
+          running = false;
+          cancelAnimationFrame(raf);
+        }
+      });
+      io.observe(canvas);
+      return () => {
+        running = false;
+        cancelAnimationFrame(raf);
+        io.disconnect();
+        window.removeEventListener("resize", resize);
+      };
+    }
+
+    function confetti() {
+      const r = box.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height * 0.3;
+      const colors = ["#fdc56d", "#ffffff", "#4caf3c", "#e8334a", "#5ab0ff"];
+      for (let i = 0; i < 80; i++) {
+        const p = document.createElement("i");
+        const size = gsap.utils.random(6, 12);
+        p.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size * gsap.utils.random(0.4, 1)}px;background:${colors[i % colors.length]}`;
+        burst.appendChild(p);
+        const a = gsap.utils.random(-Math.PI * 0.95, -Math.PI * 0.05);
+        const d = gsap.utils.random(160, Math.max(innerWidth, innerHeight) * 0.65);
+        gsap
+          .timeline({ onComplete: () => p.remove() })
+          .to(p, { x: Math.cos(a) * d, y: Math.sin(a) * d, rotation: gsap.utils.random(-540, 540), duration: gsap.utils.random(0.7, 1.1), ease: "power3.out" })
+          .to(p, { y: `+=${gsap.utils.random(120, 260)}`, autoAlpha: 0, duration: 0.9, ease: "power1.in" });
+      }
+    }
+
+    function reveal() {
+      const r = box.getBoundingClientRect();
+      const w = xmasWrap.getBoundingClientRect();
+      const x = r.left + r.width / 2 - w.left;
+      const y = r.top + r.height / 2 - w.top;
+      const radius = Math.hypot(Math.max(x, w.width - x), Math.max(y, w.height - y)) + 40;
+      gsap.set(xmasWrap, { visibility: "visible", clipPath: `circle(0px at ${x}px ${y}px)` });
+      xmas.dispatchEvent(new Event("xc:open"));
+      gsap.to(xmasWrap, {
+        clipPath: `circle(${radius}px at ${x}px ${y}px)`,
+        duration: 1.1,
+        ease: "power2.inOut",
+        onComplete: finish,
+      });
+    }
+  }
+</script>

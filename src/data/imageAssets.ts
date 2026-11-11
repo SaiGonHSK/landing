@@ -19,21 +19,6 @@ import thanhTram from "@/assets/reviews/thanh-tram.jpg";
 import tranGiaTue from "@/assets/reviews/tran-gia-tue.jpg";
 import tuongQuy from "@/assets/reviews/tuong-quy.jpg";
 
-/**
- * Tra ảnh trong `src/assets/` theo đường dẫn `/images/…` mà dữ liệu còn ghi.
- *
- * Ảnh giảng viên và ảnh cảm nhận từng nằm trong `public/`, được tham chiếu bằng chuỗi
- * đường dẫn — `content/site.json` giữ ảnh giảng viên, còn ảnh cảm nhận do trang quản
- * trị soạn và lưu trong cơ sở dữ liệu (`testimonials` là một trong `DYNAMIC_KEYS`, xem
- * `content.ts`). Đưa cả hai vào `src/assets/` thì `<Image>` mới nén và xuất được nhiều
- * khổ, nhưng import lúc build không nhận chuỗi lấy từ API, nên phải có bảng tra này.
- *
- * `public/` giờ chỉ còn favicon: đường dẫn `/images/…` nào không có trong bảng là ảnh
- * không còn tồn tại. Chỗ dùng vì vậy phải coi `undefined` là "không có ảnh" và rơi về
- * chữ cái đầu của tên, chứ không in thẻ `<img>` trỏ vào một tệp chắc chắn 404 —
- * `/images/reviews/hoang-ha-phuong.jpg` trong cơ sở dữ liệu là một trường hợp như vậy,
- * nó đã 404 từ trước lần dọn này.
- */
 const ASSETS: Record<string, ImageMetadata> = {
   "/images/teachers/cao-hoai-nhon.webp": caoHoaiNhon,
   "/images/teachers/duong-mai-phuong.webp": duongMaiPhuong,
@@ -55,11 +40,5 @@ const ASSETS: Record<string, ImageMetadata> = {
   "/images/reviews/tuong-quy.jpg": tuongQuy,
 };
 
-/**
- * Ảnh đã import cho `path`, hoặc `undefined` nếu không có ảnh nào mang đường dẫn đó.
- *
- * Nhận `undefined`/rỗng để chỗ dùng khỏi phải kiểm tra trước khi gọi — trường `image`
- * của cảm nhận là tuỳ chọn và cơ sở dữ liệu trả `null` cho phần lớn bản ghi.
- */
 export const imageAsset = (path: string | null | undefined): ImageMetadata | undefined =>
   path ? ASSETS[path] : undefined;

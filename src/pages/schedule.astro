@@ -1,92 +1,27 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
-import AboutHero from "@/components/AboutHero.astro";
-import classPhoto from "@/assets/daily/giang-sinh-lop-cam-bang.webp";
-import ScheduleCards from "@/components/ScheduleCards.astro";
+import SplitHero from "@/components/SplitHero.astro";
+import scheduleImage from "@/assets/hero/hoc-vien-nam-nu-tach-nen.webp";
+import ScheduleTable from "@/components/ScheduleTable.astro";
 import ClassRegisterDialog from "@/components/ClassRegisterDialog.astro";
 import RegisterSection from "@/components/RegisterSection.astro";
 import EnrollCta from "@/components/EnrollCta.astro";
 import Footer from "@/components/Footer.astro";
 import FloatingContact from "@/components/FloatingContact.astro";
-import { schedule, scheduleNote, scheduleTitle } from "@/data/schedule";
+import { schedule, scheduleTitle } from "@/data/schedule";
 import { contact, site } from "@/data/site";
 import { ICONS } from "@/lib/icons";
-// Ảnh tách nền cho hero.
 import { openingScheduleSchema } from "@/lib/schema";
 
-/**
- * Câu mở đầu, ghép từ tên đợt đang đăng.
- *
- * Trước đây câu này viết cứng "Lịch khai giảng dự kiến tháng 8/2026" — không có gì nối
- * nó với các lớp bên dưới, nên sang tháng 9 là trang tự mâu thuẫn với chính nó cho tới
- * khi có người nhớ ra. Giờ tên đợt đi kèm chính những lớp đó, và trung tâm đổi nó trong
- * console. Chưa đăng đợt nào thì bỏ luôn mệnh đề tháng thay vì in một chỗ trống.
- */
-const heroDescription = [
-  scheduleTitle ? `${scheduleTitle} cho cả lớp offline và online.` : "",
-  // Ghi chú của đợt, do console soạn: "Lịch dự kiến — gọi hotline để giữ chỗ." Câu chốt
-  // bên dưới không còn nhắc hotline nữa để hai câu khỏi nói cùng một việc.
-  scheduleNote,
-]
-  .filter(Boolean)
-  .join(" ") ||
-  // Chưa đăng đợt nào thì hai câu trên đều rỗng — hero vẫn cần một câu, không để trống
-  // dưới tiêu đề. Câu này nói việc trang làm, đúng cả khi lịch còn đang cập nhật.
-  "Lớp mở hằng tháng cho cả hình thức offline tại trung tâm và online, có lớp buổi tối và cuối tuần.";
-
-/** Số lớp dùng cho chip hero, đếm thẳng từ lịch để không lệch khi đổi đợt */
-const opening = schedule.filter((row) => row.openDateISO);
-const onlineCount = opening.filter((row) =>
-  row.mode === "online",
-).length;
-
-const hasOpening = opening.length > 0;
-
-/**
- * Chip nổi quanh ảnh hero — bốn câu quyết định người xem có bấm đăng ký hay không: đợt
- * này mở mấy lớp, có lớp ngoài giờ hành chính không, có lớp online không, lớp bao nhiêu
- * người.
- *
- * Ba câu đầu đọc từ lịch nên không bao giờ lệch với các lớp bên dưới. Chưa đăng đợt nào
- * thì hai chip đếm được đổi sang điều vẫn đúng lúc đó, thay vì in "0 lớp".
- */
-const heroChips = [
-  hasOpening ? `${opening.length} lớp đang mở đăng ký` : "Đang nhận đăng ký đợt tới",
-  "Có lớp buổi tối và cuối tuần",
-  onlineCount > 0 ? `${onlineCount} lớp học online` : "Test trình độ miễn phí",
-  "Mỗi lớp 10–15 học viên",
-];
-
-/**
- * Gom dòng lịch theo khối.
- *
- * Khối là chữ giáo vụ gõ vào từng dòng (`groupLabel`), không phải một chương trình tra
- * từ `programs`: một dòng lịch không nối tới khoá học hay chương trình nào nữa — xem
- * `data/scheduleApi.ts`. Vì vậy khối cũng không có trang để dẫn tới, và nút "Xem chương
- * trình" đã bỏ.
- *
- * Dòng không có nhãn khối vẫn lên trang: nó đứng thành khối riêng mang tên mã lớp. Giấu
- * một lớp đang tuyển sinh vì giáo vụ chưa gõ nhãn là mất học viên, không phải dữ liệu
- * sạch.
- *
- * Thứ tự khối = thứ tự khối đầu tiên xuất hiện trong `schedule`, mà `schedule` đã được
- * server sắp theo ngày khai giảng. Nói cách khác: khối nào có lớp khai giảng sớm nhất
- * đứng trước. Trước đây thứ tự lấy theo danh sách chương trình trong console (Sơ cấp →
- * Trung cấp → Cao cấp); giờ không còn danh sách nào để lấy, và giáo vụ đổi thứ tự bằng
- * chính ngày khai giảng của các dòng.
- */
 const groups = schedule.reduce<
   {
-    /** Khoá gom nhóm, cũng là mã neo `#lich-…` của khối. */
     key: string;
     title: string;
     rows: typeof schedule;
   }[]
 >((acc, row) => {
   const title = row.group || row.code;
-  // Mã neo phải là chuỗi đi được trong URL: nhãn khối là chữ tự do, có dấu và khoảng
-  // trắng. Bỏ dấu rồi thay mọi thứ còn lại bằng gạch nối.
   const key = title
     .toLowerCase()
     .normalize("NFD")
@@ -105,13 +40,6 @@ const groups = schedule.reduce<
   return acc;
 }, []);
 
-/*
-  Lịch khai giảng dạng dữ liệu có cấu trúc.
-
-  Đây là thông tin "hết hạn" nhanh nhất trên site, và cũng là thứ AI hay trả lời bằng
-  lịch cũ nó nhớ được. Khai `Course` kèm `CourseInstance` có `startDate` thật để bot
-  đọc được ngày khai giảng của đợt đang đăng chứ không đoán.
-*/
 const scheduleSchemas = [
   openingScheduleSchema(schedule, Astro.site?.origin ?? "", {
     name: site.fullName,
@@ -127,33 +55,23 @@ const scheduleSchemas = [
   schemas={scheduleSchemas}
 >
   <Header />
-  <main id="main" class="flex flex-col gap-16 lg:gap-24">
-    {/* Banner cùng kiểu trang Giới thiệu. Ba dữ kiện tính từ chính dữ liệu lịch. */}
-    <AboutHero
-      eyebrow="Lịch khai giảng"
+  <main id="main" class="flex flex-col gap-16 pb-16 lg:gap-24 lg:pb-24">
+    <SplitHero
+      eyebrow={scheduleTitle || "Lịch khai giảng"}
       title={"Tìm lớp phù hợp\nvới lịch của bạn"}
-      lead={heroDescription}
+      lead="Lớp mở hằng tháng, có lớp buổi tối và cuối tuần — học offline tại trung tâm hoặc online."
       cta={{ label: "Xem các lớp đang mở", href: "#tim-lop" }}
-      image={classPhoto}
-      imageAlt="Học viên Hoa văn SaigonHSK trong lớp học tại trung tâm"
-      facts={[
-        hasOpening
-          ? { value: `${opening.length} lớp`, label: "Đang mở đăng ký" }
-          : { value: "Sắp mở", label: "Đang nhận đăng ký đợt tới" },
-        onlineCount > 0
-          ? { value: `${onlineCount} lớp online`, label: "Học từ xa, tương tác trực tiếp" }
-          : { value: "Tối & cuối tuần", label: "Có lớp ngoài giờ hành chính" },
-        { value: "10–15", label: "Học viên mỗi lớp" },
+      image={scheduleImage}
+      imageAlt="Hai học viên SaigonHSK mặc đồng phục cầm giáo trình"
+      stats={[
+        { icon: ICONS.calendar, value: "Hằng tháng", label: "Mở lớp mới" },
+        { icon: ICONS.clock, value: "Tối & cuối tuần", label: "Ngoài giờ hành chính" },
+        { icon: ICONS.users, value: "10–15", label: "Học viên mỗi lớp" },
+        { icon: ICONS.monitor, value: "Offline & online", label: "Tại trung tâm hoặc từ xa" },
       ]}
     />
 
     {
-      /*
-        Chưa đăng đợt nào — trạng thái có thật, không phải lỗi: giữa hai đợt trung tâm
-        có thể chưa chốt lịch tháng sau. Nói thẳng và đưa số hotline, thay vì để lại một
-        trang chỉ có ô tìm kiếm rỗng và ba con số 0. Ô tìm kiếm cùng các khối lớp bên
-        dưới đều ẩn đi vì không có gì để tìm.
-      */
       schedule.length === 0 && (
         <section>
           <div class="container mx-auto px-6">
@@ -169,7 +87,7 @@ const scheduleSchemas = [
                 >
                   {contact.phonePrimary}
                 </a>{" "}
-                để được báo lịch sớm và giữ chỗ trước.
+                để được báo lịch sớm và đăng ký trước.
               </p>
             </div>
           </div>
@@ -177,11 +95,8 @@ const scheduleSchemas = [
       )
     }
 
-    <!-- Tìm lớp + điều hướng nhanh theo chương trình -->
     <section id="tim-lop" class:list={["scroll-mt-24", schedule.length === 0 && "hidden"]}>
       <div class="container mx-auto px-6">
-        {/* Tiêu đề canh giữa mở phần chọn lớp: hero nói đợt này mở gì, từ đây trở xuống
-            là việc của người xem — tìm và so lớp. */}
         <div class="mx-auto max-w-2xl text-center">
           <h2
             class="font-heading text-[1.75rem] font-black leading-tight tracking-tight text-balance text-brand-ink-900 md:text-[2.5rem]"
@@ -224,7 +139,7 @@ const scheduleSchemas = [
               groups.map((g) => (
                 <a
                   href={`#lich-${g.key}`}
-                  class="group inline-flex items-center gap-2 rounded-full border border-border bg-background py-2 pr-2 pl-4 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300 hover:text-brand-red-700"
+                  class="group inline-flex items-center gap-2 rounded-lg border border-border bg-background py-2 pr-2 pl-4 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300 hover:text-brand-red-700"
                 >
                   {g.title}
                   <span class="rounded-full bg-brand-ink-50 px-2.5 py-0.5 text-[0.6875rem] font-bold text-brand-ink-500">
@@ -241,19 +156,8 @@ const scheduleSchemas = [
     {
       groups.map((g) => (
         <section id={`lich-${g.key}`} data-group class="scroll-mt-24">
-          <div class="container mx-auto px-6">
-            {/* Tiêu đề nhóm gọn: tên chương trình (serif) + số lớp, kẻ một đường mảnh —
-                đủ để phân nhóm, không thành một mục lớn chen giữa các lưới thẻ. */}
-            <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
-              <h2 class="font-serif text-[1.75rem] leading-tight font-medium text-brand-ink-900 md:text-[2.25rem]">
-                {g.title}
-              </h2>
-              <span class="shrink-0 pb-1 text-sm font-semibold text-brand-ink-500">
-                {g.rows.length} lớp
-              </span>
-            </div>
-
-            <ScheduleCards rows={g.rows} class="mt-8" />
+          <div class="container mx-auto px-4 md:px-6">
+            <ScheduleTable title={g.title} rows={g.rows} />
           </div>
         </section>
       ))
@@ -279,16 +183,10 @@ const scheduleSchemas = [
       </div>
     </section>
 
-    <!-- CTA ghi danh sớm -->
     <EnrollCta />
 
     <RegisterSection />
 
-    <!--
-      Một modal cho cả trang, không phải một cái mỗi thẻ: các nút "Đăng ký giữ chỗ" chỉ
-      mang `data-class-id` và script điền nội dung lớp vào đây lúc mở. Hai mươi lớp mà
-      mỗi lớp một <dialog> là hai mươi bản form trong DOM.
-    -->
     <ClassRegisterDialog />
   </main>
   <Footer />

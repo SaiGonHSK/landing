@@ -56,14 +56,6 @@ import { ICONS } from "@/lib/icons";
       </span>
     </a>
 
-    {/*
-      Chỉ hiện dưới `sm` — cùng ngưỡng với nút bung dải liên hệ.
-
-      `tel:` trên máy tính để bàn phần lớn là mở hộp thoại "chọn ứng dụng" rồi không có
-      gì xảy ra, nên nút gọi ở đó chỉ chiếm chỗ. Người dùng desktop cần số để bấm máy
-      thì đã có nó ở đầu trang, chân trang và khối FAQ; đường liên hệ nhanh thật sự trên
-      desktop là Zalo, vốn vẫn nằm ngay trên.
-    */}
     <a
       href={`tel:${contact.phonePrimaryRaw}`}
       aria-label={`Gọi ${contact.phonePrimary}`}

@@ -1,17 +1,6 @@
 ---
 import type { TocEntry } from "@/lib/articleToc";
 
-/**
- * Cột phải của trang bài viết Thư viện: mục lục của bài.
- *
- * Vì sao có cột này: bài Thư viện dài, trước đây thân bài chiếm cả bề rộng `container`
- * nên dòng chữ trên màn hình lớn dài quá mức đọc thoải mái, mà nửa phải trang thì trống.
- * Thu cột chữ về khổ đọc được rồi lấy phần vừa dôi ra làm mục lục giải quyết cả hai.
- *
- * Chỉ hiện từ `lg`. Dưới đó cột phụ sẽ nằm chồng lên trước hoặc sau thân bài — mục lục
- * đặt trước một bài thì chắn đường vào bài, nên thà không có.
- */
-
 interface Props {
   toc: TocEntry[];
 }
@@ -29,19 +18,6 @@ const { toc } = Astro.props;
         Trong bài này
       </p>
 
-      {/*
-        Danh sách chặn chiều cao và tự cuộn: bài chia nhiều mục thì mục lục dài hơn màn
-        hình, không chặn thì phần cuối nằm ngoài vùng thấy được và không cách nào tới.
-      */}
-      {/*
-        Đường kẻ dọc liền mạch chạy suốt danh sách. Mỗi mục đắp lên nó một đoạn 2px trong
-        suốt, kéo lùi `-ml-px` cho trùng khít; mục đang đọc thì đoạn của nó đỏ lên.
-
-        Vì sao là đường liền chứ không phải vạch rời từng mục: có đường nền thì mắt thấy
-        ngay đoạn đỏ nằm ở đâu trên cả chiều dài bài, tức là đọc tới đâu rồi — vạch rời chỉ
-        nói "mục này", không nói "chỗ nào". Cũng vì vậy danh sách không còn `gap` giữa các
-        mục: hở một nhịp là đường đứt quãng.
-      */}
       <ol
         data-toc
         class="toc-list mt-4 flex max-h-[calc(100vh-13rem)] flex-col overflow-y-auto border-l border-border"
@@ -49,18 +25,6 @@ const { toc } = Astro.props;
         {
           toc.map((entry) => (
             <li>
-              {/*
-                Đang đọc = đoạn kẻ đỏ + chữ đổi từ xám sang mực đen. Chỉ hai thứ đó.
-
-                Không tô nền, không bo góc: một ô nền bo góc nằm trong khung `nav` vuông là
-                hai ngôn ngữ hình chỏi nhau, và nền tô là thứ đầu tiên khiến một mục lục
-                trông như mẫu dựng sẵn. Đỏ chỉ xuất hiện đúng một chỗ trên cả cột — đoạn kẻ.
-
-                Tuyệt đối không đổi độ đậm chữ, cỡ chữ hay bề dày viền, vì cả ba đều đổi bề
-                rộng khung chữ: chữ đậm rộng hơn nên mục dài sẽ xuống thêm một dòng và cả cột
-                giật theo mỗi lần cuộn, còn viền dày thêm 1px thì đẩy chữ nhích ngang 1px.
-                Màu thì đổi thoải mái — nó không chạm tới khung chữ.
-              */}
               <a
                 href={`#${entry.id}`}
                 data-toc-link={entry.id}
@@ -83,23 +47,6 @@ const { toc } = Astro.props;
 </aside>
 
 <script>
-  /*
-   * Tô mục đang đọc trong mục lục.
-   *
-   * Tính thẳng từ vị trí cuộn, gom lại bằng `requestAnimationFrame` nên nhiều nhất một
-   * lần mỗi khung hình và chỉ khi đang cuộn.
-   *
-   * Trước đây chỗ này dùng `IntersectionObserver` với một dải cao 10% khung nhìn, và nó
-   * sai ở đúng thao tác hay dùng nhất — bấm một mục trong mục lục. Cú nhảy neo đưa tiêu
-   * đề đích lên 6rem (`scroll-margin-top` của `.rich h2/h3`), tức NẰM TRÊN dải chứ không
-   * đi vào dải; tiêu đề đang sáng trước đó thì thường cũng đã ở ngoài dải. Không tiêu đề
-   * nào đổi trạng thái nên observer không bắn sự kiện nào, và mục sáng đứng nguyên chỗ cũ
-   * dù trang đã nhảy đi hẳn nơi khác. Nhánh dự phòng tính lại theo vị trí có tồn tại,
-   * nhưng nó nằm BÊN TRONG callback — callback không chạy thì nó không cứu được gì.
-   *
-   * Bài học: trạng thái phải tính được từ vị trí cuộn bất kỳ lúc nào, chứ đừng chỉ tính
-   * khi có sự kiện đi ngang một lằn ranh.
-   */
   const BAND_TOP = 0.3;
 
   const list = document.querySelector<HTMLElement>("[data-toc]");
@@ -115,7 +62,6 @@ const { toc } = Astro.props;
       .map((id) => document.getElementById(id))
       .filter((node): node is HTMLElement => node !== null);
 
-    /** Nhớ mục đang tô để khỏi ghi lại 17 thuộc tính DOM ở mỗi khung hình cuộn. */
     let painted: string | undefined;
 
     const paint = (id: string | undefined) => {
@@ -127,25 +73,12 @@ const { toc } = Astro.props;
     };
 
     const update = () => {
-      /*
-       * Chạm đáy trang thì tô luôn tiêu đề cuối.
-       *
-       * Mục cuối bài thường ngắn, trang hết chỗ cuộn trước khi tiêu đề của nó kịp lên tới
-       * vạch — không có nhánh này thì đọc tới tận cuối bài mà mục lục vẫn sáng ở mục
-       * áp chót, và không cách nào sáng được mục cuối.
-       */
       const doc = document.documentElement;
       if (window.innerHeight + window.scrollY >= doc.scrollHeight - 2) {
         paint(headings.at(-1)?.id);
         return;
       }
 
-      /*
-       * Tiêu đề cuối cùng đã vượt qua vạch. Vạch đặt ở 30% chiều cao khung nhìn — không
-       * phải mép trên — nên mục sáng lên đúng lúc tiêu đề lên tới vùng mắt đang đọc.
-       *
-       * `headings` theo đúng thứ tự trong bài nên gặp cái đầu tiên chưa qua vạch là dừng.
-       */
       const line = window.innerHeight * BAND_TOP;
       let current: string | undefined;
       for (const heading of headings) {
@@ -155,7 +88,6 @@ const { toc } = Astro.props;
       paint(current);
     };
 
-    /** Gom lại còn nhiều nhất một lần tính mỗi khung hình, và chỉ khi đang cuộn. */
     let queued = false;
     const schedule = () => {
       if (queued) return;
@@ -169,18 +101,11 @@ const { toc } = Astro.props;
     update();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
-    // Ảnh trong bài tải xong là mọi tiêu đề bên dưới nó tụt xuống — vị trí cũ hết đúng.
     window.addEventListener("load", update);
   }
 </script>
 
 <style>
-  /*
-   * Ẩn thanh cuộn của mục lục, giống cách dải tab làm ở WhyUs.astro.
-   *
-   * Không phải cho gọn mắt: thanh cuộn hiện/ẩn theo chiều cao danh sách sẽ hẹp lại vùng
-   * chữ đúng bằng bề rộng của nó, và mọi dòng trong mục lục nhích ngang một nhịp.
-   */
   .toc-list {
     scrollbar-width: none;
     -ms-overflow-style: none;

@@ -1,0 +1,265 @@
+---
+import HeroBackdrop from "@/components/HeroBackdrop.astro";
+/**
+ * Hero dùng chung cho mọi trang con (trừ trang chủ) — bố cục của trang Lịch khai giảng:
+ * chữ + CTA + cụm đánh giá bên trái, ảnh thật bên phải trên vệt màu, thanh 4 chỉ số đè mép dưới.
+ *
+ * `image` là ảnh tách nền (PNG/WebP trong suốt) thì để `cutout` (mặc định); ảnh chụp thường
+ * thì `cutout={false}` — ảnh được bo góc như một tấm thẻ.
+ */
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { reviewsSummary } from "@/data/testimonials";
+import { ICONS } from "@/lib/icons";
+
+import defaultImage from "@/assets/hero/hoc-vien-giao-trinh-tach-nen.webp";
+import phoiMy from "@/assets/reviews/phoi-my.jpg";
+import chiNguyen from "@/assets/reviews/chi-nguyen.jpg";
+import phuongThao from "@/assets/reviews/doan-phuong-thao.png";
+import giaTue from "@/assets/reviews/tran-gia-tue.jpg";
+
+export type HeroStat = { icon: string; value: string; label: string };
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  cta?: { label: string; href: string };
+  /** Nút viền thứ hai; có nút này thì cụm đánh giá ẩn đi cho gọn. */
+  secondary?: { label: string; href: string };
+  image?: ImageMetadata;
+  imageAlt?: string;
+  cutout?: boolean;
+  /** Truyền mảng rỗng để ẩn thanh chỉ số. */
+  stats?: HeroStat[];
+  /** Vài điểm nhấn nhỏ (sao, tia) quanh ảnh. */
+  decor?: boolean;
+}
+
+const DEFAULT_STATS: HeroStat[] = [
+  { icon: ICONS.calendar, value: "Từ 2019", label: "Đào tạo tại TP.HCM" },
+  { icon: ICONS.book, value: "HSK 1–6", label: "Trọn lộ trình" },
+  { icon: ICONS.target, value: "100%", label: "Cam kết đầu ra" },
+  { icon: ICONS.shield, value: "Có giấy phép", label: "Sở GD&ĐT TP.HCM" },
+];
+
+const {
+  title,
+  eyebrow,
+  lead,
+  cta = { label: "Xem lịch khai giảng", href: "/schedule" },
+  image = defaultImage,
+  imageAlt = "Học viên SaigonHSK mặc đồng phục cầm giáo trình",
+  cutout = true,
+  stats = DEFAULT_STATS,
+  secondary,
+  decor = false,
+} = Astro.props;
+
+const hasStats = stats.length > 0;
+
+const [line1, ...rest] = title.split("\n");
+const line2 = rest.join(" ");
+const words = (line: string) => line.split(" ").filter(Boolean);
+
+const reviews = reviewsSummary();
+const avatars = [phoiMy, chiNguyen, phuongThao, giaTue];
+---
+
+<section class="shx relative isolate bg-background">
+  <HeroBackdrop stickers="wide" wave={false} />
+  <script is:inline>
+    (function (s) {
+      if (!s || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      s.dataset.intro = "pending";
+      setTimeout(function () {
+        if (s.dataset.intro === "pending") delete s.dataset.intro;
+      }, 3000);
+    })(document.currentScript && document.currentScript.parentElement);
+  </script>
+
+  <div
+    class:list={[
+      "container mx-auto grid items-end gap-8 px-6 pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6 lg:pt-0",
+      hasStats ? "lg:min-h-[calc(100svh-4.25rem-8.5rem)]" : "lg:min-h-[calc(100svh-4.25rem)]",
+    ]}
+  >
+    <div class="self-center pb-4 lg:py-12">
+
+      <h1 class="text-[2.5rem] leading-[1.06] font-extrabold tracking-[-0.035em] text-balance text-brand-ink-900 sm:text-[3.25rem] xl:text-[4rem]">
+        <span class="block">
+          {words(line1).map((w, i) => (
+            <>
+              {i > 0 && " "}
+              <span class="shx-word inline-block">{w}</span>
+            </>
+          ))}
+        </span>
+        {
+          line2 && (
+            <span class="block text-brand-red-600">
+              {words(line2).map((w, i) => (
+                <>
+                  {i > 0 && " "}
+                  <span class="shx-word inline-block">{w}</span>
+                </>
+              ))}
+            </span>
+          )
+        }
+      </h1>
+
+      {
+        lead && (
+          <p data-speakable class="shx-fade mt-6 max-w-md text-base leading-relaxed font-medium text-brand-ink-500 line-clamp-5 lg:line-clamp-4 lg:text-lg">
+            {lead}
+          </p>
+        )
+      }
+
+      <div class="shx-fade mt-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-7">
+        <a
+          href={cta.href}
+          class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-red-600 px-7 text-[0.95rem] font-bold text-white transition-colors hover:bg-brand-red-700"
+        >
+          {cta.label}
+          <span
+            class:list={[
+              "transition-transform [&>svg]:size-[1.1rem]",
+              cta.href.startsWith("#") ? "group-hover:translate-y-0.5 [&>svg]:rotate-90" : "group-hover:translate-x-1",
+            ]}
+            set:html={ICONS.arrow}
+          />
+        </a>
+
+        {secondary ? (
+          <a
+            href={secondary.href}
+            class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-border bg-background px-7 text-[0.95rem] font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+          >
+            {secondary.label}
+            <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-[1.1rem]" set:html={ICONS.arrow} />
+          </a>
+        ) : (
+        <a href="/about/reviews" class="group flex items-center gap-3">
+          <span class="flex -space-x-2.5">
+            {
+              avatars.map((a) => (
+                <Image
+                  src={a}
+                  alt=""
+                  width={40}
+                  height={40}
+                  densities={[1, 2]}
+                  format="webp"
+                  class="size-10 rounded-full object-cover ring-2 ring-background"
+                />
+              ))
+            }
+          </span>
+          <span class="leading-tight">
+            <span class="flex items-center gap-1 text-lg font-extrabold text-brand-ink-900">
+              {reviews.score}
+              <span class="text-[#f5b301] [&>svg]:size-4" set:html={ICONS.star} />
+            </span>
+            <span class="text-[13px] font-medium text-brand-ink-500 group-hover:text-brand-ink-900">
+              {reviews.count} đánh giá trên {reviews.sourceLabel}
+            </span>
+          </span>
+        </a>
+        )}
+      </div>
+    </div>
+
+    <div class:list={["shx-media relative mx-auto w-full max-w-[34rem] lg:max-w-none lg:pt-12", cutout ? "self-end" : "self-center pb-20 lg:pb-24"]}>
+      <svg class="shx-blob absolute inset-x-[4%] bottom-[4%] -z-10 h-[86%] w-[92%]" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true">
+        <path
+          d="M64 92c38-52 118-70 186-56 64 13 120 52 132 118 12 64-14 128-64 170-52 44-130 60-196 36C58 336 18 280 14 214 10 168 34 132 64 92z"
+          fill="var(--brand-red-100)"
+        />
+      </svg>
+
+      {
+        decor && (
+          <svg class="shx-decor pointer-events-none absolute inset-0 z-10 size-full" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M330 40l6 16 16 6-16 6-6 16-6-16-16-6 16-6z" fill="var(--brand-red-600)" />
+            <path d="M74 150l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#e3a82b" />
+            <circle cx="356" cy="120" r="6" fill="#e3a82b" />
+            <path d="M52 214l18 6M58 236l16-2M66 194l12 12" stroke="var(--brand-red-300)" stroke-width="4" stroke-linecap="round" />
+            <path d="M344 196l18-8M348 218l20 0M340 174l12-14" stroke="var(--brand-red-300)" stroke-width="4" stroke-linecap="round" />
+          </svg>
+        )
+      }
+
+      <Image
+        src={image}
+        alt={imageAlt}
+        widths={[420, 640, 900]}
+        sizes="(min-width: 1024px) 45vw, 90vw"
+        format="webp"
+        quality={85}
+        loading="eager"
+        fetchpriority="high"
+        class:list={[
+          "shx-photo relative mx-auto block",
+          cutout
+            ? ["h-auto w-[92%] max-w-[34rem] object-contain object-bottom lg:w-full lg:max-w-none", hasStats ? "lg:max-h-[calc(100svh-17rem)]" : "lg:max-h-[calc(100svh-11rem)]"]
+            : "aspect-[4/5] w-[78%] max-w-[26rem] rounded-[2rem] object-cover shadow-[0_30px_60px_-30px_rgb(17_24_39/0.45)] lg:max-h-[calc(100svh-20rem)] lg:w-auto",
+        ]}
+      />
+    </div>
+  </div>
+
+  {hasStats && (
+  <div class="relative z-10 container mx-auto -mb-14 px-6">
+    <dl class="shx-stats grid grid-cols-2 gap-y-5 rounded-3xl border border-border bg-background px-5 py-6 shadow-[0_24px_60px_-36px_rgb(17_24_39/0.45)] md:grid-cols-4 md:px-8">
+      {
+        stats.map((s, i) => (
+          <div class:list={["flex items-center gap-3 px-2", i > 0 && "md:border-l md:border-border md:pl-6"]}>
+            <span class="shrink-0 text-brand-ink-400 [&>svg]:size-6" set:html={s.icon} />
+            <div class="min-w-0">
+              <dt class="truncate text-[15px] font-extrabold text-brand-ink-900">{s.value}</dt>
+              <dd class="truncate text-[13px] text-brand-ink-500">{s.label}</dd>
+            </div>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+  )}
+</section>
+
+<script>
+  import { gsap } from "gsap";
+
+  const hero = document.querySelector<HTMLElement>(".shx");
+
+  if (hero && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const q = gsap.utils.selector(hero);
+    const fades = q(".shx-fade");
+    gsap.set(q(".shx-word"), { y: 30, autoAlpha: 0 });
+    gsap.set(fades, { y: 14, autoAlpha: 0 });
+    gsap.set(q(".shx-blob"), { scale: 0.6, autoAlpha: 0, transformOrigin: "50% 60%" });
+    gsap.set(q(".shx-photo"), { y: 80, autoAlpha: 0 });
+    gsap.set(q(".shx-stats"), { y: 24, autoAlpha: 0 });
+    delete hero.dataset.intro;
+
+    gsap
+      .timeline({ defaults: { ease: "power4.out" } })
+      .to(q(".shx-word"), { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.06 })
+      .to(fades, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.08 }, "-=0.6")
+      .to(q(".shx-blob"), { scale: 1, autoAlpha: 1, duration: 1.2, ease: "expo.out" }, 0.15)
+      .to(q(".shx-photo"), { y: 0, autoAlpha: 1, duration: 1.2, ease: "expo.out" }, 0.3)
+      .to(q(".shx-stats"), { y: 0, autoAlpha: 1, duration: 0.8 }, 0.7);
+  }
+</script>
+
+<style>
+  .shx[data-intro="pending"] .shx-word,
+  .shx[data-intro="pending"] .shx-fade,
+  .shx[data-intro="pending"] .shx-blob,
+  .shx[data-intro="pending"] .shx-photo,
+  .shx[data-intro="pending"] .shx-stats {
+    opacity: 0;
+  }
+</style>

@@ -22,19 +22,12 @@ import {
 } from "@/lib/seo";
 import { breadcrumbNodes, programSchema } from "@/lib/schema";
 
-// Tra cứu theo params — xem ghi chú ở src/pages/courses/[...slug].astro. Chín chương
-// trình này vẫn sinh từ repo (`src/data/courses.ts`), chưa nằm trong bảng `courses`.
 const course = courses.find((entry) => entry.slug === Astro.params.slug);
 if (!course) return new Response(null, { status: 404 });
 
 const origin = Astro.site?.origin ?? "";
 const url = `${origin}${Astro.url.pathname}`;
 
-/**
- * Các trang này có dữ liệu chi tiết nhất trên site (thời lượng, giáo trình, chuẩn
- * đầu ra của từng cấp lớp) nhưng trước đây không phát ra structured data nào. Mỗi
- * cấp lớp trở thành một CourseInstance để Google hiểu khoá có nhiều lớp.
- */
 const schemas: Record<string, unknown>[] = [
   {
     ...courseSchema({
@@ -67,14 +60,6 @@ const schemas: Record<string, unknown>[] = [
         }
       : {}),
   },
-  /*
-    `EducationalOccupationalProgram` bên cạnh `Course` — không phải khai trùng.
-
-    `Course` trả lời "môn này dạy gì"; node này trả lời "chương trình dài bao lâu,
-    tuyển ai, học xong được chứng chỉ gì" — đúng câu người đi tìm nơi học hỏi, và là
-    loại node Google dành riêng cho chương trình đào tạo. Khi AI so sánh các trung tâm,
-    nó đọc được thời lượng và chuẩn đầu ra ở đây mà không phải parse văn xuôi.
-  */
   programSchema({
     name: course.title,
     description: course.summary,
@@ -85,15 +70,11 @@ const schemas: Record<string, unknown>[] = [
   }),
 ];
 
-// FAQ lấy từ chính dữ liệu khoá học, trả lời đúng ba câu người học hỏi nhiều nhất:
-// học bao lâu, đầu vào cần gì, học phí bao nhiêu.
 const faqs = [
   ...(course.levels[0]?.duration?.length
     ? [
         {
           question: `Khoá ${course.title} học trong bao lâu?`,
-          // Khoá một cấp (vd Cao cấp chỉ có HSK6) thì câu "gồm 1 lớp theo cấp độ"
-          // vừa thừa vừa trái với thời lượng đã nêu là 2 lớp HSK6.1 và HSK6.2.
           answer:
             course.levels.length > 1
               ? `${course.levels[0].duration[0]} Khoá gồm ${course.levels.length} lớp theo cấp độ, học viên có thể vào đúng cấp của mình sau khi test trình độ.`
@@ -113,13 +94,6 @@ const faqs = [
 
 schemas.push(faqSchema(faqs));
 
-/*
-  `tone` tô cả icon lẫn nhãn của mục — cùng một màu thì hàng tiêu đề đọc ra một khối
-  thay vì icon một màu, chữ một màu.
-
-  Sáu màu đều chọn bậc 600: đây là chữ chứ không còn là hoạ tiết, nên phải đủ tương
-  phản trên nền trắng. Riêng vàng ở bậc 500 đã mờ hẳn khi in chữ.
-*/
 const blocks = [
   { key: "audience", label: "Đối tượng", icon: ICONS.users, tone: "text-brand-ink-900" },
   { key: "goals", label: "Mục tiêu", icon: ICONS.target, tone: "text-brand-ink-900" },
@@ -131,9 +105,6 @@ const blocks = [
 
 const others = courses.filter((c) => c.slug !== course.slug).slice(0, 8);
 
-/* ---------- Dữ liệu suy ra cho các khối mới ---------- */
-
-/** Tổng buổi/giờ của cả khoá, lấy từ chuỗi thời lượng của từng cấp lớp. */
 const firstNumber = (text: string, re: RegExp) => {
   const m = text.match(re);
   return m ? Number(m[1]) : 0;
@@ -147,7 +118,6 @@ const parsed = course.levels.map((level) => {
 });
 const sum = (key: "sessions" | "hours") =>
   parsed.reduce((acc, p) => acc + p[key], 0);
-/** Chỉ cộng khi mọi cấp lớp đều đọc được số — thiếu một lớp là tổng sai. */
 const totals = {
   sessions: parsed.every((p) => p.sessions > 0) ? sum("sessions") : 0,
   hours: parsed.every((p) => p.hours > 0) ? sum("hours") : 0,
@@ -159,12 +129,10 @@ const totalsLabel = [
   .filter(Boolean)
   .join(" · ");
 
-/** "Bạn sẽ đạt được gì" — gom chuẩn đầu ra của mọi cấp lớp, bỏ trùng. */
 const benefits = [
   ...new Set(course.levels.flatMap((level) => level.outcomes ?? [])),
 ].slice(0, 6);
 
-/** Bốn thành phần của khoá, theo đúng dữ liệu khoá đang mở. */
 const includes = [
   {
     icon: ICONS.cap,
@@ -196,14 +164,6 @@ const includes = [
   },
 ];
 
-/*
-  Toàn bộ đội ngũ, người phụ trách chuyên môn lên đầu.
-
-  Trước đây khối này lấy 3 người rồi đặt tiêu đề "Ai dạy khoá này" — một khẳng định
-  sai: trung tâm không phân giảng viên cố định theo chương trình, ai cũng có thể đứng
-  lớp và việc xếp người là theo lịch từng khoá. Cắt 3 người đầu danh sách thành ra
-  ngụ ý ba người đó dạy khoá này còn năm người kia thì không.
-*/
 const isLead = (t: (typeof teachers)[number]) =>
   Number(Boolean((t as { lead?: boolean }).lead));
 const staff = [...teachers].sort((a, b) => isLead(b) - isLead(a));
@@ -213,16 +173,8 @@ const crumbs = [
   { label: course.title },
 ];
 
-// Breadcrumb JSON-LD trước đây do PageHero tự phát; hero đã bỏ nên khai ở đây.
 schemas.push(...breadcrumbNodes(crumbs, Astro.url.pathname, Astro.site));
 
-/**
- * Ba thông tin người học hỏi đầu tiên, hiển thị ngay dưới H1 — cùng ngôn ngữ thị
- * giác với trang khoá học (src/components/CatalogDetail.astro).
- *
- * Lưu ý: KHÔNG dùng được các token brand-blue-* / brand-pink-* ở đây — trong theme
- * này chúng chỉ là alias trỏ về brand-red-*, nên sẽ ra đỏ hết.
- */
 const heroFacts = [
   {
     icon: ICONS.cap,
@@ -244,19 +196,11 @@ const heroFacts = [
   },
 ].filter((f) => f.value);
 
-/*
-  Lộ trình dạng các chặng, dựng từ chính chuỗi thời lượng của từng cấp lớp:
-    · "2 lớp HSK4.1 và HSK4.2, mỗi lớp 3,5 tháng …" → hai chặng HSK4.1, HSK4.2, mỗi chặng 3,5 tháng
-    · "… (3 tháng)." hoặc "3,5 tháng · …"            → một chặng, thời lượng đó
-  KHÔNG cộng tổng số tháng cả khoá: cách tính tổng (một cấp hay cả lộ trình) chưa được
-  trung tâm xác nhận, nên chỉ ghi thời lượng từng lớp đúng như dữ liệu.
-*/
 const roadmap = course.levels.flatMap((level) => {
   const text = (level.duration ?? []).join(" ");
   const split = text.match(/2 lớp (\S+) và (\S+), mỗi lớp ([\d,]+ tháng)/);
   const goal = level.goals?.[0] ?? level.outcomes?.[0] ?? "";
   if (split) {
-    // Hai chặng cùng cấp: chặng sau lấy mục tiêu kế tiếp để hai thẻ không lặp một câu.
     const goals = [...(level.goals ?? []), ...(level.outcomes ?? [])];
     return [
       { name: split[1], months: split[3], goal: goals[0] ?? "" },
@@ -278,7 +222,6 @@ const perClassLabel =
       ? `${fmtMonths(monthNums[0])} tháng/lớp`
       : `${fmtMonths(Math.min(...monthNums))}–${fmtMonths(Math.max(...monthNums))} tháng/lớp`;
 
-/** Bốn dữ kiện ngay dưới tiêu đề trong banner. */
 const quickFacts = [
   { label: "Đầu vào", value: course.entry },
   { label: "Mục tiêu", value: course.goal },
@@ -309,12 +252,7 @@ const sectionTitle =
 >
   <Header />
   <main id="main" class="pb-16 lg:pb-24">
-    {/*
-      Banner đỏ rượu như các trang Giới thiệu/Lịch khai giảng: tên khoá, một câu tóm tắt,
-      bốn dữ kiện người chọn khoá hỏi đầu tiên (đầu vào, mục tiêu, thời lượng, hình thức)
-      và nút đăng ký — đủ để quyết định có đọc tiếp hay không ngay ở màn đầu.
-    */}
-    <section class="bg-brand-red-900 pt-[var(--header-overlap,0px)] text-[#ffffff]">
+    <section class="bg-brand-red-600 pt-[var(--header-overlap,0px)] text-[#ffffff]">
       <div class="container mx-auto px-6 py-12 lg:py-16">
         <nav aria-label="Breadcrumb">
           <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[#ffffff]/65">
@@ -371,7 +309,7 @@ const sectionTitle =
         <div class="mt-9 flex flex-col gap-3 sm:flex-row">
           <a
             href={registerHref({ course: course.slug })}
-            class="group inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#ffffff] px-7 text-[0.95rem] font-extrabold text-brand-red-900 shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-50"
+            class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#ffffff] px-7 text-[0.95rem] font-extrabold text-brand-red-900 shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-50"
           >
             Đăng ký test trình độ miễn phí
             <span class="transition-transform group-hover:translate-x-1 [&>svg]:size-4" set:html={ICONS.arrow} />
@@ -380,7 +318,7 @@ const sectionTitle =
             roadmap.length > 1 && (
               <a
                 href="#lo-trinh"
-                class="inline-flex h-12 items-center justify-center rounded-md border border-[#ffffff]/40 px-7 text-[0.95rem] font-semibold transition-colors hover:border-[#ffffff] hover:bg-white/5"
+                class="inline-flex h-12 items-center justify-center rounded-lg border border-[#ffffff]/40 px-7 text-[0.95rem] font-semibold transition-colors hover:border-[#ffffff] hover:bg-white/5"
               >
                 Xem lộ trình
               </a>
@@ -391,13 +329,8 @@ const sectionTitle =
     </section>
 
     <div class="container mx-auto px-6 pt-12 lg:pt-16">
-      <!-- Nội dung chạy dọc bên trái, thẻ đăng ký dính bên phải suốt trang -->
       <div class="grid gap-10 lg:grid-cols-[1fr_21rem] lg:items-start lg:gap-14">
         <div class="space-y-14 lg:space-y-16">
-          {/*
-            Lộ trình — chỉ khi khoá có từ hai chặng trở lên. Mỗi chặng: tên lớp,
-            thời lượng, mục tiêu một dòng. Chi tiết từng lớp vẫn ở khối "Chương trình học".
-          */}
           {
             roadmap.length > 1 && (
               <section id="lo-trinh" class="scroll-mt-24">
@@ -431,7 +364,6 @@ const sectionTitle =
             )
           }
 
-          <!-- Bạn đạt được sau khoá học -->
           {
             benefits.length > 0 && (
               <section id="dau-ra" class="scroll-mt-24">
@@ -457,7 +389,6 @@ const sectionTitle =
             )
           }
 
-          <!-- Chương trình học: chi tiết từng cấp lớp -->
           <section id="noi-dung" class="scroll-mt-24">
             {
               course.levels.length === 0 ? (
@@ -469,7 +400,7 @@ const sectionTitle =
                   <div class="mt-7 flex flex-wrap gap-3">
                     <a
                       href={`tel:${contact.phonePrimaryRaw}`}
-                      class="inline-flex items-center gap-2 rounded-xl bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+                      class="inline-flex items-center gap-2 rounded-lg bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
                     >
                       <span class="[&>svg]:size-4" set:html={ICONS.phone} />
                       Gọi {contact.phonePrimary}
@@ -478,7 +409,7 @@ const sectionTitle =
                       href={contact.zalo}
                       target="_blank"
                       rel="noopener"
-                      class="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+                      class="inline-flex items-center gap-2 rounded-lg border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
                     >
                       Chat Zalo
                     </a>
@@ -557,7 +488,6 @@ const sectionTitle =
             }
           </section>
 
-          <!-- Khoá học gồm những gì -->
           <section id="gom-gi" class="scroll-mt-24">
             <h2 class={sectionTitle}>Quyền lợi &amp; cam kết</h2>
             <div class="mt-7 grid gap-4 sm:grid-cols-2">
@@ -589,34 +519,21 @@ const sectionTitle =
             </div>
           </section>
 
-          <!-- Lịch khai giảng của đúng chương trình này -->
           <section id="lop-dang-mo" class="scroll-mt-24">
             <h2 class={sectionTitle}>Lịch học {course.title.toLowerCase()}</h2>
 
-            {/*
-              Không còn bảng lớp của riêng chương trình này.
-
-              Nó lọc lịch khai giảng theo `programSlug` của từng lớp, mà một dòng lịch
-              không nối tới chương trình nào nữa: tờ lịch trên /schedule là chữ giáo vụ
-              gõ, không phải các hàng `classes` gom theo khoá (xem `data/scheduleApi.ts`
-              và `migrations/017` bên server). Không có cách nào chọn ra "dòng nào thuộc
-              chương trình này" mà không đoán theo tên.
-
-              Thay bằng đúng khối vẫn hiển thị trước đây cho chương trình chưa có lớp
-              nào: gọi hotline, hoặc xem lịch đầy đủ — link ngay bên dưới.
-            */}
             <div class="mt-7 rounded-2xl border-2 border-dashed border-border bg-brand-ink-50/60 p-8 text-center">
               <p class="text-base font-black text-brand-ink-900">
                 Lịch khai giảng {course.title.toLowerCase()} cập nhật theo từng đợt
               </p>
               <p class="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                 Xem đợt đang mở ở trang Lịch khai giảng, hoặc gọi hotline để nhận ngày
-                khai giảng gần nhất và giữ chỗ — trung tâm xếp lớp ngay khi đủ học viên
+                khai giảng gần nhất và đăng ký — trung tâm xếp lớp ngay khi đủ học viên
                 cùng trình độ.
               </p>
               <a
                 href={`tel:${contact.phonePrimaryRaw}`}
-                class="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+                class="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
               >
                 <span class="[&>svg]:size-4" set:html={ICONS.phone} />
                 Gọi {contact.phonePrimary}
@@ -635,7 +552,6 @@ const sectionTitle =
             </a>
           </section>
 
-          <!-- Giảng viên -->
           <section id="giang-vien" class="scroll-mt-24">
             <h2 class={sectionTitle}>Đội ngũ giảng viên</h2>
             <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -690,7 +606,6 @@ const sectionTitle =
             </a>
           </section>
 
-          <!-- FAQ -->
           <section id="faq" class="scroll-mt-24">
             <h2 class={sectionTitle}>Câu hỏi thường gặp</h2>
             <div class="mt-7 grid gap-4">
@@ -715,7 +630,6 @@ const sectionTitle =
             </div>
           </section>
 
-          <!-- Khoá học khác -->
           <section id="khoa-khac" class="scroll-mt-24">
             <h2 class="text-xl font-extrabold text-brand-ink-900">Khoá học khác</h2>
             <div class="mt-5 flex flex-wrap gap-3">
@@ -723,7 +637,7 @@ const sectionTitle =
                 others.map((c) => (
                   <a
                     href={`/courses/programs/${c.slug}`}
-                    class="rounded-full border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-brand-ink-50"
+                    class="rounded-lg border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-brand-ink-50"
                   >
                     {c.title}
                   </a>
@@ -733,12 +647,11 @@ const sectionTitle =
           </section>
         </div>
 
-        <!-- Thẻ đăng ký, dính khi cuộn -->
         <aside class="lg:sticky lg:top-24 lg:order-last">
           <div
             class="overflow-hidden rounded-2xl border border-border bg-background shadow-sm"
           >
-            <div class="relative grid h-40 place-items-center bg-brand-red-900 text-[#ffffff]">
+            <div class="relative grid h-40 place-items-center bg-brand-red-600 text-[#ffffff]">
               <span
                 aria-hidden="true"
                 class="absolute -right-3 -top-6 select-none text-[8rem] font-black leading-none text-white/10">课</span
@@ -761,7 +674,7 @@ const sectionTitle =
 
               <a
                 href={registerHref({ course: course.slug })}
-                class="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
+                class="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-red-700"
               >
                 Đăng ký ngay
                 <span class="[&>svg]:size-4" set:html={ICONS.arrow} />
@@ -769,7 +682,7 @@ const sectionTitle =
 
               <a
                 href={`tel:${contact.phonePrimaryRaw}`}
-                class="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+                class="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-3.5 text-sm font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
               >
                 <span class="text-brand-ink-400 [&>svg]:size-4" set:html={ICONS.phone} />
                 {contact.phonePrimary}

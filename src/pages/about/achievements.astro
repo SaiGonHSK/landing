@@ -22,7 +22,6 @@ const posters = await Promise.all(
   })),
 );
 
-/** Chuẩn đầu ra cam kết theo nhóm lớp. */
 const outcomes = [
   { label: "Lớp HSK1", result: "100% đậu HSK1" },
   { label: "Lớp HSK2", result: "100% đậu HSK2" },
@@ -32,11 +31,6 @@ const outcomes = [
   { label: "Luyện thi HSK5", result: "100% đậu HSK5" },
 ];
 
-/*
-  Banner đầu trang cùng kiểu với trang Giới thiệu (`AboutHero`). Ảnh là poster của học viên
-  điểm cao nhất, ba dữ kiện bên dưới tính từ `honorPosters` — thêm poster mới là banner tự
-  cập nhật, không có con số nào viết tay.
-*/
 const levelOf = (exam: string) => Number(exam.replace(/\D/g, "")) || 0;
 const topScore = honorPosters.reduce((a, b) => (Number(b.total) > Number(a.total) ? b : a));
 const topLevel = honorPosters.reduce((a, b) => (levelOf(b.exam) > levelOf(a.exam) ? b : a));
@@ -46,8 +40,6 @@ const heroFacts = [
   { value: `${honorPosters.length} bảng điểm`, label: "Công bố kèm phiếu điểm gốc" },
 ];
 
-/* Trang nhánh của mục Giới thiệu: khai `AboutPage` gộp vào node `WebPage` của Layout,
-   `mainEntity` trỏ về `#organization` để AI biết trang này nói *về* trung tâm. */
 const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site })];
 ---
 
@@ -210,8 +202,6 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
 
     <section class="bg-background">
       <div class="container mx-auto px-6">
-        {/* Kiểu nhãn viết tay như `note` của SectionHeading: viền nét đứt, hơi
-            nghiêng, chữ Fuzzy Bubbles — chỉ đổi nền sang vàng cho khác khối đỏ ở trên. */}
         <div
           class="flex -rotate-1 flex-col gap-5 rounded-2xl border border-dashed border-amber-300 bg-amber-50 px-6 py-7 sm:flex-row sm:items-center sm:justify-between"
         >
@@ -233,7 +223,7 @@ const schemas = [aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.sit
 
           <a
             href={`mailto:${contact.email}`}
-            class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+            class="group inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand-red-600 px-6 py-3.5 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
           >
             Gửi bảng điểm
             <span

@@ -12,21 +12,12 @@ import { renderArticleBody } from "@/lib/articleBody";
 import { buildToc } from "@/lib/articleToc";
 import { site } from "@/data/site";
 
-// Tra cứu theo params — xem ghi chú ở src/pages/courses/[slug].astro. Bài viết do
-// trang quản trị soạn, nên danh sách đổi giữa hai lần xem là chuyện thường.
 const item = await findLibraryArticle(
   Astro.params.category ?? "",
   Astro.params.slug ?? "",
 );
 if (!item) return new Response(null, { status: 404 });
 
-/*
- * Ba bài gợi ý: ưu tiên cùng chuyên mục, thiếu thì lấy bài mới nhất của Thư viện.
- *
- * Chuyên mục mới mở thường chỉ có một bài, và một bài viết kết thúc bằng khoảng
- * trắng là chỗ người đọc rời trang. Bù bằng bài mới nhất giữ được mạch đọc mà không
- * cần chuyên mục nào phải "đủ bài" trước.
- */
 const sameCategory = (await articlesInCategory(item.category.key)).filter(
   (entry) => entry.slug !== item.slug,
 );
@@ -35,12 +26,6 @@ const fallback = (await getLibrary()).filter(
 );
 const related = [...sameCategory, ...fallback].slice(0, 3);
 
-/*
- * Mục lục rút từ chính thân bài — xem src/lib/articleToc.ts.
- *
- * Bài chỉ có một mục (hoặc không mục nào) thì không mở cột phụ: một mục lục một dòng
- * không giúp gì mà lại cắt cột chữ hẹp đi.
- */
 const { html: body, toc } = buildToc(renderArticleBody(item.body));
 const hasToc = toc.length > 1;
 
@@ -77,25 +62,6 @@ const schemas = [
     {
       item.coverImage && (
         <div class="container mx-auto px-6">
-          {/*
-            `eager` vì đây là LCP của trang.
-
-            KHÔNG ép `aspect-video` + `object-cover` ở đây. Ảnh bìa của bài Thư viện đến từ
-            hai nguồn tỉ lệ khác hẳn nhau: ảnh đặt riêng cho web là 1600×900, còn ảnh trích
-            từ tài liệu Word của giáo vụ hầu hết là ảnh dọc 2:3. Ép ảnh dọc vào khung 16:9
-            rồi cắt giữa là mất 63% chiều cao — mà đây là infographic đầy chữ, dải còn lại
-            không đọc được gì. Từ khi ảnh bìa được gỡ khỏi thân bài cho khỏi lặp, đây là
-            chỗ DUY NHẤT tấm ảnh xuất hiện, nên nó phải hiện trọn.
-
-            Thay bằng chặn chiều cao: ảnh giữ đúng tỉ lệ gốc, canh giữa, cao tối đa 34rem
-            để ảnh dọc không đẩy nội dung bài xuống quá sâu.
-          */}
-          {/*
-            `data-lightbox` mở ảnh cỡ lớn — cùng cách với thẻ giảng viên, poster thành tích
-            và dải cơ sở vật chất; phần script dùng chung ở components/Lightbox.astro, đã
-            được Layout gắn sẵn trên mọi trang. Ảnh bìa ở đây vốn đã là bản đủ to nên
-            `data-lightbox` trỏ về chính nó, không cần bản phóng to riêng.
-          */}
           <img
             data-lightbox={item.coverImage}
             data-caption={item.title}
@@ -110,18 +76,6 @@ const schemas = [
       )
     }
 
-    {/*
-      Thân bài và mục lục chia hai cột từ `lg`.
-
-      Cột chữ chặn ở tầm đọc (52rem) cho dòng chữ khỏi dài quá; phần dôi ra giữa hai
-      cột thành lề trắng, không nống cột chữ ra thêm. Khung ngoài vẫn là `container mx-auto
-      px-6` như tiêu đề và ảnh bìa nên thân bài vẫn thẳng lề với chúng.
-
-      Bài không có mục lục thì cột phải bỏ trống hẳn — chặn cả khối ở 52rem nữa là để
-      lại một mảng trắng to đùng bên phải. Lúc đó đổi sang `.rich-wide`: chữ vẫn 52rem,
-      nhưng bảng và ảnh được dùng hết bề ngang. Bảng từ vựng bốn cột của Thư viện là thứ
-      hưởng lợi thật, trước đó nó phải cuộn ngang trong cột chữ trong khi bên cạnh trống.
-    */}
     <div
       class:list={[
         "container mx-auto grid gap-12 px-6 lg:gap-16",
@@ -129,11 +83,6 @@ const schemas = [
       ]}
     >
       <article>
-        {/*
-          `set:html` là cố ý: `body` là Markdown do trang quản trị soạn, `renderArticleBody`
-          dựng nó thành HTML, và chỉ admin/staff vào được console. `buildToc` chỉ gắn thêm
-          `id` vào H2/H3 của chính chuỗi đó, không đưa nội dung nào mới vào.
-        */}
         <div
           class:list={[
             "rich text-base leading-[1.75] text-muted-foreground md:text-[1.0625rem]",

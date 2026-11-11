@@ -4,37 +4,12 @@ const BRAND = "SaigonHSK";
 export const title = (main: string) =>
   main.includes(BRAND) ? main : `${main} | ${BRAND}`;
 
-/**
- * Người Việt gõ tên thành phố theo nhiều cách và Google coi chúng là các truy vấn
- * khác nhau: "tphcm" (không dấu chấm) chiếm phần lớn lượng tìm kiếm, "tp.hcm" và
- * "sài gòn" vẫn còn nhiều. Title dùng "TPHCM", phần mô tả nhắc lại "TP.HCM" và
- * "Sài Gòn" để phủ cả ba biến thể mà không nhồi nhét.
- */
 export const CITY = {
   compact: "TPHCM",
   dotted: "TP.HCM",
   legacy: "Sài Gòn",
 } as const;
 
-/**
- * Từ khoá của **một** cấp HSK, sinh theo khuôn thay vì gõ tay sáu lần.
- *
- * Trước đây sáu cấp được liệt kê tay theo từng dòng, nên mỗi lần thêm một dạng truy vấn
- * là thêm sáu dòng và luôn sót một hai cấp — bản cũ có "ngữ pháp HSK3/4/5" mà không có
- * HSK1, HSK2, HSK6, có "đề thi HSK3/4/5" mà thiếu HSK6. Khuôn dưới đây làm chỗ khai báo
- * duy nhất: thêm một dòng ở đây là đủ sáu cấp cùng có.
- *
- * Bốn nhóm truy vấn, tất cả đều thấy trong dữ liệu tìm kiếm tiếng Việt:
- *
- * - Tìm lớp: "khoá học HSK4", "lớp HSK4 TPHCM". Giữ **cả hai** cách viết "khoá" và
- *   "khóa" — đây là hai chuỗi khác nhau với công cụ tìm kiếm, và "khóa" mới là cách gõ
- *   phổ biến hơn, trong khi cả site chỉ dùng "khoá".
- * - Luyện thi: "luyện thi HSK4", "ôn thi HSK4" — hai động từ khác nhau, người tìm dùng
- *   lẫn lộn.
- * - Tra cứu nội dung: "từ vựng HSK4", "ngữ pháp HSK4", "đề thi HSK4".
- * - Câu hỏi: "HSK4 học bao lâu", "HSK4 bao nhiêu từ" — dạng truy vấn mà trang khoá từng
- *   cấp trả lời trực tiếp bằng số liệu HSK 3.0.
- */
 const hskLevelKeywords = (level: number) => [
   `HSK${level}`,
   `HSK ${level}`,
@@ -55,7 +30,6 @@ const hskLevelKeywords = (level: number) => [
   `đề thi HSK${level}`,
   `HSK${level} học bao lâu`,
   `HSK${level} bao nhiêu từ`,
-  // Không dấu — xem ghi chú ở nhóm `nodiacritics`.
   `hoc hsk${level}`,
   `khoa hoc hsk${level}`,
   `luyen thi hsk${level}`,
@@ -65,7 +39,6 @@ const hskLevelKeywords = (level: number) => [
   `lop hsk${level} tphcm`,
 ];
 
-/** Sáu cấp HSK. Không lấy từ `HSK_LEVELS`: `lib/` không phụ thuộc vào `data/`. */
 const HSK_LEVEL_NUMBERS = [1, 2, 3, 4, 5, 6];
 
 export const keywords = {
@@ -93,18 +66,6 @@ export const keywords = {
     "trung tâm Hoa văn TPHCM",
     "học tiếng Hoa TPHCM",
   ],
-  /**
-   * Tên trung tâm và các biến thể người ta gõ khi đã biết tên.
-   *
-   * Nhóm quan trọng nhất trong file mà bản cũ không có: truy vấn thương hiệu là truy vấn
-   * gần chuyển đổi nhất — người gõ "hoa van sai gon hsk" đã định học ở đây, chỉ đang tìm
-   * đường vào. Tên bị viết rời ("Sài Gòn HSK") hay dính ("SaigonHSK"), có dấu và không
-   * dấu đều là những chuỗi khác nhau với công cụ tìm kiếm, nên phải khai đủ.
-   *
-   * Cùng bộ tên này còn nằm ở `alternateName` của node Organization trong `Layout.astro`
-   * và ở mục "Thông tin cốt lõi" của `/llms.txt` — ba chỗ nói cùng một điều cho ba loại
-   * bot khác nhau.
-   */
   brand: [
     "SaigonHSK",
     "Saigon HSK",
@@ -178,12 +139,6 @@ export const keywords = {
     "gia sư tiếng Trung TPHCM",
     "dạy tiếng Trung cho doanh nghiệp",
   ],
-  /**
-   * Biến thể không dấu — phủ tìm kiếm trên Cốc Cốc và mobile keyboard.
-   *
-   * Bản không dấu **theo cấp** ("luyen thi hsk4") nằm trong `hskLevelKeywords`, không
-   * lặp lại ở đây; chỗ này chỉ giữ các truy vấn không gắn với cấp nào.
-   */
   nodiacritics: [
     "hoc tieng trung",
     "trung tam hoc tieng trung",
@@ -216,13 +171,6 @@ export const keywords = {
   ],
 } as const;
 
-/**
- * Bộ từ khoá đầy đủ, đi vào `<meta name="keywords">` của **mọi** trang.
- *
- * Bỏ trùng lặp trước khi nối: các nhóm được soạn tay theo chủ đề nên chuyện một truy vấn
- * xuất hiện ở hai nhóm là bình thường, mà chuỗi lặp thì vừa dài vừa trông như nhồi nhét
- * với đúng những công cụ còn đọc thẻ này.
- */
 export const keywordString = Array.from(
   new Set([
     ...keywords.core,
@@ -234,12 +182,6 @@ export const keywordString = Array.from(
   ]),
 ).join(", ");
 
-/**
- * Gộp bộ từ khoá chung với các từ khoá riêng của trang, bỏ trùng lặp.
- *
- * Từ khoá riêng đứng **trước**: `Layout` nối tiếp `keywordString` vào sau chuỗi này, nên
- * thứ đặc thù của trang phải nằm ở đầu thẻ chứ không lẫn giữa hai trăm từ khoá chung.
- */
 export const keywordsFor = (...extra: string[]) =>
   Array.from(
     new Set([
@@ -253,11 +195,6 @@ export const keywordsFor = (...extra: string[]) =>
 export const defaultDescription =
   "Trung tâm Hoa văn SaigonHSK — học tiếng Trung và luyện thi HSK tại TP.HCM. Lớp 10–15 học viên, giảng viên Thạc sĩ – Tiến sĩ, cam kết 100% đầu ra.";
 
-/**
- * Google cắt title ở khoảng 60 ký tự. Nhận vào các phương án từ dài (nhiều từ khoá)
- * đến ngắn, trả về phương án dài nhất còn vừa khung hiển thị — thay vì để title bị
- * cắt giữa câu và mất luôn tên thương hiệu ở cuối.
- */
 export const pickTitle = (...candidates: string[]) => {
   const usable = candidates.filter(Boolean);
   return (
@@ -310,7 +247,6 @@ export function courseFaqs(input: {
   if (duration) {
     faqs.push({
       question: `Học ${input.title} mất bao lâu?`,
-      // Không hạ chữ thường: giá trị có thể chứa mã lớp như "HSK4.1".
       answer: `Thời lượng của khoá là ${duration}. Nhịp học phổ biến là 3 buổi/tuần; học viên đi làm có thể chọn lớp buổi tối hoặc lớp cuối tuần.`,
     });
   }
@@ -324,9 +260,6 @@ export function courseFaqs(input: {
 
   return faqs;
 }
-
-/* Breadcrumb đã chuyển sang `breadcrumbNodes` trong src/lib/schema.ts: bản ở đây không
-   sinh `@id` nên BreadcrumbList không gắn được vào node `WebPage` của trang. */
 
 export const faqSchema = (faqs: { question: string; answer: string }[]) => ({
   "@context": "https://schema.org",
@@ -355,17 +288,8 @@ export const itemListSchema = (
   })),
 });
 
-/**
- * schema.org yêu cầu courseWorkload / timeRequired là ISO 8601 duration, không phải
- * chữ tiếng Việt. Rút số giờ (hoặc số tháng) từ mô tả thời lượng; không đọc được
- * thì trả về undefined để bỏ hẳn thuộc tính thay vì phát ra dữ liệu sai.
- */
 export function toIsoDuration(text?: string): string | undefined {
   if (!text) return undefined;
-  // Chỉ nhận "48 giờ"/"48 tiếng" là tổng thời lượng. Không nhận dạng "2h/buổi" —
-  // đó là độ dài một buổi, khai vào courseWorkload sẽ sai lệch rất lớn.
-  // Lookbehind (?<![\d,]) loại các số thập phân kiểu "3,5 tháng": ISO duration
-  // không biểu diễn được phần thập phân nên thà bỏ trống hơn là khai "5 tháng".
   const hours = text.match(/(?<![\d,])(\d+)\s*(?:giờ|tiếng)/i);
   if (hours) return `PT${hours[1]}H`;
   const months = text.match(/(?<![\d,])(\d+)\s*tháng/i);
@@ -375,13 +299,11 @@ export function toIsoDuration(text?: string): string | undefined {
   return undefined;
 }
 
-/** Số buổi trong khoá, dùng cho courseSchedule.repeatCount. */
 const sessionCount = (text?: string) => {
   const m = text?.match(/(\d+)\s*buổi(?!\s*\/)/i);
   return m ? Number(m[1]) : undefined;
 };
 
-/** Số buổi mỗi tuần → repeatFrequency. */
 const weeklySessions = (text?: string) => {
   const m = text?.match(/(\d+)\s*buổi\s*\/\s*tuần/i);
   return m ? Number(m[1]) : undefined;
@@ -393,19 +315,11 @@ export type CourseSchemaInput = {
   url: string;
   origin: string;
   provider: { name: string; address: string };
-  /** Mô tả thời lượng dạng tiếng Việt, ví dụ "24 buổi, 48 giờ học, 3 buổi/tuần". */
   workload?: string;
-  /** HSK1…HSK6 hoặc mô tả trình độ, đưa vào educationalLevel. */
   level?: string;
-  /** Chứng chỉ khoá học hướng tới, ví dụ "HSK4". */
   credential?: string;
 };
 
-/**
- * Course schema đầy đủ hơn bản cũ: có offers (Google cần offers.category hoặc price
- * để hiện Course rich result), courseSchedule, educationalLevel và
- * educationalCredentialAwarded. Không đặt giá vì trung tâm báo học phí qua hotline.
- */
 export function courseSchema(input: CourseSchemaInput) {
   const workload = toIsoDuration(input.workload);
   const repeatCount = sessionCount(input.workload);
@@ -424,7 +338,6 @@ export function courseSchema(input: CourseSchemaInput) {
   if (repeatCount || perWeek) {
     instance.courseSchedule = {
       "@type": "Schedule",
-      // perWeek buổi mỗi tuần → chu kỳ lặp 1 tuần, repeatCount là tổng số buổi.
       ...(perWeek ? { repeatFrequency: "P1W" } : {}),
       ...(repeatCount ? { repeatCount } : {}),
       scheduleTimezone: "Asia/Ho_Chi_Minh",

@@ -1,10 +1,3 @@
-/**
- * Mỗi icon là một file trong src/assets/icons và được nhúng inline dưới dạng chuỗi
- * SVG (`?raw`) để dùng với `set:html`. Cách này giữ được `currentColor` và class
- * Tailwind ở thẻ bọc ngoài — thứ mà <img src="...svg"> không làm được.
- *
- * Thêm icon mới: tạo file .svg trong src/assets/icons rồi khai báo ở dưới.
- */
 import arrow from "@/assets/icons/arrow.svg?raw";
 import arrowUpRight from "@/assets/icons/arrow-up-right.svg?raw";
 import book from "@/assets/icons/book.svg?raw";
@@ -17,8 +10,6 @@ import check from "@/assets/icons/check.svg?raw";
 import chevron from "@/assets/icons/chevron.svg?raw";
 import clock from "@/assets/icons/clock.svg?raw";
 import close from "@/assets/icons/close.svg?raw";
-// Hai icon mạng xã hội dùng fill thay vì stroke như phần còn lại — đây là glyph
-// thương hiệu, vẽ lại bằng nét sẽ không còn nhận ra.
 import facebook from "@/assets/icons/facebook.svg?raw";
 import tiktok from "@/assets/icons/tiktok.svg?raw";
 import growth from "@/assets/icons/growth.svg?raw";
@@ -36,13 +27,10 @@ import seed from "@/assets/icons/seed.svg?raw";
 import shield from "@/assets/icons/shield.svg?raw";
 import snow from "@/assets/icons/snow.svg?raw";
 import sparkle from "@/assets/icons/sparkle.svg?raw";
-// Ngôi sao tô đầy, không phải nét: nó dùng để vẽ điểm đánh giá, và một dải năm ngôi
-// sao viền rỗng đọc ra là "chưa chọn" chứ không phải "năm sao".
 import star from "@/assets/icons/star.svg?raw";
 import target from "@/assets/icons/target.svg?raw";
 import users from "@/assets/icons/users.svg?raw";
 import wifi from "@/assets/icons/wifi.svg?raw";
-// Icon Zalo chính thức (app icon) — màu cố định, không theo currentColor.
 import zalo from "@/assets/icons/zalo.svg?raw";
 
 export const ICONS = {

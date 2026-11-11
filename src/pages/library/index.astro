@@ -2,14 +2,6 @@
 import LibraryHub from "@/components/LibraryHub.astro";
 import { getLibrary } from "@/data/library";
 
-/**
- * Trang chủ Thư viện: liệt kê mọi bài, mới nhất trước.
- *
- * Trước đây trang này liệt kê 12 **chuyên mục**, tức bắt người đọc bấm hai lần mới
- * thấy bài viết đầu tiên. Chuyên mục giờ chọn ở menu header, nên trang mở ra là đã
- * có nội dung để đọc.
- */
-
 const articles = await getLibrary();
 ---
 

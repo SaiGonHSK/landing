@@ -6,20 +6,13 @@ import Footer from "@/components/Footer.astro";
 import FloatingContact from "@/components/FloatingContact.astro";
 import { contact, site } from "@/data/site";
 
-/*
-  Trang mà ô "Tôi đồng ý…" ở mọi form trỏ tới.
-
-  Viết bằng lời thường cho phụ huynh/học viên đọc — không thuật ngữ kỹ thuật, không
-  dẫn điều luật. Thêm pixel quảng cáo hay chia sẻ lead ra ngoài thì phải sửa trang này,
-  và đổi `EFFECTIVE_DATE` mỗi lần sửa nội dung.
-*/
 const EFFECTIVE_DATE = "03/11/2026";
 
 const sections = [
   {
     title: "Thông tin bạn để lại",
     body: [
-      "Khi đăng ký tư vấn, giữ chỗ lớp học hoặc nhận lịch khai giảng, bạn để lại họ tên, số điện thoại, email và khoá học bạn quan tâm.",
+      "Khi đăng ký tư vấn, đăng ký lớp học hoặc nhận lịch khai giảng, bạn để lại họ tên, số điện thoại, email và khoá học bạn quan tâm.",
       "Trung tâm không hỏi số CCCD, tài khoản ngân hàng hay thông tin nhạy cảm nào khác qua website.",
     ],
   },
@@ -81,7 +74,7 @@ const sections = [
 
 <Layout
   title={`Chính sách bảo mật | ${site.name}`}
-  description={`Cách ${site.name} thu thập, sử dụng và bảo vệ thông tin cá nhân bạn cung cấp khi đăng ký tư vấn, giữ chỗ lớp học hoặc nhận lịch khai giảng.`}
+  description={`Cách ${site.name} thu thập, sử dụng và bảo vệ thông tin cá nhân bạn cung cấp khi đăng ký tư vấn, đăng ký lớp học hoặc nhận lịch khai giảng.`}
 >
   <Header />
   <main id="main" class="flex flex-col gap-16 pb-16 lg:gap-24 lg:pb-24">

@@ -1,16 +1,5 @@
 import { writeFileSync } from "node:fs";
 
-/**
- * Sinh ảnh minh hoạ cho khối "Vì sao chọn" (components/WhyUs.astro).
- *
- * Mọi ảnh dùng chung một bố cục 16:9 — nền giấy hồng, lưới điểm, hai vòng cung,
- * huy hiệu icon ở giữa, chữ Hán làm dấu nước ở góc, pinyin và gạch đỏ dưới đáy —
- * chỉ khác icon / chữ Hán / pinyin, nên cả lưới thẻ trông đồng nhất.
- *
- * Thêm giá trị mới: thêm một dòng vào ITEMS (khớp `id` trong content/site.json),
- * rồi chạy `npm run gen:values`.
- */
-
 const RED = "#b2182b";
 const RED_700 = "#971324";
 
@@ -54,7 +43,6 @@ const svg = ({ icon, han, pinyin }) => `<svg xmlns="http://www.w3.org/2000/svg" 
   <rect width="${W}" height="${H}" fill="url(#paper)"/>
   <rect width="${W}" height="${H}" fill="url(#dots)"/>
 
-  <!-- vòng cung trang trí, giống nhau ở mọi ảnh -->
   <g fill="none" stroke="${RED}" opacity=".14">
     <circle cx="${CX}" cy="${CY}" r="160" stroke-width="1.5"/>
     <circle cx="${CX}" cy="${CY}" r="200" stroke-width="1.5" stroke-dasharray="5 12"/>
@@ -64,19 +52,16 @@ const svg = ({ icon, han, pinyin }) => `<svg xmlns="http://www.w3.org/2000/svg" 
     <path d="M${W - 56} 56h-74M${W - 56} 56v74"/>
   </g>
 
-  <!-- chữ Hán làm dấu nước ở góc, không chạm huy hiệu -->
   <text x="${W - 34}" y="${H + 34}" text-anchor="end"
         font-family="'Noto Serif SC','Songti SC','SimSun',serif"
         font-size="300" fill="${RED}" opacity=".09">${han}</text>
 
-  <!-- huy hiệu icon -->
   <circle cx="${CX}" cy="${CY}" r="112" fill="#ffffff" opacity=".72"/>
   <circle cx="${CX}" cy="${CY}" r="82" fill="url(#badge)"/>
   <g transform="translate(${CX - 38} ${CY - 38}) scale(3.1667)" fill="none"
      stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
      color="#ffffff">${ICONS[icon]}</g>
 
-  <!-- pinyin + gạch chân thương hiệu -->
   <text x="${CX}" y="${CY + 152}" text-anchor="middle"
         font-family="'Bricolage Grotesque',system-ui,sans-serif" font-size="26"
         font-weight="700" letter-spacing="7" fill="${RED}" opacity=".55">${pinyin.toUpperCase()}</text>

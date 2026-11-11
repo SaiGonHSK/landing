@@ -1,14 +1,6 @@
 
 import { staticContent } from "./content";
 
-/**
- * Các khối nội dung **tĩnh** của landing, đọc từ `content/site.json` trong repo.
- *
- * `const` chứ không `let`: mấy khối này không do trang quản trị soạn — xem
- * `DYNAMIC_KEYS` trong `content.ts` để biết cái gì mới lấy từ API. Muốn đổi thương
- * hiệu, liên hệ, khối đầu trang, sứ mệnh, khác biệt, cam kết, số liệu, giảng viên hay
- * trang giới thiệu thì sửa `content/site.json` rồi deploy.
- */
 export const site = staticContent.site;
 export const contact = staticContent.contact;
 export const hero = staticContent.hero;
@@ -21,6 +13,12 @@ export const milestones = staticContent.milestones;
 export const teacher = staticContent.teacher;
 export const about = staticContent.about;
 export const reasons = staticContent.reasons;
+
+/** Pháp nhân in ở chân trang. Để trống thì footer không hiện dòng tương ứng. */
+export const legal = {
+  company: "Công ty TNHH Phát triển Giáo dục SaigonHSK",
+  taxCode: "0315640740",
+};
 
 export const footerLinks = [
   {

@@ -1,26 +1,9 @@
 ---
 import { formatArticleDate, type LibraryArticle } from "@/data/library";
 
-/**
- * Lưới bài viết của Thư viện — 3 cột, mỗi bài một thẻ bo góc rời nhau.
- *
- * Trước đây đây là lưới kẻ ô: các ô dính sát nhau, mỗi ô tự viền bốn cạnh rồi kéo lùi
- * `-1px` để chồng viền lên ô kề cho hai đường 1px thành một. Cách đó không bo góc được
- * — góc tròn thì bốn ô kề nhau hở ra bốn khoảng trắng hình sao ở mỗi mối nối.
- *
- * `overflow-hidden` trên thẻ là bắt buộc chứ không phải cho đẹp: ảnh bìa nằm sát mép
- * trên, không cắt thì hai góc trên của ảnh vẫn vuông và chìa ra ngoài góc tròn của thẻ.
- *
- * Vẫn không đặt viền ở khung bao ngoài: số cột đổi theo bề rộng màn hình (1 → 2 → 3),
- * một chuyên mục có đúng 1 bài thì viền khung bao sẽ kẻ một đường chạy ngang qua hai
- * ô trống bên cạnh.
- */
-
 interface Props {
   articles: LibraryArticle[];
-  /** Hiện khi không có bài nào — Thư viện mới mở thì trang phải nói được điều đó. */
   emptyMessage?: string;
-  /** Ảnh bìa của bài đầu tiên tải ngay: nó nằm ngay dưới màn hình đầu, là LCP. */
   eagerFirst?: boolean;
 }
 
@@ -43,16 +26,6 @@ const { articles, emptyMessage, eagerFirst = true } = Astro.props;
           <a href={article.slug} class="group flex h-full flex-col">
             {article.coverImage && (
               <div class="overflow-hidden">
-                {/*
-                  Thẻ bài giữ khung 16:9 cố định — lưới ba cột mà mỗi thẻ một chiều cao thì
-                  hàng nào cũng so le. Nhưng cắt từ MÉP TRÊN chứ không cắt giữa: ảnh bìa
-                  trích từ tài liệu Word phần lớn là ảnh dọc 2:3, cắt giữa chỉ còn một dải
-                  chữ lưng chừng, còn cắt từ trên thì ít ra lấy được phần tiêu đề của tấm
-                  infographic. Ảnh 1600×900 đặt riêng cho web thì cắt kiểu nào cũng như nhau.
-
-                  `alt` để rỗng là cố ý: tiêu đề bài nằm ngay dưới trong cùng thẻ <a>, gán
-                  alt nữa là trình đọc màn hình đọc lại y hệt hai lần.
-                */}
                 <img
                   src={article.coverImage}
                   alt=""
@@ -74,8 +47,6 @@ const { articles, emptyMessage, eagerFirst = true } = Astro.props;
                 </p>
               )}
 
-              {/* Ngày đẩy xuống đáy ô để mọi thẻ trong hàng thẳng chân nhau, dù
-                  tiêu đề dài ngắn khác nhau. */}
               <p class="mt-auto pt-6 text-sm text-muted-foreground">
                 <time datetime={article.publishedAt ?? undefined}>
                   {formatArticleDate(article.publishedAt)}

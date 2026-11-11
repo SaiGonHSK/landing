@@ -15,16 +15,11 @@ export type CatalogItem = {
 
   audience?: string[];
 
-  /** Chủ đề giao tiếp (cấp thấp) hoặc lĩnh vực đọc hiểu (cấp cao). */
   topics?: { title: string; note?: string; items: string[] };
 };
 
 const LIEN_HE = "Liên hệ trung tâm";
 
-/**
- * Lộ trình từng cấp HSK theo giáo trình thực tế của trung tâm (chuẩn HSK 3.0):
- * thời lượng, số từ vựng, số điểm ngữ pháp và chủ đề giao tiếp của mỗi khoá.
- */
 export const HSK_LEVELS = [
   {
     level: 1,
@@ -48,7 +43,6 @@ export const HSK_LEVELS = [
         "Sinh hoạt hằng ngày",
       ],
     },
-    // Chỉ HSK1 có phần vỡ lòng phát âm và bút thuận.
     foundation: [
       "Phát âm chuẩn theo hệ thống phiên âm.",
       "Biết quy tắc viết chữ Hán và viết đúng các chữ cơ bản.",
@@ -207,11 +201,6 @@ export const HSK_LEVELS = [
   },
 ] as const;
 
-/**
- * Từ HSK4 trở lên, mỗi cấp được dạy thành hai lớp nối tiếp (vd HSK6.1 và HSK6.2)
- * và con số months là thời lượng của MỘT lớp — nên mọi chỗ nói về thời lượng đều
- * phải ghi rõ "2 lớp", tránh để học viên hiểu nhầm cả cấp chỉ 3,5 tháng.
- */
 const isSplitLevel = (level: number) => level >= 4;
 
 export const hskCourses: CatalogItem[] = HSK_LEVELS.map((l) => ({
@@ -265,7 +254,6 @@ export const hskCourses: CatalogItem[] = HSK_LEVELS.map((l) => ({
   ],
 }));
 
-/** Thời lượng lớp luyện thi theo lộ trình hiện tại của trung tâm. */
 const EXAM_MONTHS: Record<number, string> = {
   3: "2 tháng",
   4: "3 tháng",
@@ -583,12 +571,6 @@ export const reviewLevels: CatalogItem[] = HSK_LEVELS.map((l) => ({
   ],
 }));
 
-/**
- * Tiêu đề là "Tài liệu luyện thi HSKn", không phải "Luyện thi HSKn", để tách khỏi
- * trang lớp học /courses/luyen-thi-hsk-n. Hai trang trước đây trùng cả H1 lẫn title
- * nên tự cạnh tranh nhau trên cùng một truy vấn: trang này nhắm nhu cầu tra tài
- * liệu, trang kia nhắm nhu cầu tìm lớp.
- */
 export const examPrepResources: CatalogItem[] = [3, 4, 5, 6].map((level) => ({
   slug: `hsk-${level}`,
   title: `Tài liệu luyện thi HSK${level}`,
@@ -725,8 +707,6 @@ export const trialClasses: CatalogItem[] = [1, 2, 3, 4].map((level) => ({
   ],
 }));
 
-// Thư viện đã tách sang `./library` (blog theo chuyên mục). Re-export lại để chỗ nào
-// còn import từ `catalog` vẫn chạy; nhập mới thì import thẳng `@/data/library`.
 export { getLibrary, findLibraryArticle, libraryCategories } from "./library";
 
 export const onlineOfflineCourses: CatalogItem[] = [

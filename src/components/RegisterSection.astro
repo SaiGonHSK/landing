@@ -4,10 +4,6 @@ import RegisterForm from "@/components/RegisterForm.astro";
 import { contact } from "@/data/site";
 
 interface Props {
-  /**
-   * Khoá học chọn sẵn khi khối này nằm trong một trang khoá cụ thể — form ngay dưới
-   * bài giới thiệu HSK3 thì không có lý do gì bắt khách tự tìm lại "HSK3" trong select.
-   */
   course?: string;
   note?: string;
 }

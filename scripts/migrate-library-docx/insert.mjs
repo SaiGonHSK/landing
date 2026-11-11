@@ -1,32 +1,4 @@
 #!/usr/bin/env node
-// Nạp manifest.json (xem convert.mjs) vào bảng `landing_pages` của DB LOCAL,
-// qua đúng API admin console dùng (`PUT /admin/pages/*slug`) — không phải
-// cmd/seed, không phải SQL trực tiếp (xem PLAN T1 mục 4).
-//
-// CHỈ LOCAL: không đọc .env.production, không có cờ nào trỏ domain production.
-// Mọi bài nạp đều status=draft, publishedAt để trống — không bài nào tự
-// publish. order_index LUÔN gửi 0 — đó là "thứ tự ghim" của bảng, không phải
-// số thứ tự bài học (xem lessonNumber trong convert.mjs, và finding T4 #1).
-//
-//   node insert.mjs             # chỉ TẠO bài chưa có, bỏ qua slug đã tồn tại
-//   node insert.mjs --force     # bài đã tồn tại thì GHI ĐÈ title/body/summary/
-//                                 coverImage/status về đúng manifest.json — mất
-//                                 mọi sửa tay đã làm trong console cho bài đó.
-//                                 Dùng có ý thức (xem finding T4 #7).
-//
-// Không có cờ --force: idempotent theo nghĩa AN TOÀN — chạy lại không tạo
-// dòng mới (đã tồn tại thì bỏ qua) và không đè mất sửa tay của người khác.
-//
-// GIỚI HẠN ĐÃ GẶP THẬT (không phải phòng xa): nếu một bài đã từng được publish
-// dù chỉ một lần (kể cả lỡ tay), `PUT /admin/pages` KHÔNG có cách nào tự xoá
-// `published_at` — service (`internal/modules/content/service.go`, hàm
-// UpsertPage) cố tình giữ nguyên `published_at` cũ khi request không gửi kèm,
-// đúng như comment ở đó: "unpublishing must not lose the original date". Gửi
-// `status: "draft"` chỉ đổi được `status`, không xoá được `published_at` còn
-// sót. Nếu cần một bài về ĐÚNG trạng thái "chưa từng publish" (status=draft VÀ
-// published_at=NULL) sau khi nó đã dính publish, phải sửa thẳng bằng SQL trên
-// DB local — không có đường nào qua API cho việc này, đây là giới hạn của API,
-// không phải bug của script.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -39,21 +11,6 @@ const MANIFEST_PATH = path.join(__dirname, "manifest.json");
 const API_BASE = process.env.API_BASE_URL ?? "http://localhost:9909/api/v1";
 const FORCE = process.argv.includes("--force");
 
-/** Đọc email/mật khẩu KHÔNG qua tham số dòng lệnh hay biến môi trường gõ tay
- * trên cùng dòng lệnh — cả hai cách đó đều lọt vào lịch sử shell
- * (`~/.zsh_history`) dưới dạng chữ thô (finding T4 #12). Ba cách, theo thứ tự
- * ưu tiên:
- *
- *   1. ADMIN_CREDENTIALS_FILE — đường dẫn tới file JSON {"email","password"}
- *      KHÔNG commit (đặt ngoài repo, ví dụ thư mục scratch của máy). Chỉ có
- *      TÊN FILE lọt vào lịch sử shell, không phải mật khẩu.
- *   2. Hỏi trực tiếp trên terminal (mật khẩu không hiện ra màn hình) — gõ vào
- *      STDIN của tiến trình đang chạy không phải là một dòng lệnh, không vào
- *      lịch sử shell.
- *   3. ADMIN_EMAIL/ADMIN_PASSWORD biến môi trường — CHỈ còn để tương thích cho
- *      script/CI không có TTY. In cảnh báo mỗi lần dùng vì đây đúng là cách bị
- *      chê ở finding T4 #12.
- */
 async function readCredentials() {
   const fileArg = process.env.ADMIN_CREDENTIALS_FILE;
   if (fileArg) {
@@ -87,15 +44,12 @@ function askVisible(question) {
   return new Promise((resolve) => rl.question(question, (answer) => { rl.close(); resolve(answer.trim()); }));
 }
 
-/** Hỏi mật khẩu, không hiện ký tự gõ lên màn hình — thủ thuật quen dùng với
- * `readline` trên Node: chặn `_writeToOutput` trong lúc hỏi đúng một câu này. */
 function askHidden(question) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     const originalWrite = rl._writeToOutput?.bind(rl);
     rl._writeToOutput = (str) => {
       if (str.trim() === question.trim() || str === "\n" || str === "\r\n") originalWrite?.(str);
-      // gõ ký tự thật: không in gì ra — ẩn mật khẩu khỏi màn hình.
     };
     rl.question(question, (answer) => {
       rl._writeToOutput = originalWrite;
@@ -141,8 +95,7 @@ async function upsertPage(token, entry) {
       body: entry.body,
       coverImage: entry.coverImage,
       status: "draft",
-      orderIndex: 0, // KHÔNG dùng entry.lessonNumber — order_index là thứ tự ghim, không phải số bài.
-      // publishedAt để trống — không tự publish.
+      orderIndex: 0,
     }),
   });
   const json = await res.json();

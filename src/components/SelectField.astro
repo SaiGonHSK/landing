@@ -1,14 +1,6 @@
 ---
 import { ICONS } from "@/lib/icons";
 
-/**
- * Bọc một `<select>` thật để vẽ lại phần trigger + danh sách theo theme của site.
- *
- * Select thật vẫn nằm trong form (ẩn bằng `opacity-0`, không phải `display: none`): nó lo
- * `required`, `FormData`, `form.reset()` và bong bóng báo lỗi của trình duyệt — script chỉ
- * vẽ phần nhìn và ghi ngược giá trị vào nó. JS chưa chạy thì select thật vẫn dùng được,
- * chỉ là popup của hệ điều hành.
- */
 ---
 
 <div data-select class="group relative">
@@ -22,7 +14,6 @@ import { ICONS } from "@/lib/icons";
 </div>
 
 <script>
-  /** Viền đỏ mà RegisterForm gắn lên field lỗi — chép sang trigger qua `peer`. */
   const TRIGGER_EXTRA =
     "flex items-center text-left peer-focus:border-brand-red-500 peer-[.border-brand-red-500]:border-brand-red-500";
   const OPTION =
@@ -52,7 +43,6 @@ import { ICONS } from "@/lib/icons";
     if (label) {
       label.id ||= `${id}-label`;
       trigger.setAttribute("aria-labelledby", `${label.id} ${id}-trigger`);
-      // Bấm nhãn thì focus trigger, không để focus rơi vào select đã ẩn.
       label.addEventListener("click", (e) => {
         e.preventDefault();
         trigger.focus();
@@ -69,7 +59,6 @@ import { ICONS } from "@/lib/icons";
       "absolute inset-x-0 z-30 max-h-72 overflow-y-auto overscroll-contain rounded-sm border border-border bg-background p-1.5 shadow-xl shadow-brand-ink-900/10 outline-none";
     if (label) list.setAttribute("aria-labelledby", label.id);
 
-    // Dòng placeholder ("Chọn khoá học") bị khoá nên không đưa vào danh sách.
     const options = [...select.options].filter((o) => !o.disabled);
     const items = options.map((option, i) => {
       const li = document.createElement("li");
@@ -88,8 +77,6 @@ import { ICONS } from "@/lib/icons";
     });
     list.append(...items);
 
-    // Select thật lùi xuống dưới trigger: còn chỗ cho bong bóng `required`, nhưng không
-    // nhận chuột và không nằm trong thứ tự Tab.
     select.classList.add("peer", "pointer-events-none", "absolute", "inset-0", "opacity-0");
     select.tabIndex = -1;
     select.after(trigger);
@@ -122,7 +109,6 @@ import { ICONS } from "@/lib/icons";
 
     const open = () => {
       if (isOpen()) return;
-      // Dưới không đủ chỗ mà trên rộng hơn thì mở ngược lên.
       const rect = trigger.getBoundingClientRect();
       const below = window.innerHeight - rect.bottom;
       const up = below < 300 && rect.top > below;
@@ -156,8 +142,6 @@ import { ICONS } from "@/lib/icons";
       close();
     };
 
-    // Safari không focus nút khi bấm chuột: không chặn thì `focusout` của list đóng nó
-    // trước, rồi cú click lại mở ra ngay.
     trigger.addEventListener("mousedown", (e) => {
       if (isOpen()) e.preventDefault();
     });
@@ -169,8 +153,6 @@ import { ICONS } from "@/lib/icons";
       }
     });
 
-    // `reportValidity()` / RegisterForm.showError focus thẳng vào select ẩn — phím ở đó
-    // mở danh sách tự vẽ thay vì popup của hệ điều hành.
     select.addEventListener("keydown", (e) => {
       if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
         e.preventDefault();
@@ -178,7 +160,6 @@ import { ICONS } from "@/lib/icons";
       }
     });
     select.addEventListener("change", sync);
-    // `reset()` đổi giá trị mà không bắn `change`; đợi nó xong rồi mới đọc lại.
     select.form?.addEventListener("reset", () => setTimeout(sync));
 
     list.addEventListener("keydown", (e) => {
@@ -206,7 +187,6 @@ import { ICONS } from "@/lib/icons";
           close(false);
           return;
         default: {
-          // Gõ chữ cái đầu để nhảy tới dòng kế tiếp bắt đầu bằng chữ đó.
           if (e.key.length !== 1) return;
           const key = e.key.toLocaleLowerCase("vi");
           const n = items.length;

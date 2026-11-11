@@ -2,7 +2,6 @@
 import CatalogDetail from "@/components/CatalogDetail.astro";
 import { reviewLevels } from "@/data/catalog";
 
-// Tra cứu theo params — xem ghi chú ở src/pages/courses/[slug].astro.
 const item = reviewLevels.find((entry) => entry.slug === Astro.params.slug);
 if (!item) return new Response(null, { status: 404 });
 

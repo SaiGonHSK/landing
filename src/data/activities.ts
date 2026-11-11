@@ -15,27 +15,6 @@ import dailyMilkTeaHandout from "@/assets/daily/giang-vien-phat-tra-sua.webp";
 import dailyFrontDesk from "@/assets/daily/quay-le-tan-trang-tri.webp";
 import dailyWaitingRoom from "@/assets/daily/hoc-vien-cho-vao-lop.webp";
 
-/**
- * Album sự kiện: bốn dịp lễ trung tâm tổ chức cho học viên — Giáng sinh, Trung thu,
- * Ngày Nhà giáo Việt Nam, Tết — mỗi dịp vài tấm.
- *
- * Trước đây mỗi dịp đúng một ảnh cho vừa một hàng 4 ô. Nay dây phơi ảnh là một dải
- * cuộn ngang ở mọi bề rộng, nên số ảnh không còn bị bề rộng màn hình chặn: cuộn qua
- * một album chục tấm mới ra được cái mà một tấm/dịp không nói nổi — rằng mỗi dịp là
- * một sự kiện có nhiều lớp tham gia, chứ không phải một lần chụp ảnh.
- *
- * Tết chỉ lấy hai tấm dù trong kho còn sáu: sáu tấm kia là poster "Check-in Tết" cùng một
- * khuôn đỏ, chỉ khác tên lớp và đoạn chúc — xếp liền nhau thì phần đuôi dải đọc ra là một
- * mẫu lặp chứ không phải sáu sự kiện. Hai tấm đủ nói trung tâm có tổ chức Tết.
- *
- * Thứ tự xếp theo dịp, và trong mỗi dịp thì ảnh chụp thật đứng trước poster có chữ.
- *
- * Ảnh nằm trong src/assets/ để Astro nén và xuất WebP theo đúng khổ hiển thị —
- * bản gốc tới 2526px, nhúng thẳng thì mỗi ô 280px vẫn phải tải nguyên bản.
- *
- * Trong mỗi dịp chọn bản gốc lớn nhất đang có: ô ảnh cắt vuông nên giới hạn thật là
- * cạnh ngắn, cạnh ngắn không đủ gấp đôi bề rộng ô thì màn Retina nhìn mờ.
- */
 export type ActivityPoster = {
   image: ImageMetadata;
   caption: string;
@@ -87,28 +66,7 @@ export type Activity = {
   caption: string;
 };
 
-/**
- * Ảnh sinh hoạt thường ngày ở trung tâm — lớp đang học, giảng viên đi quanh lớp,
- * học viên chờ vào lớp.
- *
- * Hai chỗ dùng: khối có chú thích ở `DailyLife.astro` (trang /about) và khảm nền mờ
- * trang trí ở `TrialCta.astro`.
- *
- * **Giữ số lượng là số chẵn chia hết cho 4.** `DailyLife` xếp lưới 2 cột từ `sm` và 4
- * cột từ `lg`; số nào khác thì hàng cuối hụt ô, để trơ một khoảng trắng cạnh dãy ảnh.
- * Danh sách này từng có 7 tấm và đúng là nhìn ra ngay chỗ hụt đó.
- *
- * Ảnh nằm trong src/assets/ chứ không phải public/: chỗ dùng chỉ hiện mỗi ô ~360px, để
- * trong public/ thì trình duyệt phải tải nguyên bản 2048px cho từng ô.
- */
 export const dailyMoments: Activity[] = [
-  /*
-    Tấm mở đầu là ảnh giảng viên viết bài trên bảng — tấm duy nhất trong dãy nhìn thấy
-    *nội dung đang học* (chữ Hán trên bảng) chứ chỉ thấy không khí lớp. Tiêu đề khối là
-    "Một buổi học ở SaigonHSK" nên mở bằng đúng cái cảnh dạy học.
-
-    Đây cũng là tấm thứ tám thêm vào cho lưới 4 cột đủ hai hàng — xem chú thích trên.
-  */
   {
     image: dailyBoardWork,
     caption: "Giảng viên chữa bài trên bảng, cả lớp ghi theo",

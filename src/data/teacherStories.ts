@@ -1,41 +1,13 @@
 import { teachers } from "./teachers";
 
-/**
- * Chia sẻ của giảng viên về con đường giảng dạy — hiển thị ở /about/teachers.
- *
- * Đây là lời của người thật, nên nội dung phải do chính giảng viên viết hoặc duyệt.
- * KHÔNG tự soạn thay: một câu nghe hay nhưng người ta không nói là đặt chữ vào miệng
- * người khác, và đây là trang công khai mang tên họ.
- *
- * Nối với `teachers` bằng `name` thay vì chép lại ảnh/học vị: một người đổi ảnh hay
- * đổi chức danh thì chỉ sửa `content/site.json`, khối này ăn theo. Tên sai chính tả
- * sẽ bị `teacherStories` loại thẳng — xem ghi chú ở dưới.
- */
 export type TeacherStory = {
-  /** Trùng khít `name` trong `content/site.json` (kể cả "Cô"/"Thầy"). */
   name: string;
 
-  /** Câu chốt in to, ~6–12 chữ: điều giảng viên tâm đắc nhất về nghề. */
   headline: string;
 
-  /**
-   * Lời kể, mỗi phần tử một đoạn. Nội dung nên trả lời: vì sao chọn tiếng Trung, vì
-   * sao chuyển sang đi dạy, và điều gì giữ họ ở lại với nghề.
-   */
   paragraphs: string[];
 };
 
-/*
-  ⚠️ BẢN NHÁP — CHƯA CÓ GIẢNG VIÊN NÀO DUYỆT.
-
-  Bốn đoạn dưới đây do bên làm web soạn, dựng trên đúng những gì đã công bố trong
-  `content/site.json` (bằng cấp, trường, nơi đang giảng dạy) và không bịa thêm sự kiện,
-  giải thưởng hay con số nào. Nhưng nó vẫn là lời gán cho người thật: gửi từng thầy cô
-  đọc và sửa lại theo giọng của họ trước khi đưa lên bản chính thức.
-
-  Thêm người mới thì chép nguyên khối `{ name, headline, paragraphs }` và giữ `name`
-  trùng khít với `content/site.json`.
-*/
 const stories: TeacherStory[] = [
   {
     name: "Cô Võ Thị Quỳnh Trang",
@@ -75,13 +47,6 @@ const stories: TeacherStory[] = [
   },
 ];
 
-/**
- * Chỉ giữ chia sẻ khớp được với một giảng viên đang hiển thị, và giữ đúng thứ tự của
- * `teachers` để khối này không đảo người so với dải ảnh ngay phía trên.
- *
- * Tên không khớp thì bỏ qua chứ không dựng thẻ trống: gõ sai một chữ mà vẫn ra thẻ
- * thiếu ảnh, thiếu học vị thì lỗi chỉ lộ ra khi đã lên production.
- */
 export const teacherStories = teachers
   .map((teacher) => {
     const story = stories.find((s) => s.name === teacher.name);

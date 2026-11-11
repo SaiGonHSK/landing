@@ -8,10 +8,6 @@ import { lightboxSrc } from "@/lib/images";
 import { ICONS } from "@/lib/icons";
 
 interface Props {
-  /**
-   * Ẩn tiêu đề "Đội ngũ giảng viên" — dùng cho trang /about/teachers, nơi hero
-   * đã có đúng dòng chữ này nên hiện thêm ở đây là trùng.
-   */
   heading?: boolean;
 }
 
@@ -19,10 +15,6 @@ const { heading = true } = Astro.props;
 
 type Credential = { icon: string; value: string; label: string };
 
-/**
- * Chữ cái đầu của tên, dùng khi giảng viên chưa có ảnh chân dung. Bỏ "Cô/Thầy" vì
- * mọi thẻ đều có, giữ lại tối đa 2 chữ cái để không bị chật.
- */
 const initialsOf = (name: string) =>
   name
     .replace(/^(cô|thầy)\s+/i, "")
@@ -33,15 +25,10 @@ const initialsOf = (name: string) =>
     .join("")
     .toUpperCase();
 
-/**
- * Thành tích lấy nguyên văn từ banner giới thiệu giảng viên (mảng `points`). Giảng
- * viên nào chưa có banner thì dựng tạm từ title + role như trước để thẻ không trống.
- */
 const credentialsOf = (t: (typeof teachers)[number]): Credential[] => {
   const points = (t as { points?: readonly string[] }).points ?? [];
   if (points.length > 0) {
     return points.map((point, i) => ({
-      // Dòng đầu là học vị; dòng "HSK6, HSKK cao cấp" là chứng chỉ, còn lại là quá trình.
       icon: i === 0 ? ICONS.cap : /^HSK/i.test(point) ? ICONS.target : ICONS.book,
       value: "",
       label: point,
@@ -49,7 +36,6 @@ const credentialsOf = (t: (typeof teachers)[number]): Credential[] => {
   }
 
   const [degree, school = ""] = t.title.split("—").map((s) => s.trim());
-  // Giảng viên chưa điền học vị thì bỏ hẳn dòng này thay vì hiện gạch đầu dòng rỗng.
   const lines: Credential[] = degree
     ? [{ icon: ICONS.cap, value: degree, label: school }]
     : [];
@@ -72,12 +58,6 @@ const credentialsOf = (t: (typeof teachers)[number]): Credential[] => {
   return lines;
 };
 
-/**
- * Gắn sẵn ảnh đã import và bản phóng to cho Lightbox.
- *
- * Tính ở đây chứ không trong phần dựng: `lightboxSrc` là hàm bất đồng bộ, mà phần dựng
- * của Astro không `await` được bên trong `.map`.
- */
 const cards = await Promise.all(
   teachers.map(async (t) => {
     const asset = imageAsset(t.image);
@@ -143,10 +123,6 @@ const cards = await Promise.all(
                       class="mt-0.5 shrink-0 text-white/80 [&>svg]:size-5"
                       set:html={c.icon}
                     />
-                    {/*
-                      Thành tích lấy từ banner nên có dòng rất dài; cho xuống hàng và
-                      chặn ở 3 dòng thay vì truncate — truncate cắt mất gần hết câu.
-                    */}
                     <p class="line-clamp-3 min-w-0 text-sm leading-snug">
                       {c.value && <span class="font-bold">{c.value} </span>}
                       <span class="text-white/85">{c.label}</span>

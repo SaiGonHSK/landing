@@ -7,10 +7,6 @@ import { ICONS } from "@/lib/icons";
 interface Props {
   title?: string;
   highlight?: string;
-  /**
-   * Dòng chốt trỏ về form đăng ký ở trang chủ. Tắt khi trang đặt khối này đã có sẵn
-   * form ngay trên đó — nếu không, dòng này vừa lặp lại vừa dẫn người đọc đi khỏi form.
-   */
   showFormNote?: boolean;
   class?: string;
 }
@@ -36,7 +32,6 @@ type Channel = {
   href: string;
   external: boolean;
   icon: string;
-  /** Icon đã có màu thương hiệu sẵn (Zalo), không tô lại bằng currentColor */
   brand?: boolean;
   tint?: string;
 };
@@ -68,20 +63,11 @@ const channels: Channel[] = [
   },
 ];
 
-/*
-  Khảm ảnh lớp học làm nền mờ phía sau khối.
-
-  Ảnh ở đây thuần trang trí (`alt=""`, `aria-hidden`) nên `loading="lazy"` + quality 55:
-  chúng không được tính là nội dung, không việc gì phải chặn lần vẽ đầu. Bản có chú
-  thích, đọc được cho cả người lẫn bot, nằm ở `src/components/DailyLife.astro` (trang
-  /about) — hai chỗ phục vụ hai mục đích khác nhau.
-*/
 const mosaic = Array.from(
   { length: 14 },
   (_, i) => dailyMoments[i % dailyMoments.length],
 );
 
-/** Ảnh mờ dần từ trên xuống để không cắt ngang chữ ở nửa trên khối. */
 const fadeUp =
   "mask-image: linear-gradient(to bottom, transparent, #000 55%); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%);";
 ---
@@ -132,8 +118,6 @@ const fadeUp =
         phù hợp với bạn.
       </p>
 
-      {/* Các nhóm lớp có buổi học thử — nhãn thông tin, không phải bộ lọc, nên viền nhạt
-          và không có trạng thái chọn. */}
       <ul class="mt-5 flex flex-wrap items-center justify-center gap-2">
         {
           levels.map((l) => (
@@ -148,13 +132,8 @@ const fadeUp =
     <div
       class="mx-auto mt-12 grid max-w-5xl overflow-hidden rounded-[2rem] border border-border bg-background/90 shadow-[0_40px_90px_-60px_rgb(17_24_39/0.55)] backdrop-blur-sm lg:grid-cols-[1.05fr_1fr]"
     >
-      {/*
-        Khối đỏ rượu (cùng tông hero) thay cho đỏ tươi: nửa thẻ đỏ tươi chữ trắng đậm thì
-        nặng, nút trắng bên trong không còn là điểm nhấn. Chữ "试" lùi xuống 5% — chỉ còn là
-        vân nền. Thứ tự đọc: lời hứa (tiêu đề) → ba thứ nhận được → một nút.
-      */}
       <div
-        class="relative overflow-hidden bg-brand-red-900 p-6 text-[#ffffff] md:p-8 lg:p-12"
+        class="relative overflow-hidden bg-brand-red-600 p-6 text-white md:p-8 lg:p-12"
       >
         <span
           aria-hidden="true"
@@ -163,22 +142,22 @@ const fadeUp =
         >
 
         <div class="relative z-10">
-          <p class="font-serif text-[1.75rem] leading-[1.15] font-medium text-balance md:text-[2rem]">
-            Trải nghiệm lớp học <span class="italic">trước khi đăng ký</span>
+          <p class="text-[1.75rem] leading-[1.15] font-extrabold tracking-tight text-balance md:text-[2rem]">
+            Trải nghiệm lớp học trước khi đăng ký
           </p>
-          <p class="mt-3 text-[0.95rem] leading-relaxed text-[#ffffff]/80">
+          <p class="mt-3 text-[0.95rem] leading-relaxed text-white/80">
             Một buổi học thật, cùng một lớp đang mở — để bạn tự đánh giá trước khi quyết định.
           </p>
 
-          <p class="mt-7 text-[11px] font-bold tracking-[0.18em] text-[#ffffff]/60 uppercase">
+          <p class="mt-7 text-[11px] font-bold tracking-[0.18em] text-white/60 uppercase">
             Một buổi học thử gồm
           </p>
           <ul class="mt-4 space-y-3">
             {
               includes.map((item) => (
-                <li class="flex gap-3 text-[15px] leading-relaxed text-[#ffffff]">
+                <li class="flex gap-3 text-[15px] leading-relaxed text-white">
                   <span
-                    class="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-[#ffffff]/15 [&>svg]:size-3"
+                    class="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-white/15 [&>svg]:size-3"
                     set:html={ICONS.check}
                   />
                   {item}
@@ -189,7 +168,7 @@ const fadeUp =
 
           <a
             href="/trial"
-            class="group mt-8 inline-flex h-12 items-center gap-2 rounded-md bg-[#ffffff] px-7 text-sm font-extrabold text-brand-red-900 shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-brand-red-50"
+            class="group mt-8 inline-flex h-12 items-center gap-2 rounded-lg bg-white px-7 text-sm font-bold text-brand-red-700 transition-colors hover:bg-brand-red-50"
           >
             Chọn lớp học thử
             <span
@@ -200,8 +179,6 @@ const fadeUp =
         </div>
       </div>
 
-      {/* Cột phải: ba đường đăng ký khác, có tiêu đề riêng và canh giữa theo chiều dọc
-          để hai cột cân nhau thay vì một danh sách dính lên đỉnh. */}
       <div class="flex flex-col justify-center py-4 lg:py-8">
         <p class="px-6 pt-4 text-lg font-extrabold text-brand-ink-900 sm:px-8">
           Đăng ký dễ dàng
@@ -251,14 +228,6 @@ const fadeUp =
       showFormNote && (
         <p class="mt-6 text-center text-sm text-muted-foreground">
           Chưa chọn được lớp?
-          {/*
-            Trỏ sang trang `/register`, không phải neo `/#register`.
-
-            Neo cũ dẫn về khối `RegisterSection` ở trang chủ, mà khối đó đã bỏ khỏi trang
-            chủ — nên link nhảy về đầu trang chủ rồi đứng đó, người bấm không thấy form
-            nào. Trang `/register` có form là nội dung chính nên không phụ thuộc việc
-            trang nào còn nhúng khối đó.
-          */}
           <a
             href="/register"
             class="font-semibold text-brand-red-600 underline-offset-4 hover:underline"

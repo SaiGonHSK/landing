@@ -18,7 +18,6 @@ interface Props {
 
 const { class: className = "" } = Astro.props;
 
-/** Tiện nghi tại cơ sở — hiển thị thành dải ngăn cách bằng đường kẻ dọc. */
 const amenities = [
   { label: "Phòng học sạch sẽ", icon: ICONS.sparkle },
   { label: "Máy lạnh mát", icon: ICONS.snow },
@@ -40,20 +39,9 @@ const spaces: Space[] = [
   { image: classConsult, name: "Góc tư vấn lộ trình" },
 ];
 
-/** Khổ ô ảnh lớn nhất: `sm:w-80` (320px) với `aspect-4/3` → 320×240. */
 const CARD_W = 320;
 const CARD_H = 240;
 
-/*
-  Ô ảnh là khung 4:3 cắt `object-cover`, còn ảnh gốc đủ mọi tỉ lệ. Chỉ đưa `width`
-  thì Astro giữ nguyên tỉ lệ gốc: ảnh 1024×577 ra bản 640×361, rồi CSS kéo cao lên
-  480 cho đầy khung — phóng 1,33 lần, nhìn mờ hẳn. Nên xin sharp cắt sẵn đúng 4:3
-  (`fit: "cover"` kèm cả `width` và `height`), trình duyệt hết phải phóng.
-
-  Bội số điểm ảnh lấy đúng mức ảnh gốc gánh được, tối đa 2x — cả hai chiều đều phải
-  đủ nên lấy chiều eo hẹp hơn. Ảnh 1024×577 chỉ cho được 1,2x; 1,2x vẫn nét hơn hẳn
-  bản 1x bị kéo giãn.
-*/
 const cards = await Promise.all(
   spaces.map(async (s) => {
     const density = Math.min(
@@ -65,8 +53,6 @@ const cards = await Promise.all(
     return {
       ...s,
       densities: density >= 1.05 ? [1, Number(density.toFixed(2))] : [1],
-      // Bản phóng to cho Lightbox — ô ảnh trong dải chỉ 320px, bấm vào phải có bản đủ to
-      // để nhìn được phòng học, chứ không phải phóng đúng tấm 320px lên cho mờ.
       full: await lightboxSrc(s.image),
     };
   }),
@@ -109,12 +95,6 @@ const cards = await Promise.all(
       >
         {
         cards.map((s) => (
-          /*
-            Bấm vào ảnh mở Lightbox — cùng cách với thẻ giảng viên và poster thành tích: một
-            <button> mang data-lightbox, phần script dùng chung ở components/Lightbox.astro
-            (mount trong Layout) bắt click. Ô ảnh trong dải chỉ 320px, không xem được cái gì
-            trong phòng học, mà đây lại đúng là chỗ người ta muốn nhìn kỹ.
-          */
           <button
             type="button"
             data-lightbox={s.full}
@@ -144,7 +124,6 @@ const cards = await Promise.all(
               {s.name}
             </span>
 
-            {/* Máy cảm ứng không có hover nên để nhãn hiện sẵn, khỏi mất gợi ý. */}
             <span
               class="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-brand-ink-900 opacity-0 shadow-[0_10px_24px_-14px_rgb(17_24_39/0.7)] transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100 [&>svg]:size-3.5"
             >
@@ -177,7 +156,7 @@ const cards = await Promise.all(
         href={contact.mapsUrl}
         target="_blank"
         rel="noopener"
-        class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-brand-red-600 px-5 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+        class="group inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-red-600 px-5 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
       >
         Xem đường đi
         <span

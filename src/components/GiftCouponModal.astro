@@ -1,37 +1,35 @@
 ---
-/**
- * Modal "hộp quà" ưu đãi 20/11 trên trang chủ.
- *
- * Kịch bản (GSAP, một timeline):
- *   1. Modal mở, hộp quà rơi vào giữa màn hình rồi lắc nhẹ chờ khách bấm.
- *   2. Bấm hộp → hộp nén lại, rung, nắp bật bay lên xoay, thân hộp tụt xuống mờ đi,
- *      confetti nổ từ miệng hộp.
- *   3. Phiếu giảm giá phóng to từ chỗ hộp, số tiền đếm lên tới 200.000đ.
- *
- * Hiện mỗi lần vào trang trong thời gian chương trình (tới `endsAt`).
- * Thêm `?gift=1` vào URL để ép hiện khi cần xem thử.
- * `prefers-reduced-motion`: bỏ toàn bộ chuyển động, mở thẳng phiếu.
- */
 interface Props {
-  /** Số tiền giảm, đơn vị đồng. */
   amount?: number;
-  /** Ngày cuối chương trình (ISO, hết ngày theo giờ VN). */
-  endsAt?: string;
+  eyebrow?: string;
+  title?: string;
+  message?: string;
+  startsAt?: string;
+  endsAt: string;
+  preview?: boolean;
 }
 
 const {
   amount = 200000,
-  endsAt = "2026-11-20T23:59:59+07:00",
+  eyebrow = "Ưu đãi 20/11",
+  title = "Bạn có một món quà",
+  message = "Dành cho học viên đăng ký mới trong dịp 20/11 — áp dụng cho mọi khoá học.",
+  startsAt = "",
+  endsAt,
+  preview = false,
 } = Astro.props;
 
 const amountLabel = amount.toLocaleString("vi-VN");
+const titleId = "gift-title";
 ---
 
 <dialog
   data-gift-coupon
   data-amount={amount}
+  data-starts-at={startsAt}
   data-ends-at={endsAt}
-  aria-labelledby="gift-title"
+  data-preview={preview ? "1" : undefined}
+  aria-labelledby={titleId}
   class="gift-dialog"
 >
   <button type="button" data-gift-close class="gift-close" aria-label="Đóng">
@@ -39,14 +37,12 @@ const amountLabel = amount.toLocaleString("vi-VN");
   </button>
 
   <div class="gift-stage">
-    {/* Lời mời — mờ đi khi hộp mở */}
     <div data-gift-intro class="gift-intro">
-      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Ưu đãi 20/11</p>
-      <p id="gift-title" class="mt-2 text-2xl font-black text-white md:text-3xl">Bạn có một món quà</p>
+      <p class="gift-eyebrow">{eyebrow}</p>
+      <p id={titleId} class="mt-2 text-2xl font-black text-white md:text-3xl">{title}</p>
       <p data-gift-hint class="mt-2 text-sm text-white/70">Chạm vào hộp để mở</p>
     </div>
 
-    {/* Hộp quà */}
     <button type="button" data-gift-box class="gift-box" aria-label="Mở hộp quà">
       <span data-gift-lid class="gift-lid">
         <span class="gift-bow">
@@ -61,10 +57,8 @@ const amountLabel = amount.toLocaleString("vi-VN");
       </span>
     </button>
 
-    {/* Lớp confetti — các mảnh do script sinh ra */}
     <div data-gift-confetti class="gift-confetti" aria-hidden="true"></div>
 
-    {/* Phiếu giảm giá */}
     <div data-gift-coupon-card class="gift-card" hidden>
       <div class="gift-card-top">
         <p class="text-sm font-semibold text-brand-ink-700">Chúc mừng! Bạn được giảm</p>
@@ -72,9 +66,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
           <span data-gift-amount class="text-5xl tabular-nums md:text-6xl">{amountLabel}</span>
           <span class="text-2xl md:text-3xl">đ</span>
         </p>
-        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Dành cho học viên đăng ký mới trong dịp 20/11 — áp dụng cho mọi khoá học.
-        </p>
+        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{message}</p>
       </div>
 
       <div class="gift-card-tear" aria-hidden="true"></div>
@@ -94,6 +86,15 @@ const amountLabel = amount.toLocaleString("vi-VN");
 
 <style>
   .gift-dialog {
+    --gift-notch: rgb(15 15 20);
+    --gift-body-a: var(--color-brand-red-600);
+    --gift-body-b: var(--color-brand-red-700);
+    --gift-lid-a: var(--color-brand-red-500);
+    --gift-lid-b: var(--color-brand-red-600);
+    --gift-ribbon-a: #f3c64d;
+    --gift-ribbon-b: #ffe08a;
+    --gift-knot: #e9b437;
+
     margin: auto;
     width: 100%;
     max-width: 100%;
@@ -150,12 +151,17 @@ const amountLabel = amount.toLocaleString("vi-VN");
     align-self: start;
     text-align: center;
   }
+  .gift-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgb(255 255 255 / 0.7);
+  }
 
-  /* ---------- Hộp quà ---------- */
   .gift-box {
-    --box-w: 150px;
     position: relative;
-    width: var(--box-w);
+    width: 150px;
     height: 170px;
     margin-top: 70px;
     cursor: pointer;
@@ -177,7 +183,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
     width: 100%;
     height: 118px;
     border-radius: 4px 4px 8px 8px;
-    background: linear-gradient(180deg, var(--color-brand-red-600), var(--color-brand-red-700));
+    background: linear-gradient(180deg, var(--gift-body-a), var(--gift-body-b));
     box-shadow: inset 0 14px 18px -12px rgb(0 0 0 / 0.35);
     overflow: hidden;
   }
@@ -189,7 +195,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
     width: calc(100% + 18px);
     height: 36px;
     border-radius: 6px;
-    background: linear-gradient(180deg, var(--color-brand-red-500), var(--color-brand-red-600));
+    background: linear-gradient(180deg, var(--gift-lid-a), var(--gift-lid-b));
     box-shadow: 0 6px 10px -6px rgb(0 0 0 / 0.4);
     transform-origin: 50% 100%;
   }
@@ -200,7 +206,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
     left: 50%;
     width: 24px;
     transform: translateX(-50%);
-    background: linear-gradient(90deg, #f3c64d, #ffe08a 50%, #f3c64d);
+    background: linear-gradient(90deg, var(--gift-ribbon-a), var(--gift-ribbon-b) 50%, var(--gift-ribbon-a));
   }
   .gift-bow {
     position: absolute;
@@ -214,7 +220,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
     bottom: -4px;
     width: 40px;
     height: 30px;
-    border: 7px solid #f3c64d;
+    border: 7px solid var(--gift-ribbon-a);
     border-radius: 50% 50% 10% 50%;
   }
   .gift-bow-loop--l {
@@ -232,10 +238,9 @@ const amountLabel = amount.toLocaleString("vi-VN");
     width: 20px;
     height: 16px;
     border-radius: 4px;
-    background: #e9b437;
+    background: var(--gift-knot);
   }
 
-  /* ---------- Confetti ---------- */
   .gift-confetti {
     position: relative;
     width: 0;
@@ -251,7 +256,6 @@ const amountLabel = amount.toLocaleString("vi-VN");
     border-radius: 1px;
   }
 
-  /* ---------- Phiếu ---------- */
   .gift-card {
     position: relative;
     z-index: 3;
@@ -267,7 +271,6 @@ const amountLabel = amount.toLocaleString("vi-VN");
   .gift-card-bottom {
     padding: 20px 24px 24px;
   }
-  /* Đường răng cưa + hai khuyết tròn hai bên — cùng ngôn ngữ phiếu với khối Promotions */
   .gift-card-tear {
     position: relative;
     height: 0;
@@ -282,7 +285,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
     width: 22px;
     height: 22px;
     border-radius: 999px;
-    background: rgb(15 15 20);
+    background: var(--gift-notch);
   }
   .gift-card-tear::before {
     left: -30px;
@@ -295,9 +298,13 @@ const amountLabel = amount.toLocaleString("vi-VN");
 <script>
   import { gsap } from "gsap";
 
-  const dialog = document.querySelector<HTMLDialogElement>("[data-gift-coupon]");
+  const COLORS = ["#b2182b", "#e2384d", "#f3c64d", "#ffe08a", "#ffffff"];
 
-  if (dialog && typeof dialog.showModal === "function") {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const forced = new URLSearchParams(location.search).has("gift");
+  const now = Date.now();
+
+  const setup = (dialog: HTMLDialogElement) => {
     const q = <T extends Element = HTMLElement>(sel: string) => dialog.querySelector<T>(sel)!;
     const intro = q("[data-gift-intro]");
     const hint = q("[data-gift-hint]");
@@ -310,9 +317,6 @@ const amountLabel = amount.toLocaleString("vi-VN");
     const closeBtn = q("[data-gift-close]");
 
     const amount = Number(dialog.dataset.amount) || 0;
-    const endsAt = new Date(dialog.dataset.endsAt ?? "").getTime();
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const forced = new URLSearchParams(location.search).has("gift");
 
     let wobble: gsap.core.Timeline | null = null;
     let opened = false;
@@ -332,7 +336,6 @@ const amountLabel = amount.toLocaleString("vi-VN");
         return;
       }
 
-      // Hộp rơi vào, rồi lắc nhẹ theo nhịp chờ bấm
       gsap.fromTo(intro, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" });
       gsap.fromTo(
         box,
@@ -349,18 +352,15 @@ const amountLabel = amount.toLocaleString("vi-VN");
     };
 
     const burstConfetti = () => {
-      const colors = ["#b2182b", "#e2384d", "#f3c64d", "#ffe08a", "#ffffff"];
-      const pieces: HTMLElement[] = [];
       for (let i = 0; i < 70; i++) {
         const el = document.createElement("i");
         const w = gsap.utils.random(6, 11);
         el.style.width = `${w}px`;
         el.style.height = `${w * gsap.utils.random(0.4, 1.6)}px`;
-        el.style.background = colors[i % colors.length];
+        el.style.background = COLORS[i % COLORS.length];
+        if (i % 4 === 0) el.style.borderRadius = "999px";
         confetti.appendChild(el);
-        pieces.push(el);
-      }
-      pieces.forEach((el) => {
+
         const angle = gsap.utils.random(-Math.PI * 0.95, -Math.PI * 0.05);
         const dist = gsap.utils.random(140, 320);
         gsap
@@ -384,7 +384,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
             duration: gsap.utils.random(1.2, 1.8),
             ease: "power1.in",
           });
-      });
+      }
     };
 
     const burst = () => {
@@ -402,17 +402,13 @@ const amountLabel = amount.toLocaleString("vi-VN");
       gsap
         .timeline()
         .to(intro, { autoAlpha: 0, y: -10, duration: 0.3 })
-        // Nén lấy đà + rung
         .to(box, { scaleY: 0.86, scaleX: 1.08, rotation: 0, duration: 0.25, ease: "power2.in" }, 0)
         .to(box, { x: -4, duration: 0.04, repeat: 7, yoyo: true, ease: "none" })
         .addLabel("pop")
         .to(box, { scaleY: 1.1, scaleX: 0.95, x: 0, duration: 0.15, ease: "power2.out" }, "pop")
-        // Nắp bật bay lên
         .to(lid, { y: -260, x: 70, rotation: 38, autoAlpha: 0, duration: 0.85, ease: "power2.out" }, "pop")
         .add(burstConfetti, "pop")
-        // Thân hộp tụt xuống, mờ đi
         .to(body, { y: 60, scale: 0.85, autoAlpha: 0, duration: 0.5, ease: "power2.in" }, "pop+=0.15")
-        // Phiếu bật ra từ miệng hộp
         .add(() => {
           card.hidden = false;
         }, "pop+=0.2")
@@ -438,7 +434,7 @@ const amountLabel = amount.toLocaleString("vi-VN");
           },
           "pop+=0.4",
         )
-        .from(card.querySelectorAll(".gift-card-bottom > a"), { y: 12, autoAlpha: 0, stagger: 0.08, duration: 0.4 }, "-=0.5");
+        .from(card.querySelectorAll(".gift-card-bottom > a"), { y: 12, autoAlpha: 0, duration: 0.4 }, "-=0.5");
     };
 
     const close = () => {
@@ -462,12 +458,27 @@ const amountLabel = amount.toLocaleString("vi-VN");
       e.preventDefault();
       close();
     });
-    // Bấm ra nền tối để đóng
     dialog.addEventListener("click", (e) => {
       if (e.target === dialog) close();
     });
 
-    const active = forced || Date.now() <= endsAt;
-    if (active) window.setTimeout(open, 300);
+    return open;
+  };
+
+  const isActive = (d: HTMLDialogElement) => {
+    if (d.dataset.preview) return true;
+    const start = d.dataset.startsAt ? new Date(d.dataset.startsAt).getTime() : -Infinity;
+    const end = new Date(d.dataset.endsAt ?? "").getTime();
+    return now >= start && now <= end;
+  };
+
+  const dialogs = Array.from(document.querySelectorAll<HTMLDialogElement>("[data-gift-coupon]")).filter(
+    (d) => typeof d.showModal === "function",
+  );
+  const target =
+    dialogs.find((d) => d.dataset.preview) ?? dialogs.find(isActive) ?? (forced ? dialogs[0] : undefined);
+  if (target) {
+    const open = setup(target);
+    window.setTimeout(open, 300);
   }
 </script>

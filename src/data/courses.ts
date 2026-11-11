@@ -29,22 +29,6 @@ export type Course = {
   tags: string[];
   levels: CourseLevel[];
 
-  /**
-   * `catalogKey` của những khoá trong bảng `courses` mà chương trình này gom lại.
-   *
-   * Đây là chỗ **duy nhất** nối lịch khai giảng vào chương trình. Một lớp trên
-   * `GET /api/v1/classes` chỉ biết nó dạy khoá nào (`courseId`); trang lịch tra ngược
-   * qua đây để biết xếp lớp đó vào khối chương trình nào và link "Xem chương trình"
-   * trỏ đi đâu.
-   *
-   * Trước đây mỗi dòng lịch tự mang một ô "Slug chương trình" gõ tay, nên hai lớp cùng
-   * khoá có thể khai hai chương trình khác nhau. Khai ở đây thì quan hệ nằm đúng chỗ
-   * nó thuộc về: chương trình là khái niệm của repo landing, không phải của một lớp.
-   *
-   * Không suy từ `levels[].code` được: `luyen-thi-hsk` đặt code cấp là HSK3/HSK4/HSK5
-   * trùng với code của `tieng-hoa-so-cap` và `tieng-hoa-trung-cap`, còn VIP và mấy khoá
-   * liên hệ thì `levels` rỗng.
-   */
   courseKeys: string[];
 
   contactOnly?: boolean;
@@ -63,14 +47,8 @@ const HSK_MATERIALS = [
   "Sử dụng tài liệu ôn thi uy tín từ HanBan.",
 ];
 
-/**
- * Các khoá theo cấp (Sơ cấp / Trung cấp / Cao cấp) là cùng một lộ trình HSK với
- * các trang /courses/hsk-N, chỉ gom lại theo nhóm cấp độ. Lấy chung dữ liệu từ
- * HSK_LEVELS để hai nơi không mô tả lệch nhau như trước.
- */
 const hskLevel = (level: number): CourseLevel => {
   const l = HSK_LEVELS.find((x) => x.level === level)!;
-  // Chỉ HSK1 có phần vỡ lòng phát âm và bút thuận.
   const foundation = "foundation" in l ? [...l.foundation] : [];
 
   return {
@@ -87,11 +65,7 @@ const hskLevel = (level: number): CourseLevel => {
       `Thành thạo ${l.grammarCount} điểm ngữ pháp của cấp HSK${l.level}.`,
       `Có thể ${l.can}.`,
     ],
-    // Nhịp học khác nhau giữa các lớp cùng cấp (3 buổi/tuần hoặc 2 buổi/tuần) nên
-    // chỉ nêu tổng thời lượng; số buổi cụ thể xem ở lịch khai giảng.
     duration: [
-      // Từ HSK4 trở lên, cấp độ được dạy thành 2 lớp nối tiếp nên months là thời
-      // lượng của một lớp, phải ghi rõ kẻo hiểu nhầm cả cấp chỉ 3,5 tháng.
       l.level >= 4
         ? `2 lớp HSK${l.level}.1 và HSK${l.level}.2, mỗi lớp ${l.months} · lớp tối 3 buổi/tuần hoặc 2 buổi/tuần tuỳ ca, xem lịch khai giảng.`
         : `${l.months} · lớp tối 3 buổi/tuần hoặc 2 buổi/tuần tuỳ ca, xem lịch khai giảng.`,
@@ -120,7 +94,6 @@ export const courses: Course[] = [
     icon: "hsk",
     featured: true,
     tags: ["3 khóa học", "Chuẩn HSK 3.0", "Có luyện HSKK", "Cam kết đầu ra"],
-    // Mỗi cấp chỉ còn một lớp luyện thi: HSK3 2 tháng, HSK4 3 tháng, HSK5 4 tháng.
     courseKeys: ["luyen-thi-hsk-3", "luyen-thi-hsk-4", "luyen-thi-hsk-5"],
     levels: [
       {
@@ -207,7 +180,6 @@ export const courses: Course[] = [
     icon: "growth",
     featured: true,
     tags: ["2 lớp: HSK4 – HSK5", "Chuẩn HSK 3.0", "Đọc hiểu – nghị luận"],
-    // Mỗi cấp chia thành hai chặng (HSK4.1/4.2, HSK5.1/5.2) trên lịch khai giảng.
     note: "Từ HSK4 trở lên, mỗi cấp bao gồm 2 lớp (ví dụ HSK4.1 và HSK4.2), mỗi lớp 3,5 tháng.",
     courseKeys: ["hsk-4", "hsk-5"],
     levels: [hskLevel(4), hskLevel(5)],
@@ -345,7 +317,6 @@ export const featuredCourses = courses.filter((c) => c.featured);
 export function getCourse(slug: string) {
   return courses.find((c) => c.slug === slug);
 }
-
 
 export const roadmap = [
   {

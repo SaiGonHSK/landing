@@ -11,48 +11,15 @@ import { commitments, contact } from "@/data/site";
 import { contextFromUrl, registerNote, resolveCourseOption } from "@/lib/registerLink";
 import { findRowById } from "@/data/schedule";
 
-/**
- * Trang này là trang chuyển đổi: form phải nằm ngay trong khung nhìn đầu tiên, cạnh
- * phần lý do nên đăng ký — không đặt sau hero + một loạt card như trước. Vì vậy trang
- * không dùng PageHero/RegisterSection (hai khối đó đều tự mang tiêu đề cỡ hero, ghép
- * lại thành hai tiêu đề trùng nội dung) mà dựng hero riêng và gọi RegisterForm.
- */
 const crumbs = [{ label: "Đăng ký" }];
 
-/**
- * Khoá học khách đã xem, do CTA ở trang khoá / học thử / lịch khai giảng mang sang
- * (`registerHref`). Trang render tại server nên chọn sẵn ngay trong HTML — không đợi
- * script chạy rồi mới nhảy giá trị trước mắt người đang điền.
- */
 const context = contextFromUrl(Astro.url);
 
-/**
- * Dòng lịch khách bấm trên trang Lịch khai giảng, giải từ `?item=` sang một dòng có thật
- * của đợt đang đăng. `undefined` khi id không tra được — link cũ, đợt vừa đổi, hay số ai
- * đó tự gõ — và khi đó trang chạy đúng như khi không có tham số nào.
- */
 const pickedClass = findRowById(context.itemId);
 
-/*
-  `?course=` của link được ưu tiên, dòng lịch chỉ là đường lùi.
-
-  Ngược lại thì tệ hơn: khoá của link là thứ trang trước đó biết chính xác ("HSK3"),
-  còn suy từ dòng lịch chỉ ra được nhãn khối bao ngoài ("Tiếng Trung Sơ cấp"). Lấy dòng
-  lịch đè lên link là đổi một nhãn cụ thể lấy một nhãn rộng hơn.
-
-  `resolveCourseOption` trả `undefined` cho chuỗi không khớp khoá bán ra nào — kể cả một
-  nhãn khối giáo vụ tự đặt — nên `??` mới là thứ bắt đúng "link không nói được khoá nào".
-*/
 const selectedCourse =
   resolveCourseOption(context.course) ?? resolveCourseOption(pickedClass?.group);
 
-/*
-  Mã lớp chỉ nhét vào ghi chú khi KHÔNG giải được lớp.
-
-  Giải được thì lớp đã nằm ở ô "Lớp muốn giữ chỗ", và chính ô đó dựng câu "Đăng ký giữ
-  chỗ lớp X." lúc gửi — để cả hai cùng viết là ghi chú in hai lần cùng một câu, mà khách
-  đổi lớp trong select thì câu cũ vẫn nằm nguyên trong ô ghi chú.
-*/
 const prefilledNote = registerNote(
   pickedClass ? { trial: context.trial } : context,
 );
@@ -84,10 +51,6 @@ const perks = commitments.map((c) => ({
       </span>
 
       <div class="container relative z-10 mx-auto px-6">
-        <!--
-          Cột chữ hẹp hơn cột form: form là hành động chính nên được nhiều chỗ hơn,
-          và mọi field vẫn đủ rộng để không phải rút xuống một cột.
-        -->
         <div class="grid items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
           <div>
             <h1
@@ -119,11 +82,10 @@ const perks = commitments.map((c) => ({
               }
             </ul>
 
-            <!-- Không phải ai cũng muốn điền form: mở sẵn hai lối liên hệ trực tiếp. -->
             <div class="mt-9 flex flex-wrap gap-3">
               <a
                 href={`tel:${contact.phonePrimaryRaw}`}
-                class="inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-5 py-3 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300 hover:text-brand-red-700"
+                class="inline-flex items-center gap-2.5 rounded-lg border border-border bg-background px-5 py-3 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300 hover:text-brand-red-700"
               >
                 <span class="text-brand-red-600 [&>svg]:size-4" set:html={ICONS.phone} />
                 {contact.phonePrimary}
@@ -132,7 +94,7 @@ const perks = commitments.map((c) => ({
                 href={contact.zalo}
                 target="_blank"
                 rel="noopener"
-                class="inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-5 py-3 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300"
+                class="inline-flex items-center gap-2.5 rounded-lg border border-border bg-background px-5 py-3 text-sm font-bold text-brand-ink-900 transition-colors hover:border-brand-red-300"
               >
                 <span class="[&>svg]:size-4" set:html={ICONS.zalo} />
                 Chat Zalo
@@ -164,10 +126,6 @@ const perks = commitments.map((c) => ({
 
     <TrialCta showFormNote={false} />
 
-    <!--
-      Bản đồ tách thành block riêng: khối TrialCta chỉ có link mở Google Maps ở tab
-      mới, còn người cần ngắm đường đi thì thấy luôn bản đồ mà không rời trang.
-    -->
     <section class="pb-16 lg:pb-24">
       <div class="container mx-auto px-6">
         <div class="overflow-hidden rounded-[2rem] border border-border">

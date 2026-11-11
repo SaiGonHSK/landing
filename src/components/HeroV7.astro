@@ -1,4 +1,5 @@
 ---
+import HeroBackdrop from "@/components/HeroBackdrop.astro";
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import { hero } from "@/data/site";
@@ -19,19 +20,6 @@ import leTan from "@/assets/daily/quay-le-tan-trang-tri.webp";
 import chuaBai from "@/assets/classes/giang-vien-chua-bai.webp";
 import luyenThi from "@/assets/classes/lop-luyen-thi-hsk.webp";
 import tuVan from "@/assets/classes/tu-van-lo-trinh.webp";
-
-/**
- * Hero phương án 7 — nền trắng, chữ canh giữa, bên dưới là lưới ảnh 5 cột (3 cột ở màn
- * hẹp). Bố cục theo trang chủ ef.com.vn; đỏ thương hiệu chỉ là màu nhấn.
- *
- * Chuyển động (GSAP):
- * - Tiêu đề hiện từng chữ, trượt lên + hiện dần.
- * - Mỗi cột ảnh trôi vô tận, cột chẵn lên – cột lẻ xuống, tốc độ khác nhau. Cuộn trang
- *   thì cột trôi nhanh theo vận tốc cuộn rồi chậm lại; rê chuột vào lưới thì chậm hẳn
- *   để xem ảnh. Mỗi cột render ảnh HAI lần nối nhau để vòng lặp liền mạch.
- *
- * Không JS / giảm chuyển động: chữ và ảnh đứng yên, hiện đủ.
- */
 
 type Tile = { src: ImageMetadata; alt: string; aspect: string };
 
@@ -82,9 +70,8 @@ const line1 = hero.titleLine1.split(" ");
 const line2 = hero.titleLine2.split(" ");
 ---
 
-<section id="hero" class="hero7 relative isolate overflow-hidden bg-brand-cream">
-  {/* Đánh dấu chờ intro để giấu chữ tiêu đề trước khi GSAP chạy; GSAP không chạy thì
-      tự hiện sau 3 giây. */}
+<section id="hero" class="hero7 relative isolate overflow-hidden bg-background">
+  <HeroBackdrop stickers="wide" />
   <script is:inline>
     (function (hero) {
       if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -99,18 +86,22 @@ const line2 = hero.titleLine2.split(" ");
     <h1
       class="mx-auto max-w-5xl text-[3rem] leading-[1.08] font-extrabold tracking-[-0.035em] text-balance text-brand-ink-900 sm:text-[4.5rem] lg:text-[6rem]"
     >
-      {/* Không bọc chữ trong khung `overflow-hidden`: khung đó cắt mất dấu tiếng Việt phía
-          trên (ế, ụ…). Chữ trượt lên + hiện dần thay cho kiểu trồi từ sau mép ẩn. */}
-      {line1.map((w) => (
-        <span class="inline-block">
-          <span class="hero7-word inline-block">{w}</span>
-        </span>
-      ))}{" "}
-      <span class="inline-block text-brand-red-600">
-        {line2.map((w) => (
+      {line1.map((w, i) => (
+        <>
+          {i > 0 && " "}
           <span class="inline-block">
             <span class="hero7-word inline-block">{w}</span>
           </span>
+        </>
+      ))}{" "}
+      <span class="inline-block text-brand-red-600">
+        {line2.map((w, i) => (
+          <>
+            {i > 0 && " "}
+            <span class="inline-block">
+              <span class="hero7-word inline-block">{w}</span>
+            </span>
+          </>
         ))}
       </span>
     </h1>
@@ -131,7 +122,7 @@ const line2 = hero.titleLine2.split(" ");
     >
       <a
         href="/schedule"
-        class="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-red-600 px-7 text-[0.95rem] font-bold text-white transition-colors hover:bg-brand-red-700"
+        class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-red-600 px-7 text-[0.95rem] font-bold text-white transition-colors hover:bg-brand-red-700"
       >
         Xem lịch khai giảng
         <span
@@ -141,9 +132,9 @@ const line2 = hero.titleLine2.split(" ");
       </a>
       <a
         href="/register"
-        class="inline-flex h-12 items-center justify-center rounded-full border border-border px-7 text-[0.95rem] font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
+        class="inline-flex h-12 items-center justify-center rounded-lg border border-border px-7 text-[0.95rem] font-bold text-brand-ink-900 transition-colors hover:bg-brand-ink-50"
       >
-        Đăng ký giữ chỗ ngay
+        Đăng ký ngay
       </a>
     </div>
   </div>
@@ -212,11 +203,6 @@ const line2 = hero.titleLine2.split(" ");
       tl.to(words, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.07 })
         .to(fades, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.1 }, "-=0.5");
 
-      /*
-        Cột trôi vô tận: track gồm 2 bản ảnh giống hệt, dịch đúng nửa track (-50%) là về
-        lại vị trí đầu, nên `repeat: -1` liền mạch. Cột hướng xuống chạy ngược từ -50%.
-        `speed` là số giây cho một vòng — càng lớn càng chậm.
-      */
       const loops = tracks.map((track) => {
         const down = track.dataset.dir === "1";
         return gsap.fromTo(
@@ -231,7 +217,6 @@ const line2 = hero.titleLine2.split(" ");
         );
       });
 
-      // Cuộn trang: tăng tốc theo vận tốc cuộn rồi thả dần về nhịp thường.
       let hovering = false;
       const base = () => (hovering ? 0.15 : 1);
       ScrollTrigger.create({
@@ -245,11 +230,9 @@ const line2 = hero.titleLine2.split(" ");
             gsap.to(t, { timeScale: base(), duration: 0.9, ease: "power2.out", overwrite: true });
           });
         },
-        // Ra khỏi màn: dừng hẳn, đỡ tốn CPU khi đọc phần dưới trang.
         onToggle: ({ isActive }) => loops.forEach((t) => (isActive ? t.resume() : t.pause())),
       });
 
-      // Rê chuột vào lưới: chậm hẳn để xem ảnh.
       const wall = hero.querySelector<HTMLElement>(".hero7-wall");
       const slowTo = (to: number) =>
         loops.forEach((t) => gsap.to(t, { timeScale: to, duration: 0.6, ease: "power2.out", overwrite: true }));
@@ -268,7 +251,6 @@ const line2 = hero.titleLine2.split(" ");
 </script>
 
 <style>
-  /* Mờ cả mép trên lẫn mép dưới: ảnh trôi vào – trôi ra chứ không bị cắt cụt. */
   .hero7-wall {
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);

@@ -41,12 +41,6 @@ const sections = [
   },
 ];
 
-/* Trang nhánh của mục Giới thiệu: khai `AboutPage` gộp vào node `WebPage` của Layout,
-   `mainEntity` trỏ về `#organization` để AI biết trang này nói *về* trung tâm.
-
-   Breadcrumb khai ở đây chứ không mượn `PageHero` như trước: trang này mở đầu bằng
-   `AboutHero` (bố cục hai cột riêng của nó), mà thẻ JSON-LD thì không nên đi kèm một
-   component chỉ vì component đó tình cờ đứng đầu trang. */
 const schemas = [
   aboutPageSchema({ pathname: Astro.url.pathname, site: Astro.site }),
   ...breadcrumbNodes([{ label: "Giới thiệu" }], Astro.url.pathname, Astro.site),
@@ -67,14 +61,6 @@ const schemas = [
       lead="Hoa văn SaigonHSK dạy tiếng Trung và luyện thi HSK tại TP.HCM. Giảng viên Thạc sĩ – Tiến sĩ đứng lớp, mỗi lớp 10–15 học viên để thầy cô theo sát từng người từ buổi đầu đến ngày thi."
     />
 
-    {/*
-      Ba khối kể về trung tâm, theo đúng thứ tự người đọc muốn biết: *là ai* (câu
-      chuyện) → *đứng trên cái gì* (giá trị, tầm nhìn, sứ mệnh) → *ai dạy* (đội ngũ).
-
-      Bản trước đặt văn xuôi giới thiệu, ba ô Sứ mệnh/Phương châm/Tầm nhìn và năm giá
-      trị thành ba khối rời trên nền trắng như nhau, nên cả đoạn giữa trang đọc như một
-      dải chữ dài không có nhịp. Giờ mỗi khối có nền riêng và một hình thức riêng.
-    */}
     <AboutStory />
 
     <AboutIdentity />
@@ -84,23 +70,10 @@ const schemas = [
       description="Thạc sĩ, Tiến sĩ tốt nghiệp các đại học lớn của Trung Quốc, hiện giảng dạy tại nhiều trường đại học ở TP.HCM."
     />
 
-    {/* Ảnh lớp thật, thay cho khối Cơ sở vật chất cũ (3 ảnh phòng học tĩnh). */}
     <DailyLife />
 
-    {/*
-      Số liệu đặt *sau* bốn khối kể về trung tâm, không chen giữa ảnh bìa và câu chuyện.
-
-      Dải số ở ngay dưới ảnh bìa đọc như một bảng thành tích chắn đường: người vừa mở
-      trang giới thiệu thì muốn biết trung tâm là ai trước, con số là thứ chốt lại sau
-      khi đã đọc.
-    */}
     <Milestones />
 
-    {/*
-      Nền xám cho khối này: từ khối ảnh sinh hoạt trở xuống, trang có bốn section nền
-      trắng liên tiếp (ảnh, số liệu, lưới liên kết, CTA) nên phần cuối trang trôi thành
-      một dải trắng dài. Một khối nền xám xen vào chia nó thành hai nhịp.
-    */}
     <section class="bg-brand-surface-50 py-16 lg:py-24">
       <div class="container mx-auto px-6">
         <SectionHeading
@@ -109,56 +82,19 @@ const schemas = [
           description="Mỗi mục dưới đây là một trang riêng, đi sâu vào từng khía cạnh của SaigonHSK."
         />
 
-        {/*
-          Năm mục gom trong **một** khối, phân cách bằng vạch mảnh — không phải năm hộp
-          xám rời.
-
-          Năm hộp riêng đặt cạnh nhau ở khổ hẹp (~230px) thì mỗi cặp thẻ có tới bốn mép
-          liền nhau (padding + bo góc + khoảng cách + padding), nên chữ trông như bị ép
-          vào giữa các viền. Gom lại thì chỉ còn một đường viền ngoài và bốn vạch một
-          nét, chữ có chỗ thở mà khối vẫn gọn.
-
-          Đây cũng là idiom site đang dùng cho dải bốn ô: hàng tiện nghi trong
-          `Facility.astro` và dải số trong `Milestones.astro`.
-        */}
         <div
-          class="mt-12 grid overflow-hidden rounded-3xl border border-brand-surface-200 bg-background lg:grid-cols-5"
+          class="mt-12 grid gap-px overflow-hidden rounded-3xl border border-brand-surface-200 bg-brand-surface-200 sm:grid-cols-2"
         >
           {
             sections.map((s) => (
               <a
                 href={s.href}
-                class:list={[
-                  /* Thẻ nền trắng nên hover phải *tối đi* một bậc, không sáng lên. */
-                  "group p-6 transition-colors hover:bg-brand-surface-50",
-                  /*
-                    Vạch ngang khi xếp dọc (mobile/tablet), vạch dọc khi thành một hàng
-                    (desktop). Viết tường minh thay vì `divide-x`: `divide-x` đặt viền
-                    trái cho mọi con từ thứ hai, nên khi lưới xuống hàng nó vẽ thêm một
-                    vạch ở đầu hàng dưới — đúng chỗ không nên có vạch.
-                  */
-                  "border-t border-brand-surface-200 first:border-t-0",
-                  "lg:border-t-0 lg:border-l lg:first:border-l-0",
-                ]}
+                class="group bg-background p-6 transition-colors hover:bg-brand-surface-50 sm:last:odd:col-span-2 lg:p-8"
               >
-                {/* Chấm đỏ đầu ô: điểm nhấn duy nhất của mỗi ô, và là chỗ màu thương
-                    hiệu xuất hiện trong một dải năm ô chữ toàn xám. */}
-                <span
-                  aria-hidden="true"
-                  class="mb-4 block size-2.5 rounded-full bg-brand-red-500"
-                />
-                {/*
-                  Không còn dòng "Xem chi tiết": cả ô đã là một `<a>` nên dòng đó là lời
-                  mời thứ hai cho cùng một liên kết, nhân lên năm lần thì thành nhiễu. Dấu
-                  hiệu bấm được chuyển sang hành vi: ô đổi nền, tiêu đề sang màu thương
-                  hiệu.
-
-                  `h3` chứ không `h2`: tiêu đề section này (`SectionHeading`) đã là `h2`.
-                */}
-                <h3 class="text-[15px] font-extrabold leading-snug text-brand-ink-900 transition-colors group-hover:text-brand-red-600">
+                <h3 class="text-lg font-extrabold leading-snug text-brand-ink-900 transition-colors group-hover:text-brand-red-600">
                   {s.title}
                 </h3>
-                <p class="mt-2.5 text-[13px] leading-relaxed text-muted-foreground">
+                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
                   {s.desc}
                 </p>
               </a>
@@ -168,18 +104,6 @@ const schemas = [
       </div>
     </section>
 
-    {/*
-      Chỉ còn `CtaSection`, bỏ `RegisterSection`.
-
-      Hai khối này nói cùng một việc: `RegisterSection` là form đầy đủ với tiêu đề "Nhận
-      tư vấn lộ trình và test trình độ miễn phí", `CtaSection` là thẻ đỏ "Đăng ký tư vấn
-      miễn phí" dẫn sang /register. Đặt liền nhau thì người đọc gặp hai lời mời giống
-      nhau trong một màn hình, và trang có hai chỗ nhận cùng một loại thông tin.
-
-      Giữ `CtaSection` vì trang này là trang giới thiệu, không phải trang chuyển đổi:
-      việc của nó là kể trung tâm là ai rồi dẫn sang /register — nơi form là nội dung
-      chính. Trang chủ cũng đang chọn đúng như vậy.
-    */}
     <CtaSection />
   </main>
   <Footer />

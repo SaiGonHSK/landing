@@ -10,26 +10,12 @@ import { findParent, getPageContents } from "@/data/pages";
 import { renderArticleBody } from "@/lib/articleBody";
 import { site } from "@/data/site";
 
-// Tra cứu theo params — xem ghi chú ở src/pages/courses/[slug].astro.
-//
-// `getPageContents()` chỉ trả về trang có slug nằm trong menu và có nội dung thật,
-// nên route bắt-tất-cả này không thể biến một URL bất kỳ thành một trang.
 const wanted = `/${(Astro.params.slug ?? "").replace(/^\/+|\/+$/g, "")}`;
 const page = (await getPageContents()).find((entry) => entry.slug === wanted);
 if (!page) return new Response(null, { status: 404 });
 
 const parent = findParent(page.slug);
 
-/**
- * Thư viện không có khối ghi danh và CTA cuối trang.
- *
- * Đó là trang đọc tài liệu miễn phí — chèn lời mời ghi danh vào cuối bài làm loãng
- * nội dung, người đọc vẫn có thanh liên hệ nổi khi cần. Giống `showCta={false}` ở
- * các trang /library dựng bằng CatalogHub.
- *
- * Cần cả ở route bắt-tất-cả này vì bài Thư viện lồng sâu hơn ba cấp
- * (`/library/<chuyên-mục>/<bài>`) sẽ rơi xuống đây chứ không vào route riêng.
- */
 const inLibrary = page.slug.startsWith("/library/");
 
 const crumbs = parent
@@ -46,8 +32,6 @@ const schemas = [
     description: page.summary,
     inLanguage: "vi-VN",
     mainEntityOfPage: `${origin}${page.slug}`,
-    // Google dùng dateModified để xếp hạng độ mới của nội dung; thiếu nó thì nội
-    // dung vừa cập nhật cũng không được nhận diện là mới.
     ...(page.updatedAt
       ? { dateModified: page.updatedAt, datePublished: page.updatedAt }
       : {}),
@@ -73,7 +57,6 @@ const schemas = [
 
     <section class="bg-background">
       <div class="container mx-auto px-6">
-        {/* `body` là Markdown do console soạn — xem src/lib/articleBody.ts. */}
         <article
           class="rich mx-auto max-w-3xl rounded-3xl bg-brand-ink-50 p-7 text-base leading-relaxed text-muted-foreground md:p-10"
           set:html={renderArticleBody(page.body)}
@@ -95,7 +78,7 @@ const schemas = [
                 .map((child) => (
                   <a
                     href={child.slug}
-                    class="rounded-full bg-brand-ink-50 px-5 py-2.5 text-sm font-semibold text-foreground transition-transform hover:-translate-y-0.5"
+                    class="rounded-lg bg-brand-ink-50 px-5 py-2.5 text-sm font-semibold text-foreground transition-transform hover:-translate-y-0.5"
                   >
                     {child.label}
                   </a>

@@ -1,14 +1,9 @@
 ---
-import { Image } from "astro:assets";
-import logoMark from "@/assets/logo-mark.webp";
 
 interface Props {
-  /** Chữ trong nhãn tròn kèm logo, phía trên tiêu đề */
   badge?: string;
   title: string;
-  /** Phần in đỏ, nằm cùng hàng với title */
   highlight?: string;
-  /** Nhãn viết tay nghiêng, nằm bên phải trên màn rộng */
   note?: string;
   class?: string;
 }
@@ -29,23 +24,9 @@ const {
   ]}
 >
   <div>
-    <span
-      class="inline-flex items-center gap-2 rounded-full border border-border bg-background py-1.5 pl-1.5 pr-5 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground"
-    >
-      <Image
-        src={logoMark}
-        alt=""
-        width={24}
-        densities={[1, 2]}
-        format="webp"
-        quality={90}
-        class="size-6 shrink-0 object-contain"
-      />
-      {badge}
-    </span>
 
     <h2
-      class="mt-6 font-heading text-[2rem] font-black leading-[1.05] tracking-tight text-balance text-brand-ink-900 md:text-5xl"
+      class="font-heading text-[2rem] font-black leading-[1.05] tracking-tight text-balance text-brand-ink-900 md:text-5xl"
     >
       {title}
       {highlight && <span class="text-brand-red-600">{highlight}</span>}

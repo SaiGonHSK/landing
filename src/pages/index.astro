@@ -2,6 +2,8 @@
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Hero from "@/components/HeroV7.astro";
+import HeroChristmasGate from "@/components/HeroChristmasGate.astro";
+import HeroTet from "@/components/HeroTet.astro";
 import Promotions from "@/components/Promotions.astro";
 import WhyUs from "@/components/WhyUs.astro";
 import Courses from "@/components/Courses.astro";
@@ -16,12 +18,15 @@ import CtaSection from "@/components/CtaSection.astro";
 import Footer from "@/components/Footer.astro";
 import FloatingContact from "@/components/FloatingContact.astro";
 import GiftCouponModal from "@/components/GiftCouponModal.astro";
+import { currentSeason, teachersDayGift } from "@/data/giftPromos";
 import { visiblePrograms } from "@/data/programsApi";
 import { teachers } from "@/data/teachers";
 import { itemListSchema } from "@/lib/seo";
 import { hskTermSetSchema, teacherListSchema } from "@/lib/schema";
 
 const origin = Astro.site?.origin ?? "";
+
+const season = currentSeason();
 
 const schemas = [
   hskTermSetSchema(origin),
@@ -43,28 +48,30 @@ const schemas = [
   keywords="trung tâm tiếng Trung TPHCM, học tiếng Trung ở đâu tốt, trung tâm tiếng Trung Sài Gòn, luyện thi HSK TPHCM, học tiếng Trung cho người mới bắt đầu, trung tâm tiếng Trung có giấy phép Sở Giáo dục, hoc tieng trung, trung tam tieng trung tphcm, luyen thi hsk"
   schemas={schemas}
 >
-  <Header />
+  <Header glass={!!season} />
   <main id="main" class="flex flex-col gap-16 lg:gap-24">
-    <Hero />
+    {
+      season === "luna" ? (
+        <HeroTet />
+      ) : season === "christmas" ? (
+        <HeroChristmasGate />
+      ) : (
+        <Hero />
+      )
+    }
     <Promotions />
     <Achievements />
     <WhyUs />
     <Courses limit={4} />
-    <!-- <Roadmap /> -->
     <Teacher />
     <Activities />
     <Facility />
-    {
-      /* Trang chủ chỉ lấy 6 thẻ đầu; phần còn lại ở `/about/reviews`. Xem `limit`
-        trong `Testimonials.astro`. */
-    }
     <Testimonials limit={6} />
     <TrialCta />
     <FAQ limit={5} />
-    <!-- <RegisterSection /> -->
     <CtaSection />
   </main>
   <Footer />
   <FloatingContact />
-  <GiftCouponModal />
+  {!season && <GiftCouponModal {...teachersDayGift} />}
 </Layout>

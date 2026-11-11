@@ -3,11 +3,6 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/google-sans-flex/slnt.css";
 
-/*
-  Cả site chỉ dùng MỘT font: Google Sans Flex. `font-heading`, `font-serif`, `font-hand` vẫn
-  giữ làm tên vai trò (component đang gọi), nhưng đều trỏ về `--font-sans` — đổi font sau này
-  chỉ sửa một chỗ.
-*/
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans:
@@ -33,7 +28,6 @@
   --color-brand-red-800: var(--brand-red-800);
   --color-brand-red-900: var(--brand-red-900);
   --color-brand-red-950: var(--brand-red-950);
-
 
   --color-brand-ink-50: var(--brand-ink-50);
   --color-brand-ink-100: var(--brand-ink-100);
@@ -82,7 +76,77 @@
   --color-brand-hero-900: var(--brand-hero-900);
   --color-brand-hero-950: var(--brand-hero-950);
 
-  /* Ba mức nền trung tính của hệ màu — xem chú thích ở khối `:root`. */
+  --color-brand-ember-50: var(--brand-ember-50);
+  --color-brand-ember-100: var(--brand-ember-100);
+  --color-brand-ember-200: var(--brand-ember-200);
+  --color-brand-ember-300: var(--brand-ember-300);
+  --color-brand-ember-400: var(--brand-ember-400);
+  --color-brand-ember-500: var(--brand-ember-500);
+  --color-brand-ember-600: var(--brand-ember-600);
+  --color-brand-ember-700: var(--brand-ember-700);
+  --color-brand-ember-800: var(--brand-ember-800);
+  --color-brand-ember-900: var(--brand-ember-900);
+  --color-brand-ember-950: var(--brand-ember-950);
+
+  --color-brand-jade-50: var(--brand-jade-50);
+  --color-brand-jade-100: var(--brand-jade-100);
+  --color-brand-jade-200: var(--brand-jade-200);
+  --color-brand-jade-300: var(--brand-jade-300);
+  --color-brand-jade-400: var(--brand-jade-400);
+  --color-brand-jade-500: var(--brand-jade-500);
+  --color-brand-jade-600: var(--brand-jade-600);
+  --color-brand-jade-700: var(--brand-jade-700);
+  --color-brand-jade-800: var(--brand-jade-800);
+  --color-brand-jade-900: var(--brand-jade-900);
+  --color-brand-jade-950: var(--brand-jade-950);
+
+  --color-brand-sky-50: var(--brand-sky-50);
+  --color-brand-sky-100: var(--brand-sky-100);
+  --color-brand-sky-200: var(--brand-sky-200);
+  --color-brand-sky-300: var(--brand-sky-300);
+  --color-brand-sky-400: var(--brand-sky-400);
+  --color-brand-sky-500: var(--brand-sky-500);
+  --color-brand-sky-600: var(--brand-sky-600);
+  --color-brand-sky-700: var(--brand-sky-700);
+  --color-brand-sky-800: var(--brand-sky-800);
+  --color-brand-sky-900: var(--brand-sky-900);
+  --color-brand-sky-950: var(--brand-sky-950);
+
+  --color-brand-violet-50: var(--brand-violet-50);
+  --color-brand-violet-100: var(--brand-violet-100);
+  --color-brand-violet-200: var(--brand-violet-200);
+  --color-brand-violet-300: var(--brand-violet-300);
+  --color-brand-violet-400: var(--brand-violet-400);
+  --color-brand-violet-500: var(--brand-violet-500);
+  --color-brand-violet-600: var(--brand-violet-600);
+  --color-brand-violet-700: var(--brand-violet-700);
+  --color-brand-violet-800: var(--brand-violet-800);
+  --color-brand-violet-900: var(--brand-violet-900);
+  --color-brand-violet-950: var(--brand-violet-950);
+
+  --color-brand-gold-50: var(--brand-gold-50);
+  --color-brand-gold-100: var(--brand-gold-100);
+  --color-brand-gold-200: var(--brand-gold-200);
+  --color-brand-gold-300: var(--brand-gold-300);
+  --color-brand-gold-400: var(--brand-gold-400);
+  --color-brand-gold-500: var(--brand-gold-500);
+  --color-brand-gold-600: var(--brand-gold-600);
+  --color-brand-gold-700: var(--brand-gold-700);
+  --color-brand-gold-800: var(--brand-gold-800);
+  --color-brand-gold-900: var(--brand-gold-900);
+  --color-brand-gold-950: var(--brand-gold-950);
+
+  --color-brand-slate-50: var(--brand-slate-50);
+  --color-brand-slate-100: var(--brand-slate-100);
+  --color-brand-slate-200: var(--brand-slate-200);
+  --color-brand-slate-300: var(--brand-slate-300);
+  --color-brand-slate-400: var(--brand-slate-400);
+  --color-brand-slate-500: var(--brand-slate-500);
+  --color-brand-slate-600: var(--brand-slate-600);
+  --color-brand-slate-700: var(--brand-slate-700);
+  --color-brand-slate-800: var(--brand-slate-800);
+  --color-brand-slate-900: var(--brand-slate-900);
+  --color-brand-slate-950: var(--brand-slate-950);
   --color-brand-cream: var(--brand-cream);
   --color-brand-surface-50: var(--brand-surface-50);
   --color-brand-surface-100: var(--brand-surface-100);
@@ -105,6 +169,12 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -162,18 +232,17 @@
 
 :root {
 
-  --brand-red-50: #fdf2f3;
-  --brand-red-100: #fbdcdf;
-  --brand-red-200: #f5b3b9;
-  --brand-red-300: #ed8a92;
-  --brand-red-400: #dd5560;
-  --brand-red-500: #c92c3c;
+  --brand-red-50: #fff4f3;
+  --brand-red-100: #ffe1de;
+  --brand-red-200: #ffc3c0;
+  --brand-red-300: #fe9a96;
+  --brand-red-400: #e47371;
+  --brand-red-500: #ce4d4f;
   --brand-red-600: #b2182b;
-  --brand-red-700: #971324;
-  --brand-red-800: #7c0f1d;
-  --brand-red-900: #5e0b16;
-  --brand-red-950: #38060d;
-
+  --brand-red-700: #981525;
+  --brand-red-800: #7e111e;
+  --brand-red-900: #5c1117;
+  --brand-red-950: #3c0f10;
 
   --brand-ink-50: #f6f6f7;
   --brand-ink-100: #e9e9ec;
@@ -211,62 +280,133 @@
   --brand-pink-900: var(--brand-red-900);
   --brand-pink-950: var(--brand-red-950);
 
-  --brand-hero-100: #dd5560;
-  --brand-hero-200: #ed8a92;
+  --brand-hero-100: var(--brand-red-400);
+  --brand-hero-200: var(--brand-red-300);
   --brand-hero-300: #ffffff;
   --brand-hero-400: #fffdfd;
   --brand-hero-500: #fdf4f2;
   --brand-hero-600: #fbe8e5;
   --brand-hero-700: #f7d6d3;
   --brand-hero-800: #fdece9;
-  --brand-hero-900: #971324;
-  --brand-hero-950: #5e0b16;
+  --brand-hero-900: var(--brand-red-700);
+  --brand-hero-950: var(--brand-red-900);
 
-  /*
-    Ba mức nền trung tính: nền trang, nền section, viền. Hơi ngả xanh chứ không xám
-    thuần như thang `brand-ink` — đặt cạnh mảng đỏ của thương hiệu thì xám ngả xanh
-    trông sạch, còn xám thuần ngả sang be và làm đỏ bị đục.
-  */
-  /* Nền kem ấm của khối đội ngũ (`AboutTeam`), dùng lại làm nền hero. */
+  --brand-ember-50: #fff4ee;
+  --brand-ember-100: #fddbc7;
+  --brand-ember-200: #f5bea3;
+  --brand-ember-300: #eca083;
+  --brand-ember-400: #e28166;
+  --brand-ember-500: #d6604d;
+  --brand-ember-600: #af4939;
+  --brand-ember-700: #923a2c;
+  --brand-ember-800: #752b20;
+  --brand-ember-900: #591c13;
+  --brand-ember-950: #3d0d07;
+
+  --brand-jade-50: #f0fdf4;
+  --brand-jade-100: #dcfce7;
+  --brand-jade-200: #bbf7d0;
+  --brand-jade-300: #86efac;
+  --brand-jade-400: #4ade80;
+  --brand-jade-500: #22c55e;
+  --brand-jade-600: #16a34a;
+  --brand-jade-700: #15803d;
+  --brand-jade-800: #166534;
+  --brand-jade-900: #14532d;
+  --brand-jade-950: #052e16;
+
+  --brand-sky-50: #f2f8fb;
+  --brand-sky-100: #d1e5f0;
+  --brand-sky-200: #aed1e5;
+  --brand-sky-300: #8cbcd9;
+  --brand-sky-400: #69a8ce;
+  --brand-sky-500: #4393c3;
+  --brand-sky-600: #2f7db8;
+  --brand-sky-700: #2166ac;
+  --brand-sky-800: #1a5189;
+  --brand-sky-900: #143d67;
+  --brand-sky-950: #102134;
+
+  --brand-violet-50: #f5f3ff;
+  --brand-violet-100: #ede9fe;
+  --brand-violet-200: #ddd6fe;
+  --brand-violet-300: #c4b5fd;
+  --brand-violet-400: #a78bfa;
+  --brand-violet-500: #8b5cf6;
+  --brand-violet-600: #7c3aed;
+  --brand-violet-700: #6d28d9;
+  --brand-violet-800: #5b21b6;
+  --brand-violet-900: #4c1d95;
+  --brand-violet-950: #2e1065;
+
+  --brand-gold-50: #fffbeb;
+  --brand-gold-100: #fef3c7;
+  --brand-gold-200: #fde68a;
+  --brand-gold-300: #fcd34d;
+  --brand-gold-400: #fbbf24;
+  --brand-gold-500: #f59e0b;
+  --brand-gold-600: #d97706;
+  --brand-gold-700: #b45309;
+  --brand-gold-800: #92400e;
+  --brand-gold-900: #78350f;
+  --brand-gold-950: #451a03;
+
+  --brand-slate-50: #f8fafc;
+  --brand-slate-100: #f1f5f9;
+  --brand-slate-200: #e2e8f0;
+  --brand-slate-300: #cbd5e1;
+  --brand-slate-400: #90a1b9;
+  --brand-slate-500: #62748e;
+  --brand-slate-600: #475569;
+  --brand-slate-700: #314158;
+  --brand-slate-800: #1d293d;
+  --brand-slate-900: #0f172a;
+  --brand-slate-950: #020617;
   --brand-cream: #faf6f1;
-  --brand-surface-50: #f8fafc;
-  --brand-surface-100: #f1f5f9;
-  --brand-surface-200: #e2e8f0;
+  --brand-surface-50: var(--brand-slate-50);
+  --brand-surface-100: var(--brand-slate-100);
+  --brand-surface-200: var(--brand-slate-200);
 
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: var(--brand-slate-950);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: var(--brand-slate-950);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
+  --popover-foreground: var(--brand-slate-950);
   --primary: var(--brand-blue-600);
   --primary-foreground: #ffffff;
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.62 0.035 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0 0);
+  --secondary: var(--brand-slate-100);
+  --secondary-foreground: var(--brand-slate-600);
+  --muted: var(--brand-slate-100);
+  --muted-foreground: var(--brand-slate-500);
+  --accent: var(--brand-slate-100);
+  --accent-foreground: var(--brand-slate-700);
+  --destructive: #e7000b;
+  --border: var(--brand-slate-200);
+  --input: var(--brand-slate-200);
+  --ring: var(--brand-slate-400);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --success: var(--brand-jade-600);
+  --success-foreground: #ffffff;
+  --warning: var(--brand-gold-500);
+  --warning-foreground: var(--brand-ink-900);
+  --info: var(--brand-sky-500);
+  --info-foreground: #ffffff;
   --radius: 0.625rem;
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar: var(--brand-slate-50);
+  --sidebar-foreground: var(--brand-slate-950);
   --sidebar-primary: var(--brand-blue-600);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--brand-slate-100);
+  --sidebar-accent-foreground: var(--brand-slate-700);
+  --sidebar-border: var(--brand-slate-200);
+  --sidebar-ring: var(--brand-slate-400);
 
-  --cta-secondary-bg: #e2e8f0;
+  --cta-secondary-bg: var(--brand-slate-200);
 }
 
 @layer base {
@@ -282,8 +422,6 @@
   }
 }
 
-/* iOS Safari zooms the whole page when focusing a control with font-size < 16px.
-   Unlayered on purpose so it beats Tailwind's `text-sm` utilities on mobile. */
 @media (max-width: 767px) {
   input:not([type="checkbox"]):not([type="radio"]),
   select,
@@ -361,17 +499,6 @@
   text-decoration: underline;
 }
 
-/*
- * Tiêu đề, ảnh, trích dẫn, mã và bảng trong nội dung do trang quản trị soạn.
- *
- * Preflight của Tailwind gỡ hết style mặc định của trình duyệt, nên nếu không khai
- * ở đây thì một bài viết có H2/H3 sẽ hiện ra dưới dạng chữ thường cỡ y hệt đoạn văn
- * — người soạn chia mục trong console mà bạn đọc không thấy mục nào.
- *
- * H1 có mặt vì Markdown cho gõ `# `, dù bảng chọn khối của console không mời dùng nó:
- * tiêu đề bài đã là H1 của trang rồi. Để cỡ ngang H2 cho một bài lỡ dùng H1 không phá
- * thứ bậc chữ của trang.
- */
 .rich h1,
 .rich h2,
 .rich h3,
@@ -399,12 +526,6 @@
 .rich > :first-child {
   margin-top: 0;
 }
-/*
- * `cursor: zoom-in` phải khai ở đây chứ không phải trong trang: thân bài đổ vào bằng
- * `set:html` nên style scoped của Astro không chạm tới được — nó chỉ gắn thuộc tính
- * vào phần tử có trong template. Trang bài viết bắt cú bấm này để mở `<dialog>` xem
- * ảnh cỡ lớn.
- */
 .rich img {
   margin: 1.5rem 0;
   border-radius: 1rem;
@@ -436,7 +557,6 @@
   padding: 0;
   font-size: 0.875rem;
 }
-/* Bảng dài hơn cột chữ thì cuộn trong chính nó, không đẩy cả trang trượt ngang. */
 .rich table {
   display: block;
   margin: 1.5rem 0;
@@ -456,13 +576,6 @@
   font-weight: 700;
 }
 
-/*
- * Những thẻ chỉ Markdown mới sinh ra: đường kẻ ngang, gạch ngang chữ, danh sách việc
- * (GFM), và ảnh có chú thích.
- *
- * Ảnh chèn từ bảng chọn “/” của console ra `<figure>` — xem src/lib/articleBody.ts.
- * Chú thích in nhỏ, canh giữa dưới ảnh, và `.rich img` bên trên đã lo phần ảnh.
- */
 .rich hr {
   margin: 2rem 0;
   border: 0;
@@ -472,13 +585,6 @@
   text-decoration: line-through;
   opacity: 0.7;
 }
-/*
- * Danh sách việc bỏ chấm đầu dòng — cái ô đánh dấu đã là dấu đầu dòng rồi.
- *
- * Bắt theo class `contains-task-list` / `task-list-item` do remark-gfm gắn sẵn, không
- * dò `:has(input)`: danh sách "thưa" (có dòng trống giữa các mục) bọc mỗi mục trong
- * một `<p>` nên ô đánh dấu không còn là con trực tiếp của `<li>`.
- */
 .rich .contains-task-list {
   margin-left: 0.1rem;
   list-style: none;
@@ -487,14 +593,6 @@
   margin-right: 0.45rem;
   accent-color: var(--brand-red-600);
 }
-/*
- * Bài không có mục lục (xem `hasToc` trong src/pages/library/[category]/[slug].astro).
- *
- * Khối thân bài trải hết khung thay vì chặn ở 52rem, rồi chặn lại từng khối con: chữ
- * vẫn đúng tầm đọc, còn bảng và ảnh được lấy hết bề ngang. Chặn ở khối con chứ không
- * chặn ở khối cha vì đó là cách duy nhất cho bảng rộng hơn đoạn văn mà không phải
- * dùng mẹo âm lề — mẹo đó tràn đều hai bên, mà bên phải là chỗ của mục lục.
- */
 .rich-wide > * {
   max-width: 52rem;
 }
@@ -538,14 +636,6 @@
     will-change: auto;
   }
 
-  /*
-    Biến thể trượt ngang thay cho nét trồi lên mặc định — dùng cho cặp thẻ cảm nhận đầu
-    tiên: thẻ trái vào từ mép trái, thẻ phải vào từ mép phải.
-
-    Trạng thái cuối phải khai lại ở đây chứ không nhờ được `.reveal-in`: chọn theo hai lớp
-    nên các quy tắc này ưu tiên cao hơn `.reveal-in` (một lớp), để nguyên thì thẻ đứng im
-    ở vị trí lệch.
-  */
   .reveal-child.reveal-x-left {
     transform: translateX(-4rem);
   }
